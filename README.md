@@ -1,5 +1,3 @@
-## WebSocket API Documentation for Text-to-Speech
-
 ### Overview
 Deepdub WebSocket API provides functionality to convert text into speech. The user can send a request with the desired parameters and receive audio data in response.
 
