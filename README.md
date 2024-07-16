@@ -1,5 +1,5 @@
 ### Overview
-Deepdub WebSocket API provides functionality to convert text into speech. The user can send a request with the desired parameters and receive audio data in response.
+Deepdub WebSocket API provides functionality to convert text into speech. The client can send a request with the desired parameters and receive audio data in response.
 
 ### Connection Setup
 
@@ -40,7 +40,7 @@ async with websockets.connect("wss://wsapi.deepdub.ai/open", extra_headers={"x-a
 
 - **action** (string, required): Specifies the action to perform. Must be `"text-to-speech"`.
 - **locale** (string, required): The locale(case sensitive) for the generated speech, e.g. `"en-US"`.
-- **voicePromptId** (string, required): The ID of the voice prompt to use can be fetch from the app .
+- **voicePromptId** (string, required): The ID of the voice prompt to use can be fetched from the Deepdub-Go platform.
 - **model** (string, required): The model to use for text-to-speech conversion, e.g., `"dd-etts-1.1"`.
 - **targetText** (string, required): The text to convert to speech.
 
