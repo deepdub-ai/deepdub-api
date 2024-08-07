@@ -263,7 +263,7 @@ async def create_audio_description_from_file(xml_content):
             audio_description = audio_description.mix(begin_ms / 1000, generated_audio)
 
     # Export the final_audio to a WAV file
-    audio_description.export("final.wav", format="wav")
+    audio_description.write("final.wav")
 
     print("Final WAV file created successfully.")
 
