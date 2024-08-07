@@ -6,7 +6,7 @@ from pathlib import Path
 
 import websockets
 from lxml import etree
-from pydub import AudioSegment
+from audiosample import AudioSample
 
 # Read the XML file and parse it
 xml_content = """
@@ -80,7 +80,7 @@ async def create_audio_description_from_file(xml_content):
     headers = {"x-api-key": api_key}
 
     # Connect to the WebSocket server with custom headers
-    audio_description = AudioSegment.silent(duration=0)
+    audio_description = AudioSample()
     async with websockets.connect(websocket_url, extra_headers=headers) as websocket:
         print("Connected to the WebSocket server.")
 
@@ -100,7 +100,7 @@ async def create_audio_description_from_file(xml_content):
             print(f"Sent: {message_to_send}")
             await websocket.send(json.dumps(message_to_send))
 
-            generated_audio = AudioSegment.empty()
+            generated_audio = AudioSample()
 
             while True:
 
@@ -109,19 +109,16 @@ async def create_audio_description_from_file(xml_content):
                 print(f"received chunk {message_received['generationId']} - {message_received.get('index', 0) }")
 
                 if message_received.get("data"):
-                    generated_audio += AudioSegment.from_file(io.BytesIO(base64.b64decode(message_received['data'])), format="wav")
+                    generated_audio += AudioSample(base64.b64decode(message_received['data']))
 
                 if message_received["isFinished"]:
                     break
 
             # Adding the file to the final audio
-            if len(audio_description) < end_ms:
-                audio_description += AudioSegment.silent(duration=(end_ms - len(audio_description)))
-
-            audio_description = audio_description.overlay(generated_audio, position=begin_ms)
+            audio_description = audio_description.mix(generated_audio, begin_ms)
 
     # Export the final_audio to a WAV file
-    audio_description.export("final.wav", format="wav")
+    audio_description.write("final.wav")
 
     print("Final WAV file created successfully.")
 

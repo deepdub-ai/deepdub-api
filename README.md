@@ -114,7 +114,7 @@ import io
 import json
 
 import websockets
-from pydub import AudioSegment
+from audiosample import AudioSample
 
 
 async def text_to_speech():
@@ -140,7 +140,7 @@ async def text_to_speech():
         print(f"Sent: {message_to_send}")
         await websocket.send(json.dumps(message_to_send))
 
-        generated_audio = AudioSegment.empty()
+        generated_audio = AudioSample()
 
         while True:
             message_received = await websocket.recv()
@@ -148,12 +148,12 @@ async def text_to_speech():
             print(f"received chunk {message_received['generationId']} - {message_received.get('index', 0) }")
 
             if message_received.get("data"):
-                generated_audio += AudioSegment.from_file(io.BytesIO(base64.b64decode(message_received['data'])), format="wav")
+                generated_audio += AudioSample(base64.b64decode(message_received['data']))
 
             if message_received["isFinished"]:
                 break
 
-        generated_audio.export("test.wav", format="wav")
+        generated_audio.write("test.wav")
         print("Final WAV file created successfully.")
 
 
