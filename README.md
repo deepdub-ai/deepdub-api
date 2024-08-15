@@ -27,8 +27,7 @@ async with websockets.connect("wss://wsapi.deepdub.ai/open", extra_headers={"x-a
     "targetText": "hello",
     
     // Not required:
-    "targetDuration": 4.7,
-    "tempo": 1,
+    "targetDuration": 4.7,    
     "seed": 0,
     "accentControl": {
         "accentBaseLocale": "en-US",
