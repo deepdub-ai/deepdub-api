@@ -28,6 +28,8 @@ async with websockets.connect("wss://wsapi.deepdub.ai/open", extra_headers={"x-a
     
     // Not required:
     "targetDuration": 4.7,
+    "tempo": 1,
+    "seed": 0,
     "accentControl": {
         "accentBaseLocale": "en-US",
         "accentLocale": "fr-FR",
@@ -46,10 +48,13 @@ async with websockets.connect("wss://wsapi.deepdub.ai/open", extra_headers={"x-a
 
 #### Optional Parameters
 - **targetDuration** (number, optional): The desired duration of the speech in seconds.
+- **tempo** (number, optional):  The tempo of the speech mutually exclusive with targetDuration. value should be between 0 and 2.0.
+- **seed** (number, optional): The seed value for the random number generator send same seed to keep consistency between generations.
 - **accentControl** (object, optional): An object to control accent settings.
   - **accentBaseLocale** (string, required if `accentControl` is used): The base locale for the accent, e.g., `"en-US"`.
   - **accentLocale** (string, required if `accentControl` is used): The locale for the accent, e.g., `"fr-FR"`.
   - **accentRatio** (number, required if `accentControl` is used): The ratio of the accent to apply, ranging from 0 to 1.0.
+  
 
 ### Response
 
