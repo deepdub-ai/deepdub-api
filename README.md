@@ -27,7 +27,8 @@ async with websockets.connect("wss://wsapi.deepdub.ai/open", extra_headers={"x-a
     "targetText": "hello",
     
     // Not required:
-    "targetDuration": 4.7,    
+    "targetDuration": 4.7,
+    "promptBoost": false,
     "seed": 0,
     "accentControl": {
         "accentBaseLocale": "en-US",
@@ -48,6 +49,7 @@ async with websockets.connect("wss://wsapi.deepdub.ai/open", extra_headers={"x-a
 #### Optional Parameters
 - **targetDuration** (number, optional): The desired duration of the speech in seconds.
 - **tempo** (number, optional):  The tempo of the speech mutually exclusive with targetDuration. value should be between 0 and 2.0.
+- **promptBoost** (boolean, optional): Overrides the default prompt boost logic. Boosting the prompt affects the behavior of tempo, duration and accentControl.
 - **seed** (number, optional): The seed value for the random number generator send same seed to keep consistency between generations.
 - **accentControl** (object, optional): An object to control accent settings.
   - **accentBaseLocale** (string, required if `accentControl` is used): The base locale for the accent, e.g., `"en-US"`.
