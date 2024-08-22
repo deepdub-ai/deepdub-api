@@ -30,6 +30,7 @@ async with websockets.connect("wss://wsapi.deepdub.ai/open", extra_headers={"x-a
     "targetDuration": 4.7,
     "promptBoost": false,
     "seed": 0,
+    "variance": 0.5,
     "accentControl": {
         "accentBaseLocale": "en-US",
         "accentLocale": "fr-FR",
