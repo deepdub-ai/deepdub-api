@@ -50,6 +50,7 @@ async with websockets.connect("wss://wsapi.deepdub.ai/open", extra_headers={"x-a
 #### Optional Parameters
 - **targetDuration** (number, optional): The desired duration of the speech in seconds.
 - **tempo** (number, optional):  The tempo of the speech mutually exclusive with targetDuration. value should be between 0 and 2.0.
+- **variance** (number, optional):  The variance within a single output of speech. value should be between 0 and 1.0. (system default is 1).
 - **promptBoost** (boolean, optional): Overrides the default prompt boost logic. Boosting the prompt affects the behavior of tempo, targetDuration and accentControl.
 - **seed** (number, optional): The seed value for the random number generator send same seed to keep consistency between generations.
 - **accentControl** (object, optional): An object to control accent settings.
