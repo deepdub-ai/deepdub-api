@@ -81,7 +81,7 @@ async def create_audio_description_from_file(xml_content):
 
     # Connect to the WebSocket server with custom headers
     audio_description = AudioSample()
-    async with websockets.connect(websocket_url, extra_headers=headers) as websocket:
+    async with websockets.connect(websocket_url, additional_headers=headers) as websocket:
         print("Connected to the WebSocket server.")
 
         # Send a message to the WebSocket server
@@ -106,7 +106,7 @@ async def create_audio_description_from_file(xml_content):
 
                 message_received = await websocket.recv()
                 message_received = json.loads(message_received)
-                print(f"received chunk {message_received['generationId']} - {message_received.get('index', 0) }")
+                print(f"received chunk {message_received['generationId']} - {message_received.get('index', 'ack') }")
 
                 if message_received.get("data"):
                     generated_audio += AudioSample(base64.b64decode(message_received['data']))
