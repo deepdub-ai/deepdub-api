@@ -1,9 +1,27 @@
 ### Overview
-Deepdub WebSocket API provides functionality to convert text into speech. The client can send a request with the desired parameters and receive audio data in response.
+Deepdub supports RESTful and WebSocket API which provides functionality to convert text into speech. The client can send a request with the desired parameters and receive audio data in response.
 
 ### Connection Setup
 
-To use this API, establish a WebSocket connection to the server and include the `x-api-key` header with your API key for authentication.
+To use the rest api and include the `x-api-key` header with your API key for authentication, and dont forget to copy the prompt id which is available in the Deepdub platform:
+```
+import requests
+r = requests.post("https://restapi.deepdub.ai/tts",
+         headers={
+                  "Content-Type": "application/json",
+                  "x-api-key": "your-api-key-here"
+              },
+         json={
+              "model": "dd-etts-1.1",
+              "targetText": "marry christmas! and a happy new year!",
+              "locale": "en-US",
+              "voicePromptId": "your-prompt-here"
+           }
+     )
+open("tts_output.mp3", "wb").write(r.content)
+```
+
+To use the Websocket API, establish a WebSocket connection to the server and include the `x-api-key` header with your API key for authentication.
 
 Ensure to include your API key in the WebSocket handshake as follows:
 
