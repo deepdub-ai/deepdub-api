@@ -1,5 +1,5 @@
 ### Overview
-Deepdub supports RESTful and WebSocket API which provides functionality to convert text into speech. The client can send a request with the desired parameters and receive audio data in response.
+Deepdub supports RESTful and WebSocket API which provides functionality to convert text into speech. The client can send a request with the desired parameters and receive audio data in response. Our text also supports phonemes through SSML tags, see phoneme section
 
 ### Connection Setup
 
@@ -296,4 +296,47 @@ async def create_audio_description_from_file(xml_content):
 
 # Run the WebSocket client
 asyncio.run(create_audio_description_from_file(xml_content))
+```
+
+### Phonemes
+To get an accurate pronounciation, where there is more than one way to read the same spelling, please use the phonemes SSML:
+
+```
+list_of_supported_phonemes = {
+    " ", "ˈ", "ˌ", "ː", "‿", "a", "i", "u", "b", "d", "k", "t", "ˤ", "q", "ʔ",
+    "f", "h", "ħ", "s", "θ", "z", "ð", "ɣ", "x", "ʃ", "j", "w", "l", "m", "n",
+    "r", "ʕ", "ɛ", "ɔ", "͡", "ɤ", "ʒ", "p", "ʲ", "v", "ə", "e", "o", "β", "ʎ",
+    "ŋ", "ɲ", "ɾ", "ɪ", "ʊ", "̯", "c", "ɟ", "̝", "ɦ", "ɱ", "̊", "ɑ", "ɒ", "ɐ",
+    "æ", "ø", "œ", "y", "ʰ", "ʁ", "ɕ", "ç", "ʝ", "ʌ", "ɜ", "ɹ", "ʋ", "ʨ", "ʥ",
+    "ɰ", "ʧ", "ʣ", "ʤ", "ʦ", "ɯ", "̥", "ʑ", "ʏ", "ʉ", "ʂ", "ɖ", "ɭ", "ɳ", "ʈ",
+    "̃", "χ", "ʀ", "ɨ", "̪", "ɡ", "ʐ", "ɫ", "̩", "ɴ", "ˡ", "ʍ", "ɶ", "ɵ", "ɧ",
+    "̄", "̀", "́", "̋", "̏", "ɮ", "̆", "ɓ", "ɗ"
+}
+
+def validate_phoneme_string(phoneme_str):
+    # Check if every character in the input is within the set of supported phonemes
+    return all(char in listOfSupportedPhonemes for char in phoneme_str)
+```
+
+#### SSML tags.
+```
+<phoneme alphabet="ipa" ph="təmeɪˈtoʊ"> tomato </phoneme>
+```
+
+#### Using SSML inline
+```
+import requests
+r = requests.post("https://restapi.deepdub.ai/tts",
+         headers={
+                  "Content-Type": "application/json",
+                  "x-api-key": "your-api-key-here"
+              },
+         json={
+              "model": "dd-etts-1.1",
+              "targetText": "marry <phoneme alphabet="ipa" ph="ˈkɹɪsməs"> Christmas </phoneme>! and a happy new year!",
+              "locale": "en-US",
+              "voicePromptId": "your-prompt-here"
+           }
+     )
+open("tts_output.mp3", "wb").write(r.content)
 ```
