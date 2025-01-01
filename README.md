@@ -154,6 +154,7 @@ async def text_to_speech():
     # Define the WebSocket server URL and the API key
     websocket_url = "wss://wsapi.deepdub.ai/open"
     api_key = "Your API Key Here"
+    voice_prompt_id = "your-prompt-here"
 
     # Define custom headers
     headers = {"x-api-key": api_key}
@@ -167,7 +168,7 @@ async def text_to_speech():
             "action": "text-to-speech",
             "targetText": "Hello, this is a test.",
             "locale": "en-US",
-            "voicePromptId": "promptId",
+            "voicePromptId": voice_prompt_id,
         }
 
         print(f"Sent: {message_to_send}")
