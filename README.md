@@ -1,21 +1,28 @@
 ### Overview
+This is a documentation for the Deepdub eTTS API (Emotional Text-To-Speech). Before getting started make sure to get an API key at https://deepdub.ai/
+
 Deepdub supports RESTful and WebSocket API which provides functionality to convert text into speech. The client can send a request with the desired parameters and receive audio data in response. Our text also supports phonemes through SSML tags, see phoneme section
 
 ### Connection Setup
 
 To use the rest api and include the `x-api-key` header with your API key for authentication, and dont forget to copy the prompt id which is available in the Deepdub platform:
-```
+```python
 import requests
+
+#TODO: set api key and voice prompt.
+api_key = "your-api-key-here"
+voice_prompt_id = "your-prompt-here"
+
 r = requests.post("https://restapi.deepdub.ai/tts",
          headers={
                   "Content-Type": "application/json",
-                  "x-api-key": "your-api-key-here"
+                  "x-api-key": api_key
               },
          json={
               "model": "dd-etts-1.1",
               "targetText": "marry christmas! and a happy new year!",
               "locale": "en-US",
-              "voicePromptId": "your-prompt-here"
+              "voicePromptId": voice_prompt_id
            }
      )
 open("tts_output.mp3", "wb").write(r.content)
@@ -301,7 +308,7 @@ asyncio.run(create_audio_description_from_file(xml_content))
 ### Phonemes
 To get an accurate pronounciation, where there is more than one way to read the same spelling, please use the phonemes SSML:
 
-```
+```python
 list_of_supported_phonemes = {
     " ", "ˈ", "ˌ", "ː", "‿", "a", "i", "u", "b", "d", "k", "t", "ˤ", "q", "ʔ",
     "f", "h", "ħ", "s", "θ", "z", "ð", "ɣ", "x", "ʃ", "j", "w", "l", "m", "n",
@@ -319,12 +326,12 @@ def validate_phoneme_string(phoneme_str):
 ```
 
 #### SSML tags.
-```
+```xml
 <phoneme alphabet="ipa" ph="təmeɪˈtoʊ"> tomato </phoneme>
 ```
 
 #### Using SSML inline
-```
+```python
 import requests
 r = requests.post("https://restapi.deepdub.ai/tts",
          headers={
