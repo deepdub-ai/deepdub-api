@@ -348,3 +348,43 @@ r = requests.post("https://restapi.deepdub.ai/tts",
      )
 open("tts_output.mp3", "wb").write(r.content)
 ```
+#### Requesting different formats
+This could be used with REST API or the Websocket API.
+```python
+import requests
+r = requests.post("https://restapi.deepdub.ai/tts",
+         headers={
+                  "Content-Type": "application/json",
+                  "x-api-key": "your-api-key-here"
+              },
+         json={
+              "model": "dd-etts-1.1",
+              "targetText": "Hi, how can I help you ?",
+              "locale": "en-US",
+              "format": "mulaw", # this can be one of the following mp3 (default for REST API),
+                                 # opus, and mulaw (mulaw also modifies to 8000 sample rate)
+              "voicePromptId": "your-prompt-here"
+           }
+     )
+open("tts_output.mp3", "wb").write(r.content)
+```
+#### Requesting different sample rates.
+Sample rate can be one of 48000 (default), 44100, 32000, 24000, 22050, 16000, 8000
+- Sample rate only applies when changing format to mp3, opus, and mulaw. 
+```python
+import requests
+r = requests.post("https://restapi.deepdub.ai/tts",
+         headers={
+                  "Content-Type": "application/json",
+                  "x-api-key": "your-api-key-here"
+              },
+         json={
+              "model": "dd-etts-1.1",
+              "targetText": "Hi, how can I help you ?",
+              "locale": "en-US",
+              "sampleRate": 16000,
+              "voicePromptId": "your-prompt-here"
+           }
+     )
+open("tts_output.mp3", "wb").write(r.content)
+```
