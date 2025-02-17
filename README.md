@@ -28,6 +28,8 @@ r = requests.post("https://restapi.deepdub.ai/tts",
 open("tts_output.mp3", "wb").write(r.content)
 ```
 
+* The response for REST API is binary data.
+
 To use the Websocket API, establish a WebSocket connection to the server and include the `x-api-key` header with your API key for authentication.
 
 Ensure to include your API key in the WebSocket handshake as follows:
@@ -103,7 +105,7 @@ async with websockets.connect("wss://wsapi.deepdub.ai/open", extra_headers={"x-a
 - **generationId** (string): A unique identifier for the generated speech.
 - **data** (string): The base64-encoded audio data.
 
-### Example Request
+### Example Request for Websocket API
 ```json
 {
     "action": "text-to-speech",
@@ -121,7 +123,7 @@ async with websockets.connect("wss://wsapi.deepdub.ai/open", extra_headers={"x-a
 }
 ```
 
-### Example Response
+### Example Response for Websocket API
 ```json
 {
     "index": 0,
