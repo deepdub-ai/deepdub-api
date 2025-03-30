@@ -443,7 +443,7 @@ open("tts_output.mp3", "wb").write(r.content)
 **Request JSON Structure:**
 ```json
 {
-  "age": Number,
+  "age": "Integer",
   "data": "Base64 decoded voice clone",
   "filename": "Voice clone unique name",
   "gender": "String",
@@ -456,7 +456,7 @@ open("tts_output.mp3", "wb").write(r.content)
 ```
 {
   "createdAt": "String",
-  "id": "The actual PromptId to be referenced in TTS Generation requests",
+  "id": "The actual voice Prompt ID to be referenced in TTS Generation requests",
 }
 ```
 
