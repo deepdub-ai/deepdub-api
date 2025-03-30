@@ -197,6 +197,53 @@ async def text_to_speech():
 asyncio.run(text_to_speech())
 
 ```
+### Example - Voice Cloning 
+```
+## API Usage Examples
+
+```python
+import base64
+import requests
+
+# This script demonstrates how to use the DeepDub REST API for text-to-speech (TTS) generation
+# with a voice reference audio file
+
+# API credentials
+api_key = ""
+
+# Step 1: Read and encode the reference audio file to base64
+# This audio file will be used as a voice reference for the TTS generation
+with open("tts_in.m4a", "rb") as audio_file:
+    audio_bytes = audio_file.read()
+    audio_b64 = base64.b64encode(audio_bytes).decode("utf-8")
+
+# Step 2: Make a POST request to the TTS endpoint
+# The request includes the voice reference and text to be synthesized
+r = requests.post(
+    "https://restapi.deepdub.ai/tts",
+    headers={
+        "Content-Type": "application/json",  # Specify JSON content type
+        "x-api-key": api_key                 # Authentication via API key
+    },
+    json={
+        "model": "dd-etts-1.1",                  # TTS model to use
+        "targetText": "marry christmas! and a happy new year!",  # Text to synthesize
+        "locale": "en-US",                       # Language locale
+        "voiceReference": audio_b64,             # Base64-encoded reference audio
+        "variance": 0.2,                         # Control variation in speech
+        "tempo": 1.0,                            # Speech speed (1.0 is normal)
+        "temperature": 0.7,                      # Controls randomness in generation
+	"promptBoost": true,			 # Enhance speaker similarity.	
+    },
+    timeout=120  # Increase timeout to prevent broken pipe errors during audio streaming
+)
+
+# Step 3: Save the generated audio to a file
+# The response is streamed in chunks to handle potentially large audio files
+with open("tts_out.mp3", "wb") as f:
+    for chunk in r.iter_content(chunk_size=8192):
+        f.write(chunk)
+```
 
 ### Example - Audio Description
 
