@@ -62,7 +62,8 @@ async with websockets.connect("wss://wsapi.deepdub.ai/open", extra_headers={"x-a
         "accentBaseLocale": "en-US",
         "accentLocale": "fr-FR",
         "accentRatio": 0.75
-    },    
+    },
+    "voiceReference": "base64 audio encoded voice reference"     
 }
 ```
 
