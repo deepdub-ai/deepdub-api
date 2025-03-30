@@ -438,3 +438,28 @@ r = requests.post("https://restapi.deepdub.ai/tts",
      )
 open("tts_output.mp3", "wb").write(r.content)
 ```
+
+### Add Voice to My Voices library
+**Request JSON Structure:**
+```json
+{
+  "age": Number,
+  "data": "Base64 decoded voice clone",
+  "filename": "Voice clone unique name",
+  "gender": "String",
+  "locale": "String",
+  "speaking_style": "String",
+  "text": "Description"
+}
+```
+**Response JSON Structure**
+```
+{
+  "createdAt": "String",
+  "id": "The actual PromptId to be referenced in TTS Generation requests",
+}
+```
+
+
+
+
