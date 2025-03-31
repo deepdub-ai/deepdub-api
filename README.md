@@ -85,8 +85,14 @@ async with websockets.connect("wss://wsapi.deepdub.ai/open", extra_headers={"x-a
   - **accentBaseLocale** (string, required if `accentControl` is used): The base locale for the accent, e.g., `"en-US"`.
   - **accentLocale** (string, required if `accentControl` is used): The locale for the accent, e.g., `"fr-FR"`.
   - **accentRatio** (number, required if `accentControl` is used): The ratio of the accent to apply, ranging from 0 to 1.0.
-- **voiceReference** (string,optional): Base 64 encoded audio data used for voice reference" 
-  
+- **voiceReference** (string,optional): Base 64 encoded audio data used for voice reference 
+
+### Notes
+ - voiceReference
+   - Supported formats: WAV, MP3, OGG, FLAC, AIFF, AAC
+   - Channel support: Mono and Stereo
+   - Preferred sample rate: 48,000 Hz
+   - Audio size limit: Up to 20 MB (~5 seconds in length)
 
 ### Response
 
