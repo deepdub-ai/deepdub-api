@@ -63,7 +63,7 @@ async with websockets.connect("wss://wsapi.deepdub.ai/open", extra_headers={"x-a
         "accentLocale": "fr-FR",
         "accentRatio": 0.75
     },
-    "voiceReference": "base64 audio encoded voice reference"     
+    "voiceReference": "HAAYABgAGAAgACAA...IAAkACQAJAAkACQAIAAgACAAIAAkACQAJAAkACQA=="     
 }
 ```
 
@@ -85,6 +85,7 @@ async with websockets.connect("wss://wsapi.deepdub.ai/open", extra_headers={"x-a
   - **accentBaseLocale** (string, required if `accentControl` is used): The base locale for the accent, e.g., `"en-US"`.
   - **accentLocale** (string, required if `accentControl` is used): The locale for the accent, e.g., `"fr-FR"`.
   - **accentRatio** (number, required if `accentControl` is used): The ratio of the accent to apply, ranging from 0 to 1.0.
+- **voiceReference** (string,optional): Base 64 encoded audio data used for voice reference" 
   
 
 ### Response
@@ -440,16 +441,17 @@ open("tts_output.mp3", "wb").write(r.content)
 ```
 
 ### Add Voice to My Voices library
+  
 **Request JSON Structure:**
 ```json
 {
-  "age": "Integer",
-  "data": "Base64 decoded voice clone",
-  "filename": "Voice clone unique name",
-  "gender": "String",
-  "locale": "String",
-  "speaking_style": "String",
-  "text": "Description"
+  "age": "30",
+  "data": "HAAYABgAGAAgACAA...IAAkACQAJAAkACQAIAAgACAAIAAkACQAJAAkACQA==",
+  "filename": "myvoice.wav",
+  "gender": "Male",
+  "locale": "en-US",
+  "speaking_style": "Reading",
+  "text": "My voice clone"
 }
 ```
 **Response JSON Structure**
