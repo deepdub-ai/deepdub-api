@@ -4,7 +4,7 @@ This is a documentation for the Deepdub eTTS API (Emotional Text-To-Speech). Bef
 Deepdub supports RESTful and WebSocket API which provides functionality to convert text into speech. The client can send a request with the desired parameters and receive audio data in response. Our text also supports phonemes through SSML tags, see phoneme section
 
 ### Available models:
-| Model Name | Model ID | Realtime Support | Realtime Latency (E2E) | Realtime Factor |
+| Model Nickname | Model ID | Realtime Support | Realtime Latency (E2E) | Realtime Factor |
 | ---------- | -------- | ---------------- | ----------- | --------------- |
 | OG | dd-etts-1.1 | x | 600ms | 2x |
 | Violet | dd-etts-2.5 | v | 200ms | 3.5x |
