@@ -470,8 +470,8 @@ open("tts_output.mp3", "wb").write(r.content)
 **Response JSON Structure:**
 ```
 {
-  "createdAt": "String",
-  "id": "The actual voice Prompt ID to be referenced in TTS Generation requests",
+  "voice_prompt_id": "The actual voice Prompt ID to be referenced in TTS Generation requests",
+...
 }
 ```
 
