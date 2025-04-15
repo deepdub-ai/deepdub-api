@@ -460,7 +460,7 @@ open("tts_output.mp3", "wb").write(r.content)
   "age": "30",
   "data": "HAAYABgAGAAgACAA...IAAkACQAJAAkACQAIAAgACAAIAAkACQAJAAkACQA==",
   "filename": "myvoice.wav",
-  "gender": "Male",
+  "gender": "MALE",
   "locale": "en-US",
   "speaking_style": "Reading",
   "text": "My voice clone"
