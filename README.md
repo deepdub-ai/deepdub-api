@@ -466,7 +466,8 @@ open("tts_output.mp3", "wb").write(r.content)
   "text": "My voice clone"
 }
 ```
-**Response JSON Structure**
+
+**Response JSON Structure:**
 ```
 {
   "createdAt": "String",
@@ -474,6 +475,40 @@ open("tts_output.mp3", "wb").write(r.content)
 }
 ```
 
+### Example - Add Voice
+```
+import base64
+import requests
+
+# Constants
+URL = "https://restapi.deepdub.ai/api/v1/voice"
+HEADERS = {
+    "Content-Type": "application/json",
+    "x-api-key": ""
+}
+
+def upload_voice_prompt(audio_file_path: str):
+    """Uploads a voice prompt to the server."""
+    with open(audio_file_path, "rb") as audio_file:
+        encoded_audio = base64.b64encode(audio_file.read()).decode("utf-8")
+
+    payload = {
+        "fileName": "myVoice",
+        "data": encoded_audio,
+        "age": 30,
+        "gender": "MALE",
+        "locale": "en-US",
+        "speakingStyle": "neutral",
+        "text": "This is a test voice prompt"
+    }
+
+    response = requests.post(URL, headers=HEADERS, json=payload)
+    response.raise_for_status()
+    print("Voice prompt uploaded successfully")
+
+if __name__ == "__main__":
+    upload_voice_prompt("myVoice.wav")
+```
 
 
 
