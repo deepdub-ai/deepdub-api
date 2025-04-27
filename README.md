@@ -1,17 +1,20 @@
 ### Overview
+
 This is a documentation for the Deepdub eTTS API (Emotional Text-To-Speech). Before getting started make sure to get an API key at https://deepdub.ai/
 
 Deepdub supports RESTful and WebSocket API which provides functionality to convert text into speech. The client can send a request with the desired parameters and receive audio data in response. Our text also supports phonemes through SSML tags, see phoneme section
 
-### Available models:
-| Model Nickname | Model ID | Realtime Support | Realtime Latency (E2E) | Realtime Factor |
-| ---------- | -------- | ---------------- | ----------- | --------------- |
-| OG | dd-etts-1.1 | x | 600ms | 2x |
-| Violet | dd-etts-2.5 | v | 200ms | 3.5x |
+### Available Models
+
+| Model Nickname | Model ID    | Realtime Support | Realtime Latency (E2E) | Realtime Factor |
+| -------------- | ----------- | ---------------- | ---------------------- | --------------- |
+| OG             | dd-etts-1.1 | x                | 600ms                  | 2x              |
+| Violet         | dd-etts-2.5 | v                | 200ms                  | 3.5x            |
 
 ### Connection Setup
 
 To use the rest api and include the `x-api-key` header with your API key for authentication, and dont forget to copy the prompt id which is available in the Deepdub platform:
+
 ```python
 import requests
 
@@ -34,7 +37,7 @@ r = requests.post("https://restapi.deepdub.ai/tts",
 open("tts_output.mp3", "wb").write(r.content)
 ```
 
-* The response for REST API is binary data.
+- The response for REST API is binary data.
 
 To use the Websocket API, establish a WebSocket connection to the server and include the `x-api-key` header with your API key for authentication.
 
@@ -51,64 +54,68 @@ async with websockets.connect("wss://wsapi.deepdub.ai/open", extra_headers={"x-a
 **Action:** `text-to-speech`
 
 **Request JSON Structure:**
+
 ```json
 {
-    "action": "text-to-speech",
-    "locale": "en-US",
-    "voicePromptId": "promptId",
-    "model": "dd-etts-1.1",
-    "targetText": "hello",
-    
-    // Not required:
-    "targetDuration": 4.7,
-    "promptBoost": false,
-    "seed": 0,
-    "variance": 0.5,
-    "accentControl": {
-        "accentBaseLocale": "en-US",
-        "accentLocale": "fr-FR",
-        "accentRatio": 0.75
-    },
-    "voiceReference": "HAAYABgAGAAgACAA...IAAkACQAJAAkACQAIAAgACAAIAAkACQAJAAkACQA=="     
+  "action": "text-to-speech",
+  "locale": "en-US",
+  "voicePromptId": "promptId",
+  "model": "dd-etts-1.1",
+  "targetText": "hello",
+
+  // Not required:
+  "targetDuration": 4.7,
+  "promptBoost": false,
+  "seed": 0,
+  "variance": 0.5,
+  "accentControl": {
+    "accentBaseLocale": "en-US",
+    "accentLocale": "fr-FR",
+    "accentRatio": 0.75
+  },
+  "voiceReference": "HAAYABgAGAAgACAA...IAAkACQAJAAkACQAIAAgACAAIAAkACQAJAAkACQA=="
 }
 ```
 
 ### Request Parameters
 
 - **action** (string, required): Specifies the action to perform. Must be `"text-to-speech"`.
-- **locale** (string, required): The locale(case sensitive) for the generated speech, e.g. `"en-US"`.
+- **locale** (string, required): The locale (case sensitive) for the generated speech, e.g. `"en-US"`.
 - **voicePromptId** (string, required): The ID of the voice prompt to use can be fetched from the Deepdub-Go platform.
 - **model** (string, required): The model to use for text-to-speech conversion, e.g., `"dd-etts-1.1"`.
 - **targetText** (string, required): The text to convert to speech.
 
 #### Optional Parameters
+
 - **targetDuration** (number, optional): The desired duration of the speech in seconds.
-- **tempo** (number, optional):  The tempo of the speech mutually exclusive with targetDuration. value should be between 0 and 2.0.
-- **variance** (number, optional):  The variance within a single output of speech. value should be between 0 and 1.0. (system default is 1).
+- **tempo** (number, optional): The tempo of the speech mutually exclusive with targetDuration. value should be between 0 and 2.0.
+- **variance** (number, optional): The variance within a single output of speech. value should be between 0 and 1.0. (system default is 1).
 - **promptBoost** (boolean, optional): Overrides the default prompt boost logic. Boosting the prompt affects the behavior of tempo, targetDuration and accentControl.
 - **seed** (number, optional): The seed value for the random number generator send same seed to keep consistency between generations.
 - **accentControl** (object, optional): An object to control accent settings.
   - **accentBaseLocale** (string, required if `accentControl` is used): The base locale for the accent, e.g., `"en-US"`.
   - **accentLocale** (string, required if `accentControl` is used): The locale for the accent, e.g., `"fr-FR"`.
   - **accentRatio** (number, required if `accentControl` is used): The ratio of the accent to apply, ranging from 0 to 1.0.
-- **voiceReference** (string,optional): Base 64 encoded audio data used for voice reference 
+- **voiceReference** (string,optional): Base 64 encoded audio data used for voice reference
 
 ### Notes
- - voiceReference
-   - Supported formats: WAV, MP3, OGG, FLAC, AIFF, AAC
-   - Channel support: Mono and Stereo
-   - Preferred sample rate: 48,000 Hz
-   - Audio size limit: Up to 20 MB (~5 seconds in length)
+
+- voiceReference
+  - Supported formats: WAV, MP3, OGG, FLAC, AIFF, AAC
+  - Channel support: Mono and Stereo
+  - Preferred sample rate: 48,000 Hz
+  - Audio size limit: Up to 20 MB (~5 seconds in length)
 
 ### Response
 
 **Response JSON Structure:**
+
 ```json
 {
-    "index": 0,
-    "isFinished": false,
-    "generationId": "4da9902b-9141-4fb7-9efb-d616ce266ed9",
-    "data": "HAAYABgAGAAgACAA...IAAkACQAJAAkACQAIAAgACAAIAAkACQAJAAkACQA=="
+  "index": 0,
+  "isFinished": false,
+  "generationId": "4da9902b-9141-4fb7-9efb-d616ce266ed9",
+  "data": "HAAYABgAGAAgACAA...IAAkACQAJAAkACQAIAAgACAAIAAkACQAJAAkACQA=="
 }
 ```
 
@@ -120,41 +127,43 @@ async with websockets.connect("wss://wsapi.deepdub.ai/open", extra_headers={"x-a
 - **data** (string): The base64-encoded audio data.
 
 ### Example Request for Websocket API
+
 ```json
 {
-    "action": "text-to-speech",
-    "locale": "en-US",
-    "voicePromptId": "promptId",
-    "model": "dd-etts-1.1",
-    "targetText": "hello",
-    "targetDuration": 4.7,
-    "accentControl": {
-        "accentBaseLocale": "en-US",
-        "accentLocale": "fr-FR",
-        "accentRatio": 0.75
-    },
-    "cleanAudio": true
+  "action": "text-to-speech",
+  "locale": "en-US",
+  "voicePromptId": "promptId",
+  "model": "dd-etts-1.1",
+  "targetText": "hello",
+  "targetDuration": 4.7,
+  "accentControl": {
+    "accentBaseLocale": "en-US",
+    "accentLocale": "fr-FR",
+    "accentRatio": 0.75
+  },
+  "cleanAudio": true
 }
 ```
 
 ### Example Response for Websocket API
+
 ```json
 {
-    "index": 0,
-    "isFinished": false,
-    "generationId": "4da9902b-9141-4fb7-9efb-d616ce266ed9",
-    "data": "HAAYABgAGAAgACAA...IAAkACQAJAAkACQAIAAgACAAIAAkACQAJAAkACQA=="
+  "index": 0,
+  "isFinished": false,
+  "generationId": "4da9902b-9141-4fb7-9efb-d616ce266ed9",
+  "data": "HAAYABgAGAAgACAA...IAAkACQAJAAkACQAIAAgACAAIAAkACQAJAAkACQA=="
 }
 ```
 
 ### Notes
+
 - Ensure that the WebSocket connection is properly maintained for receiving the response.
 - The `data` field in the response contains base64-encoded audio data that can be decoded and played back.
 
 This documentation provides a comprehensive guide to using the WebSocket API for text-to-speech functionality, including how to set up the connection with the necessary API key.
 
-
-### Example - Basic Usage
+### Example: Basic Usage
 
 ```python
 import asyncio
@@ -211,9 +220,8 @@ async def text_to_speech():
 asyncio.run(text_to_speech())
 
 ```
-### Example - Voice Cloning 
-```
-## API Usage Examples
+
+### Example: Voice Cloning
 
 ```python
 import base64
@@ -247,7 +255,7 @@ r = requests.post(
         "variance": 0.2,                         # Control variation in speech
         "tempo": 1.0,                            # Speech speed (1.0 is normal)
         "temperature": 0.7,                      # Controls randomness in generation
-	"promptBoost": true,			 # Enhance speaker similarity.	
+	"promptBoost": true,			 # Enhance speaker similarity.
     },
     timeout=120  # Increase timeout to prevent broken pipe errors during audio streaming
 )
@@ -259,7 +267,7 @@ with open("tts_out.mp3", "wb") as f:
         f.write(chunk)
 ```
 
-### Example - Audio Description
+### Example: Audio Description
 
 ```python
 import asyncio
@@ -313,7 +321,7 @@ def generate_segments_from_text(xml_content):
         # Generate audio for the text using the API
         yield {"text": text,  "begin_ms": begin_ms, "end_ms": end_ms}
 
-async def create_audio_description_from_file(xml_content):    
+async def create_audio_description_from_file(xml_content):
     # Define the WebSocket server URL and the API key
     websocket_url = "wss://wsapi.deepdub.ai/open"
     api_key = "Your API Key Here"
@@ -370,6 +378,7 @@ asyncio.run(create_audio_description_from_file(xml_content))
 ```
 
 ### Phonemes
+
 To get an accurate pronounciation, where there is more than one way to read the same spelling, please use the phonemes SSML:
 
 ```python
@@ -389,12 +398,14 @@ def validate_phoneme_string(phoneme_str):
     return all(char in listOfSupportedPhonemes for char in phoneme_str)
 ```
 
-#### SSML tags.
+#### SSML tags
+
 ```xml
 <phoneme alphabet="ipa" ph="təmeɪˈtoʊ"> tomato </phoneme>
 ```
 
 #### Using SSML inline
+
 ```python
 import requests
 r = requests.post("https://restapi.deepdub.ai/tts",
@@ -411,8 +422,11 @@ r = requests.post("https://restapi.deepdub.ai/tts",
      )
 open("tts_output.mp3", "wb").write(r.content)
 ```
+
 #### Requesting different formats
+
 This could be used with REST API or the Websocket API.
+
 ```python
 import requests
 r = requests.post("https://restapi.deepdub.ai/tts",
@@ -431,9 +445,13 @@ r = requests.post("https://restapi.deepdub.ai/tts",
      )
 open("tts_output.mp3", "wb").write(r.content)
 ```
-#### Requesting different sample rates.
+
+#### Requesting different sample rates
+
 Sample rate can be one of 48000 (default), 44100, 32000, 24000, 22050, 16000, 8000
-- Sample rate only applies when changing format to mp3, opus, and mulaw. 
+
+- Sample rate only applies when changing format to mp3, opus, and mulaw.
+
 ```python
 import requests
 r = requests.post("https://restapi.deepdub.ai/tts",
@@ -453,8 +471,9 @@ open("tts_output.mp3", "wb").write(r.content)
 ```
 
 ### Add Voice to My Voices library
-  
+
 **Request JSON Structure:**
+
 ```json
 {
   "age": "30",
@@ -468,15 +487,17 @@ open("tts_output.mp3", "wb").write(r.content)
 ```
 
 **Response JSON Structure:**
-```
+
+```json
 {
   "voice_prompt_id": "The actual voice Prompt ID to be referenced in TTS Generation requests",
 ...
 }
 ```
 
-### Example - Add Voice
-```
+### Example: Add Voice
+
+```python
 import base64
 import requests
 
@@ -510,5 +531,10 @@ if __name__ == "__main__":
     upload_voice_prompt("myVoice.wav")
 ```
 
+### Supported Locales
 
+The following locales are supported (these are the values you can use for `locale`, `accentControl.accentBaseLocale` and `accentControl.accentLocale`):
 
+```
+ar-EG, ar-LB, ar-QA, ar-SA, cs-CZ, da-DK, de-DE, en-AU, en-CA, en-GB, en-IE, en-US, es-AR, es-CL, es-ES, es-MX, es-PE, es-XL, fr-CA, fr-FR, he-IL, hi-IN, hu-HU, it-IT, ja-JP, ko-KR, no-NO, pl-PL, pt-BR, pt-PT, ro-RO, ru-RU, sv-SE, ta-IN, th-TH, tr-TR
+```
