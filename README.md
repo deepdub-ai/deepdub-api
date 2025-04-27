@@ -536,5 +536,8 @@ if __name__ == "__main__":
 The following locales are supported (these are the values you can use for `locale`, `accentControl.accentBaseLocale` and `accentControl.accentLocale`):
 
 ```
-ar-EG, ar-LB, ar-QA, ar-SA, cs-CZ, da-DK, de-DE, en-AU, en-CA, en-GB, en-IE, en-US, es-AR, es-CL, es-ES, es-MX, es-PE, es-XL, fr-CA, fr-FR, he-IL, hi-IN, hu-HU, it-IT, ja-JP, ko-KR, no-NO, pl-PL, pt-BR, pt-PT, ro-RO, ru-RU, sv-SE, ta-IN, th-TH, tr-TR
+ar-EG, ar-LB, ar-QA, ar-SA, cs-CZ, da-DK, de-DE, en-AU, en-CA, en-GB, en-IE, 
+en-US, es-AR, es-CL, es-ES, es-MX, es-PE, es-XL, fr-CA, fr-FR, he-IL, hi-IN, 
+hu-HU, it-IT, ja-JP, ko-KR, no-NO, pl-PL, pt-BR, pt-PT, ro-RO, ru-RU, sv-SE, 
+ta-IN, th-TH, tr-TR
 ```
