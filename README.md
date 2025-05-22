@@ -519,6 +519,7 @@ def upload_voice_prompt(audio_file_path: str):
         "age": 30,
         "gender": "MALE",
         "locale": "en-US",
+        "name": "Little Mike"
         "speakingStyle": "neutral",
         "text": "This is a test voice prompt"
     }
@@ -531,7 +532,26 @@ if __name__ == "__main__":
     upload_voice_prompt("myVoice.wav")
 ```
 
+
+### Example: Delete voice
+```
+response = requests.delete(URL + "/prompt_id", headers=HEADERS, json=payload)
+```
+### Example: List voices
+```
+response = requests.get(URL, headers=HEADERS, json=payload)
+```
+### Example: Get voice
+```
+response = requests.get(URL + "/prompt_id", headers=HEADERS, json=payload)
+```
+
+
+
+
 ### Supported Locales
+
+
 
 The following locales are supported (these are the values you can use for `locale`, `accentControl.accentBaseLocale` and `accentControl.accentLocale`):
 
