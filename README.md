@@ -22,7 +22,7 @@ import requests
 api_key = "your-api-key-here"
 voice_prompt_id = "your-prompt-here"
 
-r = requests.post("https://restapi.deepdub.ai/tts",
+r = requests.post("https://restapi.deepdub.ai/api/v1/tts",
          headers={
                   "Content-Type": "application/json",
                   "x-api-key": api_key
