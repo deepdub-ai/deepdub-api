@@ -242,7 +242,7 @@ with open("tts_in.m4a", "rb") as audio_file:
 # Step 2: Make a POST request to the TTS endpoint
 # The request includes the voice reference and text to be synthesized
 r = requests.post(
-    "https://restapi.deepdub.ai/tts",
+    "https://restapi.deepdub.ai/api/v1/tts",
     headers={
         "Content-Type": "application/json",  # Specify JSON content type
         "x-api-key": api_key                 # Authentication via API key
@@ -408,7 +408,7 @@ def validate_phoneme_string(phoneme_str):
 
 ```python
 import requests
-r = requests.post("https://restapi.deepdub.ai/tts",
+r = requests.post("https://restapi.deepdub.ai/api/v1/tts",
          headers={
                   "Content-Type": "application/json",
                   "x-api-key": "your-api-key-here"
@@ -429,7 +429,7 @@ This could be used with REST API or the Websocket API.
 
 ```python
 import requests
-r = requests.post("https://restapi.deepdub.ai/tts",
+r = requests.post("https://restapi.deepdub.ai/api/v1/tts",
          headers={
                   "Content-Type": "application/json",
                   "x-api-key": "your-api-key-here"
@@ -454,7 +454,7 @@ Sample rate can be one of 48000 (default), 44100, 32000, 24000, 22050, 16000, 80
 
 ```python
 import requests
-r = requests.post("https://restapi.deepdub.ai/tts",
+r = requests.post("https://restapi.deepdub.ai/api/v1/tts",
          headers={
                   "Content-Type": "application/json",
                   "x-api-key": "your-api-key-here"
