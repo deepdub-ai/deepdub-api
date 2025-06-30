@@ -565,7 +565,10 @@ ta-IN, th-TH, tr-TR
 
 
 ### Testing TTLA and TTFA for realtime applications
+```bash
 pip install deepdub
+export DEEPDUB_API_KEY="your-api-key-here"
+```
 ```python
 import time
 import deepdub
