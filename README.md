@@ -566,7 +566,7 @@ ta-IN, th-TH, tr-TR
 
 ### Testing TTLA and TTFA for realtime applications
 pip install deepdub
-```
+```python
 import time
 import deepdub
 import asyncio
