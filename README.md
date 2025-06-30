@@ -569,6 +569,7 @@ ta-IN, th-TH, tr-TR
 pip install deepdub
 export DEEPDUB_API_KEY="your-api-key-here"
 ```
+create test.py with the following code.
 ```python
 import time
 import deepdub
