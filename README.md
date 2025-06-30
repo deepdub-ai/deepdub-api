@@ -561,3 +561,30 @@ en-US, es-AR, es-CL, es-ES, es-MX, es-PE, es-XL, fr-CA, fr-FR, he-IL, hi-IN,
 hu-HU, it-IT, ja-JP, ko-KR, no-NO, pl-PL, pt-BR, pt-PT, ro-RO, ru-RU, sv-SE, 
 ta-IN, th-TH, tr-TR
 ```
+
+
+
+### Testing TTLA and TTFA for realtime applications
+pip install deepdub
+```
+import time
+import deepdub
+import asyncio
+
+dd = deepdub.DeepdubClient()
+
+async def main():
+    t1 = time.time()
+    async with dd.async_connect():
+        print(f"Initial connect time: {time.time() -t1}")
+        t1 = time.time()
+        ttfa = False
+        async for chunk in dd.async_tts(text="Hello, World!", voicePromptId="408e3a63-d449-4e65-a098-ee18c542ec8e_reading-neutral", realtime=True):
+            if not ttfa:
+                print(f"TTFA: {time.time() - t1}")
+                ttfa = True
+        print(f"TTFL: {time.time() - t1}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
