@@ -589,7 +589,7 @@ async def main():
             if not ttfa:
                 print(f"TTFA: {time.time() - t1}")
                 ttfa = True
-        print(f"TTFL: {time.time() - t1}")
+        print(f"TTLA: {time.time() - t1}")
 
 if __name__ == "__main__":
     asyncio.run(main())
