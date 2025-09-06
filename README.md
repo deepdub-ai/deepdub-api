@@ -10,8 +10,8 @@ In addition to this API documentation, there's also the python library found her
 
 | Model Nickname | Model ID    | Realtime Support | Realtime Latency (E2E) | Realtime Factor |
 | -------------- | ----------- | ---------------- | ---------------------- | --------------- |
-| OG             | dd-etts-1.1 | x                | 600ms                  | 2x              |
-| Violet         | dd-etts-2.5 | v                | 200ms                  | 3.5x            |
+| OG             | dd-etts-1.1 | x                | 600ms                  | up to 2x        |
+| Violet         | dd-etts-2.5 | v                | 200ms                  | up to 3.5x      |
 
 ### Connection Setup
 
