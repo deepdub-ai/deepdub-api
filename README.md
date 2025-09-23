@@ -581,11 +581,11 @@ dd = deepdub.DeepdubClient()
 
 async def main():
     t1 = time.time()
-    async with dd.async_connect():
+    async with dd.async_connect() as conn:
         print(f"Initial connect time: {time.time() -t1}")
         t1 = time.time()
         ttfa = False
-        async for chunk in dd.async_tts(text="Hello, World!", voicePromptId="408e3a63-d449-4e65-a098-ee18c542ec8e_reading-neutral", realtime=True):
+        async for chunk in conn.async_tts(text="Hello, World!", voicePromptId="408e3a63-d449-4e65-a098-ee18c542ec8e_reading-neutral", realtime=True):
             if not ttfa:
                 print(f"TTFA: {time.time() - t1}")
                 ttfa = True
