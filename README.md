@@ -12,6 +12,7 @@ In addition to this API documentation, there's also the python library found her
 | -------------- | ----------- | ---------------- | ---------------------- | --------------- |
 | OG             | dd-etts-1.1 | x                | 600ms                  | up to 2x        |
 | Violet         | dd-etts-2.5 | v                | 200ms                  | up to 3.5x      |
+| Phanotmx       | dd-etts-3.0 | v                | 125ms                  | up to 5x        |
 
 ### Connection Setup
 
