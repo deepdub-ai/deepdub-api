@@ -1,0 +1,115 @@
+---
+title: Introduction
+description: "Generate expressive, high-quality speech with Deepdub's Text-to-Speech API"
+---
+
+## Welcome to Deepdub
+
+Deepdub provides a powerful Text-to-Speech API for generating natural, expressive speech with voice cloning, accent control, and real-time streaming. Whether you're building voiceover pipelines, conversational agents, or content localization workflows, Deepdub delivers studio-quality audio at scale.
+
+### Key capabilities
+
+<CardGroup cols={2}>
+
+<Card title="Text-to-Speech" icon="waveform-lines">
+  Generate speech from text using state-of-the-art models with fine-grained control over tempo, variance, and duration.
+</Card>
+
+<Card title="Voice Cloning" icon="microphone">
+  Clone any voice from a short audio sample. Upload voice prompts or pass a base64-encoded audio reference for instant cloning.
+</Card>
+
+<Card title="Accent Control" icon="globe">
+  Blend accents between locales with precise ratio control — generate an American English speaker with a French accent, or any combination.
+</Card>
+
+<Card title="Real-time Streaming" icon="bolt">
+  Stream audio in real-time over HTTP or WebSocket connections for low-latency applications.
+</Card>
+
+</CardGroup>
+
+## Try it now
+
+Use the free trial API key to generate speech instantly — no sign-up required:
+
+```
+dd-00000000000000000000000065c9cbfe
+```
+
+<Tabs>
+<Tab title="Python">
+```python
+from deepdub import DeepdubClient
+
+client = DeepdubClient(api_key="dd-00000000000000000000000065c9cbfe")
+
+audio = client.tts(
+    text="Welcome to Deepdub!",
+    voice_prompt_id="bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
+    model="dd-etts-3.0",
+    locale="en-US",
+)
+
+with open("output.mp3", "wb") as f:
+    f.write(audio)
+```
+</Tab>
+<Tab title="JavaScript">
+```javascript
+const { DeepdubClient } = require("@deepdub/node");
+
+async function main() {
+  const deepdub = new DeepdubClient("dd-00000000000000000000000065c9cbfe");
+  await deepdub.connect();
+
+  await deepdub.generateToFile("./output.wav", "Welcome to Deepdub!", {
+    locale: "en-US",
+    voicePromptId: "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
+    model: "dd-etts-3.0",
+  });
+}
+
+main();
+```
+</Tab>
+</Tabs>
+
+## API access
+
+Deepdub offers two integration methods:
+
+| Method | Endpoint | Use case |
+|--------|----------|----------|
+| **REST API** | `https://restapi.deepdub.ai/api/v1` | Synchronous audio generation, voice management, retroactive generation |
+| **WebSocket API** | `wss://wsapi.deepdub.ai` | Real-time streaming with chunked audio delivery |
+
+## Quick links
+
+<CardGroup cols={2}>
+
+<Card title="Quickstart" icon="rocket" href="/quickstart">
+  Get up and running with your first TTS generation in minutes.
+</Card>
+
+<Card title="Voice Presets" icon="headphones" href="/voice-presets">
+  Browse ready-to-use voice presets across 6 languages.
+</Card>
+
+<Card title="Python SDK" icon="python" href="/sdk">
+  Install the Python SDK and start generating speech.
+</Card>
+
+<Card title="JavaScript SDK" icon="js" href="/sdk-javascript">
+  Install the Node.js SDK with real-time streaming support.
+</Card>
+
+<Card title="REST API Reference" icon="code" href="/api-reference/tts/generate-and-stream-tts-audio">
+  Explore the full REST API with interactive playground.
+</Card>
+
+<Card title="WebSocket API" icon="plug" href="/api-reference/websocket/overview">
+  Stream audio in real-time with chunked delivery.
+</Card>
+
+</CardGroup>

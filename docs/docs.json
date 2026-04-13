@@ -1,0 +1,102 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Deepdub Documentation",
+  "colors": {
+    "primary": "#FF3390",
+    "light": "#FF3390",
+    "dark": "#FF3390"
+  },
+  "logo": {
+    "light": "/logo/logo128.png",
+    "dark": "/logo/logo128.png"
+  },
+  "favicon": "/favicon.svg",
+  "seo": {
+    "metatags": {
+      "title": "Deepdub Docs | Voice AI APIs, SDKs, and Developer Guides",
+      "description": "The developer hub for Deepdub voice AI. Explore documentation, SDKs, and API references for integrating expressive multilingual voice and AI dubbing into your workflows."
+    }
+  },
+  "openapi": "openapi3.json",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": ["introduction", "quickstart", "authentication", "voice-presets"]
+          },
+          {
+            "group": "SDKs",
+            "pages": ["sdk", "sdk-javascript"]
+          },
+          {
+            "group": "AI Agent Integration",
+            "pages": ["cursor-skill", "claude-code"]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "TTS",
+            "pages": [
+              "api-reference/tts/generate-and-stream-tts-audio"
+            ]
+          },
+          {
+            "group": "Gender Detection",
+            "pages": [
+              "api-reference/gender-detection/classify-speaker-gender",
+              "api-reference/gender-detection/classify-speaker-gender-file-upload"
+            ]
+          },
+          {
+            "group": "Voice",
+            "pages": [
+              "api-reference/voice/get-voice-prompts",
+              "api-reference/voice/upload-a-voice-sample",
+              "api-reference/voice/update-a-voice-prompt",
+              "api-reference/voice/get-a-voice-prompt-by-id",
+              "api-reference/voice/delete-a-voice-prompt"
+            ]
+          },
+          {
+            "group": "WebSocket",
+            "pages": ["api-reference/websocket/overview"]
+          }
+        ]
+      }
+    ]
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Support",
+        "href": "mailto:support@deepdub.ai"
+      }
+    ]
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/deepdub-ai",
+      "website": "https://deepdub.com",
+      "linkedin": "https://www.linkedin.com/company/deepdub"
+    }
+  },
+  "api": {
+    "auth": {
+      "method": "key",
+      "name": "x-api-key",
+      "defaultValue": "dd-00000000000000000000000065c9cbfe"
+    },
+    "baseUrl": "https://restapi.deepdub.ai/api/v1",
+    "examples": {
+      "prefill": true,
+      "defaults": "required"
+    }
+  }
+}

@@ -1,0 +1,103 @@
+---
+title: Cursor Skill
+description: "Integrate Deepdub API knowledge into Cursor IDE's AI agent"
+---
+
+## Overview
+
+The Deepdub Cursor Skill gives the AI agent in [Cursor](https://cursor.com) full knowledge of the Deepdub API, SDKs, voice presets, and coding conventions. When activated, the agent can write Deepdub integration code, generate TTS calls, manage voices, and follow Deepdub best practices — without needing to look up the docs.
+
+## Installation
+
+Create the skill directory in your project and download the `SKILL.md` file:
+
+```bash
+mkdir -p .cursor/skills/deepdub-api
+curl -o .cursor/skills/deepdub-api/SKILL.md \
+  https://raw.githubusercontent.com/yuval-deepdub/docs/main/skills/SKILL.md
+```
+
+<Card title="View SKILL.md on GitHub" icon="github" href="https://github.com/yuval-deepdub/docs/blob/main/skills/SKILL.md">
+  View, copy, or download the full Cursor Skill file.
+</Card>
+
+## Skill file
+
+The `SKILL.md` file contains the full Deepdub API reference in a format Cursor understands. It includes:
+
+- **Base URLs** — US, EU, and WebSocket endpoints
+- **Authentication** — API key format and free trial key
+- **REST endpoints** — TTS generation, voice management, gender detection
+- **Python SDK** — `pip install deepdub` with sync/async examples
+- **JavaScript SDK** — `npm install @deepdub/node` with WebSocket and HTTP examples
+- **Error codes** — 400, 401, 402, 403, 404, 429, 500 with meanings
+- **Voice presets** — common preset IDs for quick testing
+- **Rate limits** — concurrent request limits
+
+### Frontmatter
+
+```yaml
+name: deepdub-api
+description: >-
+  Deepdub Text-to-Speech API reference for building TTS integrations.
+  Use when the user writes code that calls the Deepdub API, uses the
+  Deepdub Python/JS SDK, generates speech, manages voices, classifies
+  gender, or mentions deepdub, TTS, text-to-speech, or voice cloning.
+```
+
+### Key sections
+
+**TTS request body:**
+
+```json
+{
+  "model": "dd-etts-3.0",
+  "targetText": "Hello world",
+  "locale": "en-US",
+  "voicePromptId": "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773"
+}
+```
+
+**Python SDK:**
+
+```python
+from deepdub import DeepdubClient
+client = DeepdubClient(api_key="YOUR_KEY")
+audio = client.tts(
+    text="Hello", voice_prompt_id="...",
+    model="dd-etts-3.0", locale="en-US",
+)
+```
+
+**JavaScript SDK:**
+
+```javascript
+const { DeepdubClient } = require("@deepdub/node");
+const deepdub = new DeepdubClient("YOUR_KEY");
+await deepdub.connect();
+const buffer = await deepdub.generateToBuffer("Hello", {
+  locale: "en-US",
+  voicePromptId: "...",
+  model: "dd-etts-3.0",
+});
+```
+
+## How it works
+
+Once installed, the Cursor agent automatically activates this skill when you:
+
+- Write code that imports `deepdub` or `@deepdub/node`
+- Ask about TTS, text-to-speech, or voice cloning
+- Reference voice prompts or the Deepdub API
+- Work on gender detection audio classification
+
+The agent will use the correct endpoints, default model (`dd-etts-3.0`), proper authentication headers, and real voice preset IDs from the skill.
+
+## Example prompts
+
+After installing the skill, try asking Cursor:
+
+- *"Generate TTS audio with the Storyteller voice and save to file"*
+- *"Add accent blending to this TTS call — mix French into English at 30%"*
+- *"Classify the gender of speaker in this audio file using the Deepdub API"*
+- *"Stream TTS audio in real-time using the JavaScript SDK"*

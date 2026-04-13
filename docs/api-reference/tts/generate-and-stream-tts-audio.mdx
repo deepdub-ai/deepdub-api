@@ -1,0 +1,32 @@
+---
+openapi: post /tts
+---
+
+## Supported output formats
+
+The REST API streams audio as raw bytes in the HTTP response body. Supported formats:
+
+| Format | Description |
+|--------|-------------|
+| `mp3` | Compressed audio, smallest file size. **Default.** |
+| `opus` | High-quality compressed audio, efficient for streaming. |
+| `mulaw` | 8-bit µ-law encoding, commonly used in telephony. Defaults to 8000 Hz if no sample rate is specified. |
+
+<Warning>
+  The REST API supports `mp3`, `opus`, and `mulaw` only. For `wav` or `s16le` output, use the [WebSocket API](/api-reference/websocket/overview).
+</Warning>
+
+## Sample rates
+
+The sample rate is passed through to the audio conversion layer. The internal generation runs at 48 kHz and is resampled to the requested rate. If no sample rate is specified, `mulaw` defaults to 8000 Hz.
+
+### REST vs WebSocket comparison
+
+| Feature | REST API | WebSocket API |
+|---------|----------|---------------|
+| **Delivery** | Streaming HTTP response (chunked audio bytes) | Chunked audio delivered incrementally as base64-encoded JSON messages |
+| **Formats** | `mp3`, `opus`, `mulaw` | `wav` (default), `mp3`, `opus`, `mulaw`, `s16le` |
+| **Streaming input (ctx/isFinal)** | Not supported | `wav`, `s16le`, `mulaw` only |
+| **Default format** | `mp3` | `wav` |
+| **Default mulaw sample rate** | 8000 Hz | 8000 Hz |
+| **Best for** | Simple integrations, file generation | Real-time playback, low-latency applications |

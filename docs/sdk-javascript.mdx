@@ -1,0 +1,328 @@
+---
+title: JavaScript SDK
+description: "Install and use the Deepdub Node.js SDK for text-to-speech generation with streaming support"
+---
+
+## Installation
+
+```bash
+npm install --save @deepdub/node
+# or
+yarn add @deepdub/node
+```
+
+**Requirements:** Node.js 18+
+
+## Initialization
+
+```javascript
+const { DeepdubClient } = require("@deepdub/node");
+
+// Default: WebSocket protocol (supports streaming)
+const deepdub = new DeepdubClient("dd-your-api-key");
+
+// HTTP protocol (supports voiceReference and sampleRate with all formats)
+const deepdub = new DeepdubClient("dd-your-api-key", { protocol: "http" });
+```
+
+<ParamField body="apiKey" type="string" required>
+  Your Deepdub API key. Must start with `dd-`.
+</ParamField>
+
+<ParamField body="options.protocol" type="string" default="websocket">
+  Transport protocol: `"websocket"` for real-time streaming, or `"http"` for REST API.
+</ParamField>
+
+### Protocol comparison
+
+| Feature | WebSocket | HTTP |
+|---------|-----------|------|
+| Streaming chunks (`onChunk`) | Yes | No |
+| `sampleRate` option | mp3 only | All formats |
+| `voiceReference` option | No | Yes |
+| Concurrent generations | Yes | Yes |
+
+Use **WebSocket** (default) for real-time streaming and low-latency playback. Use **HTTP** when you need `voiceReference` for instant voice cloning or `sampleRate` with non-mp3 formats.
+
+---
+
+## Connection
+
+For WebSocket protocol, you must call `connect()` before generating audio:
+
+```javascript
+const deepdub = new DeepdubClient("dd-your-api-key");
+await deepdub.connect();
+```
+
+For HTTP protocol, no connection step is needed.
+
+---
+
+## Generate to buffer
+
+Generate audio and receive a `Buffer` of WAV data:
+
+```javascript
+const buffer = await deepdub.generateToBuffer("Hello, welcome to Deepdub!", {
+  locale: "en-US",
+  voicePromptId: "your-voice-id",
+});
+
+console.log(`Generated ${buffer.length} bytes of audio`);
+```
+
+**Returns:** `Promise<Buffer>` — WAV audio data.
+
+## Generate to file
+
+Generate audio and save directly to a file:
+
+```javascript
+await deepdub.generateToFile("./output.wav", "Hello, welcome to Deepdub!", {
+  locale: "en-US",
+  voicePromptId: "your-voice-id",
+});
+```
+
+**Returns:** `Promise<void>`
+
+---
+
+## Generation parameters
+
+Both `generateToBuffer` and `generateToFile` accept these options:
+
+<ParamField body="locale" type="string" required>
+  Language locale code (e.g., `en-US`, `fr-FR`, `he-IL`).
+</ParamField>
+
+<ParamField body="voicePromptId" type="string" required>
+  Voice prompt ID to use for generation.
+</ParamField>
+
+<ParamField body="model" type="string" default="dd-etts-3.0">
+  Model ID. Available: `dd-etts-3.0`, `dd-etts-2.5`.
+</ParamField>
+
+<ParamField body="generationId" type="string">
+  Optional UUID for tracking. Auto-generated if not provided.
+</ParamField>
+
+<ParamField body="format" type="string">
+  Output format: `mp3`, `wav`, `opus`, or `mulaw`.
+</ParamField>
+
+<ParamField body="sampleRate" type="number">
+  Sample rate in Hz. WebSocket protocol only supports this with `mp3` format. Use HTTP protocol for other formats.
+</ParamField>
+
+<ParamField body="temperature" type="number">
+  Generation temperature (0.0–1.0).
+</ParamField>
+
+<ParamField body="variance" type="number">
+  Voice variation level (0.0–1.0).
+</ParamField>
+
+<ParamField body="tempo" type="number">
+  Playback speed multiplier (0.5–2.0).
+</ParamField>
+
+<ParamField body="targetDuration" type="number">
+  Target audio duration in seconds.
+</ParamField>
+
+<ParamField body="seed" type="number">
+  Random seed for deterministic output.
+</ParamField>
+
+<ParamField body="promptBoost" type="boolean">
+  Enhance voice prompt characteristics.
+</ParamField>
+
+<ParamField body="superStretch" type="boolean">
+  Enable super stretch for longer audio.
+</ParamField>
+
+<ParamField body="realtime" type="boolean">
+  Enable real-time priority processing.
+</ParamField>
+
+<ParamField body="voiceReference" type="string">
+  Base64-encoded audio for instant voice cloning. **HTTP protocol only.**
+</ParamField>
+
+<ParamField body="accentControl" type="object">
+  Accent blending: `{ accentBaseLocale, accentLocale, accentRatio }`.
+</ParamField>
+
+<ParamField body="onChunk" type="function">
+  Callback receiving each audio chunk as a `Buffer`. **WebSocket protocol only.**
+</ParamField>
+
+<ParamField body="headerless" type="boolean" default="false">
+  When `true`, chunks passed to `onChunk` have WAV headers stripped (raw PCM). **WebSocket protocol only.**
+</ParamField>
+
+---
+
+## Streaming chunks
+
+Receive audio data incrementally for real-time playback:
+
+```javascript
+const buffer = await deepdub.generateToBuffer("Streaming audio in real-time!", {
+  locale: "en-US",
+  voicePromptId: "your-voice-id",
+  model: "dd-etts-3.0",
+  onChunk: (chunk) => {
+    console.log(`Received ${chunk.length} bytes`);
+    // Stream to audio player, network, etc.
+  },
+});
+```
+
+### Headerless chunks
+
+Strip WAV headers from each chunk for raw PCM data (useful for audio players):
+
+```javascript
+const buffer = await deepdub.generateToBuffer("Raw PCM streaming.", {
+  locale: "en-US",
+  voicePromptId: "your-voice-id",
+  headerless: true,
+  onChunk: (chunk) => {
+    audioPlayer.write(chunk); // Raw PCM data, no WAV header
+  },
+});
+```
+
+---
+
+## Concurrent generations
+
+Run multiple generations in parallel on the same WebSocket connection:
+
+```javascript
+const { DeepdubClient } = require("@deepdub/node");
+
+async function main() {
+  const deepdub = new DeepdubClient("dd-your-api-key");
+  await deepdub.connect();
+
+  const sentences = [
+    "First sentence to generate.",
+    "Second sentence in parallel.",
+    "Third sentence simultaneously.",
+  ];
+
+  const results = await Promise.all(
+    sentences.map((text, i) =>
+      deepdub.generateToFile(`./output_${i}.wav`, text, {
+        locale: "en-US",
+        voicePromptId: "your-voice-id",
+        model: "dd-etts-3.0",
+      })
+    )
+  );
+
+  console.log("All generations complete!");
+}
+
+main();
+```
+
+---
+
+## Full example
+
+```javascript
+const { DeepdubClient } = require("@deepdub/node");
+
+async function main() {
+  const deepdub = new DeepdubClient(process.env.DEEPDUB_API_KEY);
+  await deepdub.connect();
+
+  // Generate with accent blending
+  const buffer = await deepdub.generateToBuffer(
+    "This text has a subtle French accent.",
+    {
+      locale: "en-US",
+      voicePromptId: "your-voice-id",
+      model: "dd-etts-3.0",
+      temperature: 0.7,
+      variance: 0.6,
+      accentControl: {
+        accentBaseLocale: "en-US",
+        accentLocale: "fr-FR",
+        accentRatio: 0.3,
+      },
+    }
+  );
+
+  require("fs").writeFileSync("./accented.wav", buffer);
+  console.log(`Generated ${buffer.length} bytes`);
+}
+
+main();
+```
+
+## Using HTTP protocol
+
+For voice cloning from an audio reference:
+
+```javascript
+const { DeepdubClient } = require("@deepdub/node");
+const fs = require("fs");
+
+async function main() {
+  const deepdub = new DeepdubClient(process.env.DEEPDUB_API_KEY, {
+    protocol: "http",
+  });
+
+  const audioRef = fs.readFileSync("./reference_voice.wav");
+  const voiceReference = audioRef.toString("base64");
+
+  const buffer = await deepdub.generateToBuffer("Cloning a voice from audio.", {
+    locale: "en-US",
+    voiceReference,
+    model: "dd-etts-3.0",
+    sampleRate: 44100,
+  });
+
+  fs.writeFileSync("./cloned_output.wav", buffer);
+}
+
+main();
+```
+
+---
+
+## Error handling
+
+```javascript
+try {
+  const buffer = await deepdub.generateToBuffer("Hello!", {
+    locale: "en-US",
+    voicePromptId: "your-voice-id",
+  });
+} catch (error) {
+  // WebSocket errors are emitted as strings from the server
+  // e.g. "Rate limit exceeded", "Insufficient credits"
+  console.error("Generation failed:", error);
+}
+```
+
+---
+
+## Environment variables
+
+| Variable | Description |
+|----------|-------------|
+| `DEEPDUB_API_KEY` | API key (use with `dotenv`) |
+
+```javascript
+require("dotenv").config();
+const deepdub = new DeepdubClient(process.env.DEEPDUB_API_KEY);
+```

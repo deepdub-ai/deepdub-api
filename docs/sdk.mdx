@@ -1,0 +1,540 @@
+---
+title: Python SDK
+description: "Install and use the Deepdub Python SDK for text-to-speech, voice management, and real-time streaming"
+---
+
+## Installation
+
+```bash
+pip install deepdub
+```
+
+**Requirements:** Python 3.9+
+
+**Dependencies:** `requests`, `websockets`, `click`, `audiosample`
+
+## Initialization
+
+```python
+from deepdub import DeepdubClient
+
+# Option 1: Pass API key directly
+client = DeepdubClient(api_key="dd-your-api-key")
+
+# Option 2: Use DEEPDUB_API_KEY environment variable
+# export DEEPDUB_API_KEY=dd-your-api-key
+client = DeepdubClient()
+```
+
+### Constructor parameters
+
+<ParamField body="api_key" type="string">
+  Your Deepdub API key. Falls back to `DEEPDUB_API_KEY` environment variable if not provided.
+</ParamField>
+
+<ParamField body="base_url" type="string" default="https://restapi.deepdub.ai/api/v1">
+  Base URL for the REST API. Falls back to `DEEPDUB_BASE_URL` environment variable.
+</ParamField>
+
+<ParamField body="base_websocket_url" type="string" default="wss://wsapi.deepdub.ai/open">
+  Base URL for the WebSocket API. Falls back to `DEEPDUB_BASE_WEBSOCKET_URL` environment variable.
+</ParamField>
+
+<ParamField body="base_websocket_streaming_url" type="string" default="wss://wss.deepdub.ai/ws">
+  Base URL for the WebSocket streaming API. Falls back to `DEEPDUB_BASE_WEBSOCKET_STREAMING_URL` environment variable.
+</ParamField>
+
+<ParamField body="eu" type="boolean" default="false">
+  Use EU region endpoints (`restapi.eu.deepdub.ai`, `wsapi.eu.deepdub.ai`). Falls back to `DD_EU` environment variable (`"1"` to enable).
+</ParamField>
+
+### Region endpoints
+
+| Region | REST API | WebSocket API |
+|--------|----------|---------------|
+| **US (default)** | `https://restapi.deepdub.ai/api/v1` | `wss://wsapi.deepdub.ai/open` |
+| **EU** | `https://restapi.eu.deepdub.ai/api/v1` | `wss://wsapi.eu.deepdub.ai/open` |
+
+---
+
+## Text-to-Speech
+
+### `tts()` — Synchronous generation
+
+Generate speech and receive the complete audio as bytes.
+
+```python
+audio_data = client.tts(
+    text="Hello, welcome to Deepdub!",
+    voice_prompt_id="your-voice-id",
+    model="dd-etts-2.5",
+    locale="en-US"
+)
+
+with open("output.mp3", "wb") as f:
+    f.write(audio_data)
+```
+
+**Returns:** `bytes` — binary audio data in the specified format.
+
+#### Parameters
+
+<ParamField body="text" type="string" required>
+  Text to convert to speech.
+</ParamField>
+
+<ParamField body="voice_prompt_id" type="string">
+  Voice prompt ID to use. Either this or `voice_reference` must be provided.
+</ParamField>
+
+<ParamField body="voice_reference" type="Union[bytes, str, Path]">
+  Audio reference for instant voice cloning. Accepts a file `Path`, raw `bytes`, or a base64-encoded `string`. Either this or `voice_prompt_id` must be provided.
+</ParamField>
+
+<ParamField body="model" type="string" default="dd-etts-2.5">
+  Model ID. Available models: `dd-etts-3.0`, `dd-etts-2.5`.
+</ParamField>
+
+<ParamField body="locale" type="string" default="en-US">
+  Language locale code (e.g., `en-US`, `fr-FR`).
+</ParamField>
+
+<ParamField body="format" type="string" default="mp3">
+  Audio output format. REST API supports: `mp3`, `opus`, `mulaw`. WebSocket additionally supports: `wav` (default), `s16le`.
+</ParamField>
+
+<ParamField body="temperature" type="float">
+  Generation temperature (0.0–1.0). Higher values produce more varied output.
+</ParamField>
+
+<ParamField body="variance" type="float">
+  Voice variation level (0.0–1.0).
+</ParamField>
+
+<ParamField body="duration" type="float">
+  Target audio duration in seconds. Mutually exclusive with `tempo`.
+</ParamField>
+
+<ParamField body="tempo" type="float">
+  Playback speed multiplier. Mutually exclusive with `duration`.
+</ParamField>
+
+<ParamField body="seed" type="int">
+  Random seed for deterministic generation.
+</ParamField>
+
+<ParamField body="prompt_boost" type="bool">
+  Enhance voice prompt characteristics.
+</ParamField>
+
+<ParamField body="sample_rate" type="int">
+  Output sample rate in Hz. Supported: `8000`, `16000`, `22050`, `24000`, `44100`, `48000`.
+</ParamField>
+
+<ParamField body="accent_base_locale" type="string">
+  Base accent locale (e.g., `en-US`). Must be provided together with `accent_locale` and `accent_ratio`.
+</ParamField>
+
+<ParamField body="accent_locale" type="string">
+  Target accent locale (e.g., `fr-FR`). Must be provided together with `accent_base_locale` and `accent_ratio`.
+</ParamField>
+
+<ParamField body="accent_ratio" type="float">
+  Accent blend ratio (0.0–1.0). Must be provided together with `accent_base_locale` and `accent_locale`.
+</ParamField>
+
+### Full example with all parameters
+
+```python
+audio_data = client.tts(
+    text="This demonstrates all available TTS parameters.",
+    voice_prompt_id="your-voice-id",
+    model="dd-etts-2.5",
+    locale="en-US",
+    format="mp3",
+    temperature=0.7,
+    variance=0.6,
+    tempo=1.1,
+    seed=42,
+    prompt_boost=True,
+    sample_rate=44100,
+    accent_base_locale="en-US",
+    accent_locale="fr-FR",
+    accent_ratio=0.3,
+)
+
+with open("output.mp3", "wb") as f:
+    f.write(audio_data)
+```
+
+### Voice cloning from audio reference
+
+```python
+from pathlib import Path
+
+audio_data = client.tts(
+    text="Cloning a voice from an audio sample.",
+    voice_reference=Path("reference_audio.mp3"),
+    model="dd-etts-2.5",
+    locale="en-US",
+)
+
+with open("cloned_output.mp3", "wb") as f:
+    f.write(audio_data)
+```
+
+---
+
+### `tts_retro()` — Retroactive generation
+
+Submit a TTS request and receive a URL for later retrieval.
+
+```python
+response = client.tts_retro(
+    text="Generate this audio for later retrieval.",
+    voice_prompt_id="your-voice-id",
+    model="dd-etts-2.5",
+    locale="en-US"
+)
+
+audio_url = response["url"]
+print(f"Audio available at: {audio_url}")
+```
+
+**Returns:** `dict` with a `url` key pointing to the generated audio.
+
+#### Parameters
+
+<ParamField body="text" type="string" required>
+  Text to convert to speech.
+</ParamField>
+
+<ParamField body="voice_prompt_id" type="string" required>
+  Voice prompt ID to use.
+</ParamField>
+
+<ParamField body="model" type="string" default="dd-etts-2.5">
+  Model ID.
+</ParamField>
+
+<ParamField body="locale" type="string" default="en-US">
+  Language locale code.
+</ParamField>
+
+---
+
+## Async / WebSocket TTS
+
+### `async_tts()` — Streaming generation
+
+Stream audio chunks over WebSocket for low-latency playback. Must be used within an `async_connect()` context.
+
+```python
+import asyncio
+from deepdub import DeepdubClient
+
+client = DeepdubClient(api_key="dd-your-api-key")
+
+async def stream_audio():
+    audio_data = bytearray()
+    async with client.async_connect() as conn:
+        async for chunk in conn.async_tts(
+            text="Streaming audio in real time!",
+            voice_prompt_id="bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
+            model="dd-etts-3.0",
+            locale="en-US",
+            format="wav",
+            sample_rate=16000,
+        ):
+            audio_data.extend(chunk)
+            print(f"Received chunk: {len(chunk)} bytes")
+
+    with open("streamed.wav", "wb") as f:
+        f.write(audio_data)
+    print(f"Total audio: {len(audio_data)} bytes")
+
+asyncio.run(stream_audio())
+```
+
+**Yields:** `bytes` — audio chunks as they are generated.
+
+#### Parameters
+
+Same as `tts()`, plus:
+
+<ParamField body="generation_id" type="string">
+  Optional UUID for request tracking. Auto-generated if not provided.
+</ParamField>
+
+<ParamField body="target_gender" type="string">
+  Target gender for the output voice.
+</ParamField>
+
+<ParamField body="verbose" type="bool" default="false">
+  Print debug information about sent/received messages.
+</ParamField>
+
+### Multiple concurrent generations
+
+The WebSocket connection supports multiplexing — run multiple TTS requests on the same connection:
+
+```python
+import asyncio
+from deepdub import DeepdubClient
+
+client = DeepdubClient(api_key="dd-your-api-key")
+
+async def generate_multiple():
+    async with client.async_connect() as conn:
+        async def generate_one(text, filename):
+            audio = bytearray()
+            async for chunk in conn.async_tts(
+                text=text,
+                voice_prompt_id="bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
+                model="dd-etts-3.0",
+                locale="en-US",
+                format="wav",
+                sample_rate=16000,
+            ):
+                audio.extend(chunk)
+            with open(filename, "wb") as f:
+                f.write(audio)
+
+        await asyncio.gather(
+            generate_one("First sentence.", "out1.wav"),
+            generate_one("Second sentence.", "out2.wav"),
+            generate_one("Third sentence.", "out3.wav"),
+        )
+
+asyncio.run(generate_multiple())
+```
+
+---
+
+## Streaming Input
+
+For real-time text streaming (sending text incrementally), use `async_stream_connect()`:
+
+```python
+import asyncio
+from deepdub import DeepdubClient
+
+client = DeepdubClient(api_key="dd-your-api-key")
+
+async def streaming_input():
+    async with client.async_stream_connect(
+        model="dd-etts-3.0",
+        locale="en-US",
+        voice_prompt_id="your-voice-id",
+        format="wav",
+        sample_rate=16000,
+    ) as conn:
+        await conn.async_stream_text("Hello, ")
+        await conn.async_stream_text("this is streamed ")
+        await conn.async_stream_text("text input.")
+        await conn.async_stream_end()
+
+        audio_data = bytearray()
+        while True:
+            audio = await conn.async_stream_recv_audio()
+            if audio is None:
+                break
+            audio_data.extend(audio)
+            print(f"Received chunk: {len(audio)} bytes")
+        print(f"Total audio: {len(audio_data)} bytes")
+
+asyncio.run(streaming_input())
+```
+
+---
+
+## Gender Classification
+
+Classify the gender of a speaker from an audio sample:
+
+```python
+import asyncio
+from pathlib import Path
+from deepdub import DeepdubClient
+
+client = DeepdubClient(api_key="dd-your-api-key")
+
+async def classify():
+    async with client.async_connect() as conn:
+        result = await conn.gender_classify(
+            audio_data=Path("speaker_sample.wav"),
+            sample_rate=16000,
+            timeout=5.0,
+        )
+        print(result)
+
+asyncio.run(classify())
+```
+
+<ParamField body="audio_data" type="Union[bytes, str, Path]" required>
+  Audio data as raw bytes, base64-encoded string, or file Path. Automatically trimmed to 1 second.
+</ParamField>
+
+<ParamField body="sample_rate" type="int" default="16000">
+  Sample rate of the input audio.
+</ParamField>
+
+<ParamField body="timeout" type="float" default="5.0">
+  Timeout in seconds for the WebSocket response.
+</ParamField>
+
+<ParamField body="generation_id" type="string">
+  Optional UUID for request tracking.
+</ParamField>
+
+---
+
+## Voice Management
+
+### `list_voices()` — List all voice prompts
+
+```python
+voices = client.list_voices()
+
+for voice in voices.get("voicePrompts", []):
+    print(f"{voice['id']}: {voice.get('name', voice.get('title', 'Untitled'))}")
+```
+
+**Returns:** `dict` with a `voicePrompts` key containing a list of voice prompt objects.
+
+### `add_voice()` — Upload a voice sample
+
+```python
+from pathlib import Path
+
+response = client.add_voice(
+    data=Path("voice_sample.wav"),
+    name="Professional Narrator",
+    gender="female",
+    locale="en-US",
+    publish=False,
+    speaking_style="Neutral",
+    age=30,
+)
+
+print(f"Created voice: {response}")
+```
+
+**Returns:** `dict` with the created voice prompt information.
+
+#### Parameters
+
+<ParamField body="data" type="Union[bytes, str, Path]" required>
+  Audio data — a file `Path`, raw `bytes`, or base64-encoded `string`.
+</ParamField>
+
+<ParamField body="name" type="string" required>
+  Display name for the voice prompt.
+</ParamField>
+
+<ParamField body="gender" type="string" required>
+  Speaker gender: `"male"` or `"female"`.
+</ParamField>
+
+<ParamField body="locale" type="string" required>
+  Language locale code (e.g., `en-US`).
+</ParamField>
+
+<ParamField body="publish" type="bool" default="false">
+  Whether to make the voice publicly available.
+</ParamField>
+
+<ParamField body="speaking_style" type="string" default="Neutral">
+  Speaking style descriptor.
+</ParamField>
+
+<ParamField body="age" type="int" default="0">
+  Age of the speaker.
+</ParamField>
+
+---
+
+## CLI Reference
+
+The SDK includes a command-line interface:
+
+```bash
+# List available voices
+deepdub list-voices
+
+# Upload a new voice
+deepdub add-voice \
+  --file path/to/audio.mp3 \
+  --name "My Voice" \
+  --gender male \
+  --locale en-US
+
+# Generate text-to-speech
+deepdub tts \
+  --text "Hello from the CLI!" \
+  --voice-prompt-id your-voice-id
+
+# Set API key via flag or environment
+deepdub --api-key dd-your-key tts --text "Hello!"
+export DEEPDUB_API_KEY=dd-your-key
+```
+
+---
+
+## Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DEEPDUB_API_KEY` | API key for authentication | — |
+| `DEEPDUB_BASE_URL` | REST API base URL | `https://restapi.deepdub.ai/api/v1` |
+| `DEEPDUB_BASE_WEBSOCKET_URL` | WebSocket API base URL | `wss://wsapi.deepdub.ai/open` |
+| `DEEPDUB_BASE_WEBSOCKET_STREAMING_URL` | Streaming WebSocket base URL | `wss://wss.deepdub.ai/ws` |
+| `DD_EU` | Use EU endpoints (`"1"` to enable) | `"0"` |
+
+---
+
+## Error Handling
+
+```python
+from deepdub import DeepdubClient
+import requests
+
+client = DeepdubClient(api_key="dd-your-api-key")
+
+try:
+    audio = client.tts(
+        text="Hello!",
+        voice_prompt_id="your-voice-id",
+    )
+except requests.exceptions.HTTPError as e:
+    if e.response.status_code == 401:
+        print("Invalid API key")
+    elif e.response.status_code == 400:
+        print("Invalid request parameters")
+    else:
+        print(f"API error: {e}")
+except ValueError as e:
+    print(f"Validation error: {e}")
+```
+
+For async operations, WebSocket errors are raised as `Exception` with the error message from the server:
+
+```python
+try:
+    async with client.async_connect() as conn:
+        async for chunk in conn.async_tts(text="Hello!", voice_prompt_id="id"):
+            pass
+except Exception as e:
+    error_msg = str(e)
+    # Possible errors: "Rate limit exceeded", "Insufficient credits", etc.
+    print(f"WebSocket error: {error_msg}")
+```
+
+---
+
+## Available Models
+
+| Model ID | Description |
+|----------|-------------|
+| `dd-etts-3.0` | Latest model with best quality |
+| `dd-etts-2.5` | Stable production model (default) |

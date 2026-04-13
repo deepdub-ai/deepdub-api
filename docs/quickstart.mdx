@@ -1,0 +1,207 @@
+---
+title: Quickstart
+description: "Generate your first TTS audio in under 5 minutes"
+---
+
+## Prerequisites
+
+All you need is:
+- **Free trial API key:** `dd-00000000000000000000000065c9cbfe`
+- **A voice preset** — see [Voice Presets](/voice-presets) for the full list
+
+## Generate speech with the Python SDK
+
+<Steps>
+
+<Step title="Install the SDK">
+
+```bash
+pip install deepdub
+```
+
+</Step>
+
+<Step title="Generate audio">
+
+```python
+from deepdub import DeepdubClient
+
+client = DeepdubClient(api_key="dd-00000000000000000000000065c9cbfe")
+
+audio = client.tts(
+    text="Welcome to Deepdub! This is your first generated audio.",
+    voice_prompt_id="50a537cf-1ec8-4714-b07e-c589ab76be4b",  # Promo / Commercials
+    model="dd-etts-3.0",
+    locale="en-US",
+)
+
+with open("output.mp3", "wb") as f:
+    f.write(audio)
+
+print(f"Generated {len(audio)} bytes of audio")
+```
+
+</Step>
+
+</Steps>
+
+## Generate speech with the JavaScript SDK
+
+<Steps>
+
+<Step title="Install the SDK">
+
+```bash
+npm install --save @deepdub/node
+```
+
+</Step>
+
+<Step title="Generate audio">
+
+```javascript
+const { DeepdubClient } = require("@deepdub/node");
+
+async function main() {
+  const deepdub = new DeepdubClient("dd-00000000000000000000000065c9cbfe");
+  await deepdub.connect();
+
+  const buffer = await deepdub.generateToBuffer(
+    "Welcome to Deepdub! This is your first generated audio.",
+    {
+      locale: "en-US",
+      voicePromptId: "50a537cf-1ec8-4714-b07e-c589ab76be4b",  // Promo / Commercials
+      model: "dd-etts-3.0",
+    }
+  );
+
+  require("fs").writeFileSync("output.wav", buffer);
+  console.log(`Generated ${buffer.length} bytes of audio`);
+}
+
+main();
+```
+
+</Step>
+
+</Steps>
+
+## Generate speech with cURL
+
+```bash
+curl -X POST https://restapi.deepdub.ai/api/v1/tts \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: dd-00000000000000000000000065c9cbfe" \
+  -d '{
+    "model": "dd-etts-3.0",
+    "targetText": "Welcome to Deepdub! This is your first generated audio.",
+    "locale": "en-US",
+    "voicePromptId": "50a537cf-1ec8-4714-b07e-c589ab76be4b"
+  }' \
+  --output output.mp3
+```
+
+## Advanced generation options
+
+Fine-tune your audio with accent blending and tuned parameters:
+
+```python
+audio = client.tts(
+    text="This demonstrates accent blending with tuned parameters.",
+    voice_prompt_id="bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",  # Storyteller
+    model="dd-etts-3.0",
+    locale="en-US",
+    temperature=0.7,
+    tempo=1.1,
+    variance=0.6,
+    sample_rate=44100,
+    format="mp3",
+    prompt_boost=True,
+    accent_base_locale="en-US",
+    accent_locale="fr-FR",
+    accent_ratio=0.3,
+)
+
+with open("advanced_output.mp3", "wb") as f:
+    f.write(audio)
+```
+
+## Real-time streaming
+
+For low-latency applications, stream audio chunks as they're generated:
+
+<Tabs>
+<Tab title="Python SDK">
+```python
+import asyncio
+from deepdub import DeepdubClient
+
+client = DeepdubClient(api_key="dd-00000000000000000000000065c9cbfe")
+
+async def stream():
+    audio_data = bytearray()
+    async with client.async_connect() as conn:
+        async for chunk in conn.async_tts(
+            text="Streaming audio in real time!",
+            voice_prompt_id="bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
+            model="dd-etts-3.0",
+            locale="en-US",
+            format="wav",
+            sample_rate=16000,
+        ):
+            audio_data.extend(chunk)
+            print(f"Received chunk: {len(chunk)} bytes")
+
+    with open("streamed.wav", "wb") as f:
+        f.write(audio_data)
+    print(f"Total audio: {len(audio_data)} bytes")
+
+asyncio.run(stream())
+```
+</Tab>
+<Tab title="JavaScript SDK">
+```javascript
+const { DeepdubClient } = require("@deepdub/node");
+
+async function main() {
+  const deepdub = new DeepdubClient("dd-00000000000000000000000065c9cbfe");
+  await deepdub.connect();
+
+  const buffer = await deepdub.generateToBuffer("Streaming audio in real time!", {
+    locale: "en-US",
+    voicePromptId: "50a537cf-1ec8-4714-b07e-c589ab76be4b",
+    model: "dd-etts-3.0",
+    onChunk: (chunk) => {
+      console.log(`Received ${chunk.length} bytes`);
+    },
+  });
+
+  require("fs").writeFileSync("streamed.wav", buffer);
+}
+
+main();
+```
+</Tab>
+</Tabs>
+
+## Next steps
+
+<CardGroup cols={2}>
+
+<Card title="Voice Presets" icon="headphones" href="/voice-presets">
+  Browse curated voice presets from our library of thousands of voices.
+</Card>
+
+<Card title="Python SDK Reference" icon="python" href="/sdk">
+  Full Python SDK reference with all methods and async streaming.
+</Card>
+
+<Card title="JavaScript SDK Reference" icon="js" href="/sdk-javascript">
+  Full Node.js SDK reference with streaming chunks and concurrent generation.
+</Card>
+
+<Card title="REST API Reference" icon="code" href="/api-reference/tts/generate-and-stream-tts-audio">
+  Explore all TTS parameters and response formats.
+</Card>
+
+</CardGroup>

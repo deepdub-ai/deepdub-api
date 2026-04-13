@@ -1,0 +1,111 @@
+---
+title: Claude Code (AGENTS.md)
+description: "Integrate Deepdub API knowledge into Claude Code's AI agent"
+---
+
+## Overview
+
+[Claude Code](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview) is Anthropic's agentic coding tool. It automatically reads `AGENTS.md` files from your repository to understand project context. Adding a Deepdub `AGENTS.md` gives Claude Code full knowledge of the API, SDKs, and conventions.
+
+## Installation
+
+Download the `AGENTS.md` file to the root of your repository:
+
+```bash
+curl -o AGENTS.md \
+  https://raw.githubusercontent.com/yuval-deepdub/docs/main/skills/AGENTS.md
+```
+
+<Card title="View AGENTS.md on GitHub" icon="github" href="https://github.com/yuval-deepdub/docs/blob/main/skills/AGENTS.md">
+  View, copy, or download the full Claude Code AGENTS.md file.
+</Card>
+
+## AGENTS.md file
+
+The `AGENTS.md` file contains the full Deepdub API reference that Claude Code reads automatically. It includes:
+
+- **Project structure** — overview of the monorepo layout
+- **Base URLs** — US, EU, and WebSocket endpoints
+- **Authentication** — API key format and free trial key
+- **REST endpoints** — TTS generation, voice management, gender detection
+- **Python SDK** — `pip install deepdub` with sync/async examples
+- **JavaScript SDK** — `npm install @deepdub/node` with WebSocket and HTTP examples
+- **Error codes** — 400, 401, 402, 403, 404, 429, 500 with meanings
+- **Voice presets** — common preset IDs for quick testing
+- **Coding conventions** — project-specific patterns and best practices
+
+### Key sections
+
+**TTS request body:**
+
+```json
+{
+  "model": "dd-etts-3.0",
+  "targetText": "Hello world",
+  "locale": "en-US",
+  "voicePromptId": "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773"
+}
+```
+
+**Python SDK:**
+
+```python
+from deepdub import DeepdubClient
+client = DeepdubClient(api_key="YOUR_KEY")
+audio = client.tts(
+    text="Hello", voice_prompt_id="...",
+    model="dd-etts-3.0", locale="en-US",
+)
+```
+
+**JavaScript SDK:**
+
+```javascript
+const { DeepdubClient } = require("@deepdub/node");
+const deepdub = new DeepdubClient("YOUR_KEY");
+await deepdub.connect();
+const buffer = await deepdub.generateToBuffer("Hello", {
+  locale: "en-US",
+  voicePromptId: "...",
+  model: "dd-etts-3.0",
+});
+```
+
+**Error responses:**
+
+All errors return JSON: `success: false` with a `message` field.
+
+| Code | Meaning |
+|------|---------|
+| 400 | Invalid or missing parameters |
+| 401 | Invalid or missing API key |
+| 402 | Insufficient credits |
+| 429 | Rate limit exceeded |
+| 500 | Internal server error |
+
+## How it works
+
+Claude Code reads `AGENTS.md` files automatically when it starts a session in your repository. Subdirectory `AGENTS.md` files are scoped to that directory. The Deepdub reference can go at the project root or in a specific service directory.
+
+| Placement | Scope |
+|-----------|-------|
+| `/AGENTS.md` | Entire repo — always available |
+| `/projects/my-service/AGENTS.md` | Only when working in that service |
+
+## Example prompts
+
+After adding the `AGENTS.md`, try asking Claude Code:
+
+- *"Add a TTS endpoint that generates speech from user input"*
+- *"Integrate the Deepdub Python SDK to classify speaker gender"*
+- *"Create a streaming TTS service using the JavaScript SDK"*
+- *"Upload a custom voice sample via the REST API"*
+
+## Combining with Cursor
+
+You can use both the Cursor Skill and Claude Code AGENTS.md in the same repo. They don't conflict — each tool reads its own format:
+
+| Tool | File | Location |
+|------|------|----------|
+| Cursor | `.cursor/skills/deepdub-api/SKILL.md` | Project `.cursor/skills/` |
+| Claude Code | `AGENTS.md` | Repository root |
