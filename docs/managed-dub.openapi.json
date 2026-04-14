@@ -1,14 +1,15 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Deepdub Managed Dub API",
+    "title": "Deepdub Managed Dubbing API",
     "description": "Public REST API for submitting videos for AI-assisted dubbing, tracking job status, and managing deliverables.",
     "version": "1.0.0"
   },
   "paths": {
     "/dubbing/job": {
       "post": {
-        "summary": "Create Dubbing Job",
+        "summary": "Submit Dubbing Job",
+        "description": "Create a new dubbing job. The source video is validated, locales are resolved, and the job is queued for processing. Returns a requestId used to track the job.",
         "operationId": "create_dubbing_job_dubbing_job_post",
         "requestBody": {
           "content": {
@@ -46,7 +47,8 @@
     },
     "/dubbing/job/{request_id}": {
       "get": {
-        "summary": "Get Dubbing Job",
+        "summary": "Get Dubbing Job Status",
+        "description": "Return the current status, progress trace, export path, and additional products for a single dubbing job.",
         "operationId": "get_dubbing_job_dubbing_job__request_id__get",
         "parameters": [
           {
@@ -83,7 +85,8 @@
         }
       },
       "put": {
-        "summary": "Update Request Handler",
+        "summary": "Update Dubbing Job",
+        "description": "Update mutable fields of an existing job. Only the fields included in the request body are changed.",
         "operationId": "update_request_handler_dubbing_job__request_id__put",
         "parameters": [
           {
@@ -128,7 +131,8 @@
         }
       },
       "delete": {
-        "summary": "Cancel Request Handler",
+        "summary": "Cancel Dubbing Job",
+        "description": "Mark a job as cancelled. Cancellation is permanent \u2014 a cancelled job cannot be revived; submit a new job instead.",
         "operationId": "cancel_request_handler_dubbing_job__request_id__delete",
         "parameters": [
           {
@@ -163,7 +167,8 @@
         }
       },
       "patch": {
-        "summary": "Create Redubbing Job Handler",
+        "summary": "Submit Redubbing Feedback",
+        "description": "Submit quality feedback and issue reports for a completed dubbing job, triggering a resynthesis workflow.",
         "operationId": "create_redubbing_job_handler_dubbing_job__request_id__patch",
         "parameters": [
           {
@@ -213,6 +218,7 @@
     "/dubbing/jobs": {
       "get": {
         "summary": "List Dubbing Jobs",
+        "description": "Return a paginated list of dubbing jobs belonging to the authenticated customer. Cancelled jobs are excluded.",
         "operationId": "list_dubbing_jobs_dubbing_jobs_get",
         "parameters": [
           {
@@ -251,7 +257,8 @@
     },
     "/dubbing/job/{request_id}/sources": {
       "post": {
-        "summary": "Add Source Handler",
+        "summary": "Add Additional Source",
+        "description": "Attach an additional source asset (subtitles, audio hints, etc.) to an existing job. The new source is ingested asynchronously.",
         "operationId": "add_source_handler_dubbing_job__request_id__sources_post",
         "parameters": [
           {
@@ -321,7 +328,7 @@
           "SOURCE_AUDIO"
         ],
         "title": "AdditionalProductsEnum",
-        "description": "An enumeration."
+        "description": "Type of deliverable product that can be requested alongside (or instead of) the dubbed video."
       },
       "AdditionalSourcesEnum": {
         "type": "string",
@@ -331,7 +338,7 @@
           "MISC"
         ],
         "title": "AdditionalSourcesEnum",
-        "description": "An enumeration."
+        "description": "Type of additional source asset that can be attached to a dubbing job as input reference material."
       },
       "DubbingSegment": {
         "properties": {
@@ -452,7 +459,7 @@
                 "$ref": "#/components/schemas/AdditionalProductsEnum"
               }
             ],
-            "description": "Product to be added to the dubbing job (e.g., 'SUBTITLES', 'CC_SDH')"
+            "description": "Type of product to deliver (e.g., 'SDH', 'SRT', 'WEBVTT', 'TRANSCRIPT')"
           },
           "assetPath": {
             "type": "string",
@@ -483,7 +490,7 @@
                 "$ref": "#/components/schemas/AdditionalSourcesEnum"
               }
             ],
-            "description": "Source to be added to the dubbing job (e.g., )"
+            "description": "Type of source asset (e.g., 'AUDIO_HINTS', 'CC_SDH', 'MISC')"
           },
           "assetPath": {
             "type": "string",
@@ -513,7 +520,7 @@
           "sourceVideoPath": {
             "type": "string",
             "title": "Sourcevideopath",
-            "description": "S3 path to the source video file (must start with 's3://', e.g., 's3://bucket/video.mp4')"
+            "description": "S3 or HTTPS path to the source video file (e.g., 's3://bucket/video.mp4' or 'https://example.com/video.mp4')"
           },
           "exportPath": {
             "type": "string",
@@ -619,7 +626,7 @@
             },
             "type": "array",
             "title": "Additionalsources",
-            "description": "List of additional products to be delivered with the dubbing job (e.g., ['SUBTITLES', 'CC_SDH'])"
+            "description": "Additional source assets to attach as input reference material (e.g., closed captions, audio hints)"
           },
           "additionalProducts": {
             "items": {
@@ -627,7 +634,7 @@
             },
             "type": "array",
             "title": "Additionalproducts",
-            "description": "List of additional products to be delivered with the dubbing job (e.g., ['SUBTITLES', 'CC_SDH'])"
+            "description": "Deliverable products to produce alongside or instead of the dubbed video (e.g., SRT subtitles, transcripts)"
           },
           "metadata": {
             "additionalProperties": {
@@ -701,7 +708,7 @@
           "MIX"
         ],
         "title": "IssueCategory",
-        "description": "An enumeration."
+        "description": "High-level category of a quality issue reported during redubbing review."
       },
       "IssueLabel": {
         "type": "string",
@@ -719,7 +726,7 @@
           "TIMING_LIPSYNC"
         ],
         "title": "IssueLabel",
-        "description": "An enumeration."
+        "description": "Specific label describing the nature of a quality issue."
       },
       "IssueSeverity": {
         "type": "string",
@@ -730,7 +737,7 @@
           "CRITICAL"
         ],
         "title": "IssueSeverity",
-        "description": "An enumeration."
+        "description": "Severity level of a quality issue: SUGGESTION (nice-to-have) through CRITICAL (must-fix)."
       },
       "ManagedDubProgressStatusEnum": {
         "type": "string",
@@ -758,7 +765,7 @@
           "REDELIVERED_TO_CLIENT"
         ],
         "title": "ManagedDubProgressStatusEnum",
-        "description": "An enumeration."
+        "description": "Lifecycle status of a dubbing job, from initial intake through delivery and optional client re-fixes."
       },
       "MixTypeEnum": {
         "type": "string",
@@ -767,7 +774,7 @@
           "REPLACEMENT"
         ],
         "title": "MixTypeEnum",
-        "description": "An enumeration."
+        "description": "Audio mixing strategy: REPLACEMENT (replace original dialogue track) or UN_STYLE (overlay dubbed audio on the original)."
       },
       "RedubbingIssue": {
         "properties": {
@@ -866,7 +873,7 @@
             },
             "type": "array",
             "title": "Additionalproducts",
-            "description": "List of additional products to be delivered with the dubbing job (e.g., ['SUBTITLES', 'CC_SDH'])"
+            "description": "Additional products to (re-)deliver with this revision (e.g., updated SDH or transcript)"
           }
         },
         "type": "object",
@@ -930,7 +937,7 @@
           "MANAGED_HIGH_TIER"
         ],
         "title": "WorkflowTypeEnum",
-        "description": "An enumeration."
+        "description": "Dubbing workflow tier: AUTOMATED (fully automated), MANAGED (human-in-the-loop QC), or MANAGED_HIGH_TIER (premium managed)."
       }
     },
     "securitySchemes": {
