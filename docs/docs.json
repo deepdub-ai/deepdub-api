@@ -69,6 +69,10 @@
             "pages": ["api-reference/websocket/overview"]
           }
         ]
+      },
+      {
+        "tab": "Managed Dub API",
+        "openapi": "managed-dub.openapi.json"
       }
     ]
   },

@@ -1,0 +1,955 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Deepdub Managed Dub API",
+    "description": "Public REST API for submitting videos for AI-assisted dubbing, tracking job status, and managing deliverables.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/dubbing/job": {
+      "post": {
+        "summary": "Create Dubbing Job",
+        "operationId": "create_dubbing_job_dubbing_job_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DubbingSubmissionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DubbingSubmissionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dubbing/job/{request_id}": {
+      "get": {
+        "summary": "Get Dubbing Job",
+        "operationId": "get_dubbing_job_dubbing_job__request_id__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Request Id"
+            },
+            "name": "request_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DubbingStatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Request Handler",
+        "operationId": "update_request_handler_dubbing_job__request_id__put",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Request Id"
+            },
+            "name": "request_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DubbingSubmissionUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Cancel Request Handler",
+        "operationId": "cancel_request_handler_dubbing_job__request_id__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Request Id"
+            },
+            "name": "request_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Create Redubbing Job Handler",
+        "operationId": "create_redubbing_job_handler_dubbing_job__request_id__patch",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Request Id"
+            },
+            "name": "request_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RedubbingSubmissionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RedubbingSubmissionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dubbing/jobs": {
+      "get": {
+        "summary": "List Dubbing Jobs",
+        "operationId": "list_dubbing_jobs_dubbing_jobs_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Next Token"
+            },
+            "name": "next_token",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DubbingStatusListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dubbing/job/{request_id}/sources": {
+      "post": {
+        "summary": "Add Source Handler",
+        "operationId": "add_source_handler_dubbing_job__request_id__sources_post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Request Id"
+            },
+            "name": "request_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DubbingSubmissionAdditionalSource"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AdditionalProductStateEnum": {
+        "type": "string",
+        "enum": [
+          "PENDING_DELIVERY",
+          "DELIVERED"
+        ],
+        "title": "AdditionalProductStateEnum",
+        "description": "State of an additional product in the delivery lifecycle.\n\nNone   \u2013 legacy / unknown (pre-deployment products, not shown as pending).\nPENDING_DELIVERY \u2013 explicitly awaiting delivery.\nDELIVERED        \u2013 already delivered to the customer."
+      },
+      "AdditionalProductsEnum": {
+        "type": "string",
+        "enum": [
+          "SDH",
+          "SRT",
+          "WEBVTT",
+          "TRANSCRIPT",
+          "AS_RECORDED_SCRIPT",
+          "AUDIO_HINTS",
+          "SOURCE_VIDEO",
+          "SOURCE_AUDIO"
+        ],
+        "title": "AdditionalProductsEnum",
+        "description": "An enumeration."
+      },
+      "AdditionalSourcesEnum": {
+        "type": "string",
+        "enum": [
+          "AUDIO_HINTS",
+          "CC_SDH",
+          "MISC"
+        ],
+        "title": "AdditionalSourcesEnum",
+        "description": "An enumeration."
+      },
+      "DubbingSegment": {
+        "properties": {
+          "timestampStart": {
+            "type": "integer",
+            "title": "Timestampstart",
+            "description": "Start time of the segment in milliseconds (e.g., 12345)"
+          },
+          "timestampEnd": {
+            "type": "integer",
+            "title": "Timestampend",
+            "description": "End time of the segment in milliseconds (e.g., 23456)"
+          },
+          "characterName": {
+            "type": "string",
+            "title": "Charactername",
+            "description": "Name of the character speaking in this segment (e.g., 'John', 'Narrator')"
+          },
+          "characterId": {
+            "type": "string",
+            "title": "Characterid",
+            "description": "Unique identifier for the character (e.g., 'char_001')"
+          },
+          "sourceDialogue": {
+            "type": "string",
+            "title": "Sourcedialogue",
+            "description": "Original dialogue text in the source language (e.g., 'Hello, how are you?')"
+          },
+          "targetDialogue": {
+            "type": "string",
+            "title": "Targetdialogue",
+            "description": "Translated dialogue text in the target language (e.g., 'Hola, \u00bfc\u00f3mo est\u00e1s?')"
+          },
+          "segmentId": {
+            "type": "string",
+            "title": "Segmentid",
+            "description": "Unique identifier for the segment (e.g., 'seg_001')"
+          }
+        },
+        "type": "object",
+        "required": [
+          "timestampStart",
+          "timestampEnd",
+          "characterName",
+          "characterId",
+          "sourceDialogue"
+        ],
+        "title": "DubbingSegment"
+      },
+      "DubbingStatusListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DubbingStatusResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "nextToken": {
+            "type": "string",
+            "title": "Nexttoken"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "DubbingStatusListResponse"
+      },
+      "DubbingStatusResponse": {
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "title": "Requestid"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ManagedDubProgressStatusEnum"
+          },
+          "detailedTrace": {
+            "type": "string",
+            "title": "Detailedtrace"
+          },
+          "exportPath": {
+            "type": "string",
+            "title": "Exportpath"
+          },
+          "additionalProducts": {
+            "items": {
+              "$ref": "#/components/schemas/DubbingSubmissionAdditionalProduct"
+            },
+            "type": "array",
+            "title": "Additionalproducts"
+          },
+          "metadata": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Metadata"
+          }
+        },
+        "type": "object",
+        "required": [
+          "requestId",
+          "status",
+          "detailedTrace",
+          "exportPath",
+          "additionalProducts",
+          "metadata"
+        ],
+        "title": "DubbingStatusResponse"
+      },
+      "DubbingSubmissionAdditionalProduct": {
+        "properties": {
+          "product": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdditionalProductsEnum"
+              }
+            ],
+            "description": "Product to be added to the dubbing job (e.g., 'SUBTITLES', 'CC_SDH')"
+          },
+          "assetPath": {
+            "type": "string",
+            "title": "Assetpath",
+            "description": "S3 path to the asset file (must start with 's3://', e.g., 's3://bucket/asset.mp4')"
+          },
+          "state": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdditionalProductStateEnum"
+              }
+            ],
+            "description": "Delivery state: None means pending delivery, DELIVERED means already delivered."
+          }
+        },
+        "type": "object",
+        "required": [
+          "product",
+          "assetPath"
+        ],
+        "title": "DubbingSubmissionAdditionalProduct"
+      },
+      "DubbingSubmissionAdditionalSource": {
+        "properties": {
+          "source": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdditionalSourcesEnum"
+              }
+            ],
+            "description": "Source to be added to the dubbing job (e.g., )"
+          },
+          "assetPath": {
+            "type": "string",
+            "title": "Assetpath",
+            "description": "S3 path to the asset file (must start with 's3://', e.g., 's3://bucket/asset.mp4')"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source",
+          "assetPath"
+        ],
+        "title": "DubbingSubmissionAdditionalSource"
+      },
+      "DubbingSubmissionRequest": {
+        "properties": {
+          "sourceLocale": {
+            "type": "string",
+            "title": "Sourcelocale",
+            "description": "Locale code of the source language (e.g., 'en-US')"
+          },
+          "targetLocale": {
+            "type": "string",
+            "title": "Targetlocale",
+            "description": "Locale code of the target language (e.g., 'es-ES')"
+          },
+          "sourceVideoPath": {
+            "type": "string",
+            "title": "Sourcevideopath",
+            "description": "S3 path to the source video file (must start with 's3://', e.g., 's3://bucket/video.mp4')"
+          },
+          "exportPath": {
+            "type": "string",
+            "title": "Exportpath",
+            "description": "S3 path where the dubbed video will be exported (must start with 's3://', e.g., 's3://bucket/output.mp4')"
+          },
+          "contentId": {
+            "type": "string",
+            "title": "Contentid",
+            "description": "Unique identifier for the content (e.g., 'content_123')"
+          },
+          "batchId": {
+            "type": "string",
+            "title": "Batchid",
+            "description": "Identifier for the batch this submission belongs to (e.g., 'batch_001')"
+          },
+          "batchName": {
+            "type": "string",
+            "title": "Batchname",
+            "description": "Name of the batch this submission belongs to (e.g., 'Power Rangers Season 1')"
+          },
+          "workflowType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/WorkflowTypeEnum"
+              }
+            ],
+            "description": "Type of workflow to use for dubbing (e.g., 'AUTOMATED', 'MANAGED')",
+            "default": "AUTOMATED"
+          },
+          "mixType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MixTypeEnum"
+              }
+            ],
+            "description": "Type of audio mix to use for dubbing (e.g., 'REPLACEMENT', 'UN_STYLE')",
+            "default": "REPLACEMENT"
+          },
+          "sourceSpeechTrackPath": {
+            "type": "string",
+            "title": "Sourcespeechtrackpath",
+            "description": "S3 path to the source speech audio track, if separate from video (must start with 's3://', e.g., 's3://bucket/audio.wav')"
+          },
+          "sourceMAndETrackPath": {
+            "type": "string",
+            "title": "Sourcemandetrackpath",
+            "description": "S3 path to the source Music & Effects (M&E) track (must start with 's3://', e.g., 's3://bucket/me_track.wav')"
+          },
+          "uncompressedAudioPath": {
+            "type": "string",
+            "title": "Uncompressedaudiopath",
+            "description": "S3 path to the uncompressed audio file, if available (must start with 's3://', e.g., 's3://bucket/uncompressed.wav')"
+          },
+          "segments": {
+            "items": {
+              "$ref": "#/components/schemas/DubbingSegment"
+            },
+            "type": "array",
+            "title": "Segments",
+            "description": "List of segments to be dubbed, with timing and dialogue information"
+          },
+          "titleName": {
+            "type": "string",
+            "title": "Titlename",
+            "description": "Title of the content (e.g., 'The Great Adventure')"
+          },
+          "genreName": {
+            "type": "string",
+            "title": "Genrename",
+            "description": "Genre of the content (e.g., 'Action', 'Comedy')"
+          },
+          "maturityRating": {
+            "type": "string",
+            "title": "Maturityrating",
+            "description": "Maturity rating of the content (e.g., 'PG-13', 'R')"
+          },
+          "contentType": {
+            "type": "string",
+            "title": "Contenttype",
+            "description": "Type of content (e.g., 'movie', 'series')"
+          },
+          "priority": {
+            "type": "integer",
+            "title": "Priority",
+            "description": "Priority of the dubbing job (higher means more urgent, e.g., 10)"
+          },
+          "needByDate": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Needbydate",
+            "description": "Date by which the dubbed content is needed (e.g., '2024-07-01T12:00:00Z')"
+          },
+          "isVideoWaterMarked": {
+            "type": "boolean",
+            "title": "Isvideowatermarked",
+            "description": "Indicates if the source video is watermarked (e.g., True, False)",
+            "default": false
+          },
+          "additionalSources": {
+            "items": {
+              "$ref": "#/components/schemas/DubbingSubmissionAdditionalSource"
+            },
+            "type": "array",
+            "title": "Additionalsources",
+            "description": "List of additional products to be delivered with the dubbing job (e.g., ['SUBTITLES', 'CC_SDH'])"
+          },
+          "additionalProducts": {
+            "items": {
+              "$ref": "#/components/schemas/DubbingSubmissionAdditionalProduct"
+            },
+            "type": "array",
+            "title": "Additionalproducts",
+            "description": "List of additional products to be delivered with the dubbing job (e.g., ['SUBTITLES', 'CC_SDH'])"
+          },
+          "metadata": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Metadata",
+            "description": "Metadata attached to the dubbing job (e.g., {'key': 'value'})"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sourceLocale",
+          "targetLocale",
+          "sourceVideoPath"
+        ],
+        "title": "DubbingSubmissionRequest"
+      },
+      "DubbingSubmissionResponse": {
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "title": "Requestid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "requestId"
+        ],
+        "title": "DubbingSubmissionResponse"
+      },
+      "DubbingSubmissionUpdateRequest": {
+        "properties": {
+          "needByDate": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Needbydate",
+            "description": "Date by which the dubbed content is needed (e.g., '2024-07-01T12:00:00Z')"
+          },
+          "metadata": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Metadata",
+            "description": "Metadata attached to the dubbing job (e.g., {'key': 'value'})"
+          }
+        },
+        "type": "object",
+        "title": "DubbingSubmissionUpdateRequest"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "IssueCategory": {
+        "type": "string",
+        "enum": [
+          "SYNTHESIS",
+          "TRANSLATION",
+          "TIMING",
+          "MIX"
+        ],
+        "title": "IssueCategory",
+        "description": "An enumeration."
+      },
+      "IssueLabel": {
+        "type": "string",
+        "enum": [
+          "ACCENT",
+          "ADAPTATION",
+          "AUDIO_ARTIFACT",
+          "EMOTION",
+          "EMPHASIS",
+          "MISPRONUNCIATION",
+          "MISSING_AUDIO",
+          "MIX",
+          "RHYTHM",
+          "SPEAKER_CONSISTENCY",
+          "TIMING_LIPSYNC"
+        ],
+        "title": "IssueLabel",
+        "description": "An enumeration."
+      },
+      "IssueSeverity": {
+        "type": "string",
+        "enum": [
+          "SUGGESTION",
+          "MINOR",
+          "MAJOR",
+          "CRITICAL"
+        ],
+        "title": "IssueSeverity",
+        "description": "An enumeration."
+      },
+      "ManagedDubProgressStatusEnum": {
+        "type": "string",
+        "enum": [
+          "INTAKE_PREPROCESSING",
+          "INTAKE_VALIDATION",
+          "INTAKE_FAILED",
+          "INTAKE_APPROVED",
+          "CASTING",
+          "ADAPTGEN_START",
+          "ADAPTGEN_MIDWAY",
+          "READY_FOR_QC",
+          "QC",
+          "QC_IN_REVIEW",
+          "ADAPTGEN_QC_FIX",
+          "READY_FOR_DMX",
+          "DMX_DONE",
+          "DELIVERED_TO_CLIENT",
+          "CLIENT_REFIX_PROCESSING",
+          "CLIENT_REFIX_REJECTED",
+          "CLIENT_REFIX",
+          "FAILURE",
+          "READY_FOR_REDMX",
+          "REDMX_DONE",
+          "REDELIVERED_TO_CLIENT"
+        ],
+        "title": "ManagedDubProgressStatusEnum",
+        "description": "An enumeration."
+      },
+      "MixTypeEnum": {
+        "type": "string",
+        "enum": [
+          "UN_STYLE",
+          "REPLACEMENT"
+        ],
+        "title": "MixTypeEnum",
+        "description": "An enumeration."
+      },
+      "RedubbingIssue": {
+        "properties": {
+          "timestampStart": {
+            "type": "integer",
+            "title": "Timestampstart",
+            "description": "Start timestamp of the issue in milliseconds (e.g., 12345)"
+          },
+          "timestampEnd": {
+            "type": "integer",
+            "title": "Timestampend",
+            "description": "End timestamp of the issue in milliseconds (e.g., 23456)"
+          },
+          "category": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IssueCategory"
+              }
+            ],
+            "description": "Category of the issue (e.g., 'SYNTHESIS', 'TRANSLATION')"
+          },
+          "severity": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IssueSeverity"
+              }
+            ],
+            "description": "Severity level of the issue (e.g., 'SUGGESTION', 'MINOR', 'MAJOR', 'CRITICAL')"
+          },
+          "label": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IssueLabel"
+              }
+            ],
+            "description": "Label describing the type of issue (e.g., 'ACCENT', 'ADAPTATION', 'AUDIO_ARTIFACT')"
+          },
+          "details": {
+            "type": "string",
+            "title": "Details",
+            "description": "Detailed description of the issue (e.g., 'The accent does not match the character profile.')"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp",
+            "description": "Timestamp when the issue was reported (e.g., '2024-06-01T15:30:00Z')"
+          },
+          "issueId": {
+            "type": "string",
+            "title": "Issueid",
+            "description": "Unique identifier for the issue (e.g., 'issue_001')"
+          }
+        },
+        "type": "object",
+        "required": [
+          "timestampStart",
+          "timestampEnd",
+          "category",
+          "severity",
+          "label",
+          "details",
+          "timestamp"
+        ],
+        "title": "RedubbingIssue"
+      },
+      "RedubbingSubmissionRequest": {
+        "properties": {
+          "generalFeedback": {
+            "type": "string",
+            "title": "Generalfeedback",
+            "description": "General feedback for the redubbing submission (e.g., 'The timing was off in several places.')"
+          },
+          "exportPath": {
+            "type": "string",
+            "title": "Exportpath",
+            "description": "S3 path to the exported video file (must start with 's3://', e.g., 's3://bucket/output.mp4') if different from the original export path"
+          },
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/RedubbingIssue"
+            },
+            "type": "array",
+            "title": "Issues",
+            "description": "List of issues identified in the redubbing submission",
+            "default": []
+          },
+          "revisionNumber": {
+            "type": "integer",
+            "title": "Revisionnumber",
+            "description": "Revision number of the redubbing submission if applicable"
+          },
+          "additionalProducts": {
+            "items": {
+              "$ref": "#/components/schemas/DubbingSubmissionAdditionalProduct"
+            },
+            "type": "array",
+            "title": "Additionalproducts",
+            "description": "List of additional products to be delivered with the dubbing job (e.g., ['SUBTITLES', 'CC_SDH'])"
+          }
+        },
+        "type": "object",
+        "required": [
+          "generalFeedback"
+        ],
+        "title": "RedubbingSubmissionRequest"
+      },
+      "RedubbingSubmissionResponse": {
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "title": "Requestid",
+            "description": "Unique identifier for the redubbing submission request (e.g., 'redub_req_001')"
+          }
+        },
+        "type": "object",
+        "required": [
+          "requestId"
+        ],
+        "title": "RedubbingSubmissionResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "WorkflowTypeEnum": {
+        "type": "string",
+        "enum": [
+          "AUTOMATED",
+          "MANAGED",
+          "MANAGED_HIGH_TIER"
+        ],
+        "title": "WorkflowTypeEnum",
+        "description": "An enumeration."
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key",
+        "description": "API key issued by Deepdub. Contact your account manager to obtain one."
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "https://dubbing.deepdub.app"
+    }
+  ],
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ]
+}
