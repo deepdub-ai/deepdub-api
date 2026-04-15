@@ -1,0 +1,5 @@
+---
+openapi: delete /issues/{id}
+---
+
+Deletes (archives) the issue. After deletion, [`GET /issues/{id}`](/api-reference/issues/get-issue) for the same ID returns `404`.

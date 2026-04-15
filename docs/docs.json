@@ -44,7 +44,9 @@
           {
             "group": "TTS",
             "pages": [
-              "api-reference/tts/generate-and-stream-tts-audio"
+              "api-reference/tts/generate-and-stream-tts-audio",
+              "api-reference/tts/submit-retroactive-tts",
+              "api-reference/tts/get-retroactive-tts-audio"
             ]
           },
           {
@@ -62,6 +64,15 @@
               "api-reference/voice/update-a-voice-prompt",
               "api-reference/voice/get-a-voice-prompt-by-id",
               "api-reference/voice/delete-a-voice-prompt"
+            ]
+          },
+          {
+            "group": "Issues",
+            "pages": [
+              "api-reference/issues/create-issue",
+              "api-reference/issues/get-issue",
+              "api-reference/issues/update-issue",
+              "api-reference/issues/delete-issue"
             ]
           },
           {

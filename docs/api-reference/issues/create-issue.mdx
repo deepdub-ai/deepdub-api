@@ -1,0 +1,19 @@
+---
+openapi: post /issues
+---
+
+## Reporting generation problems
+
+Use this endpoint to flag a TTS generation that didn't sound right — a mispronunciation, an unwanted artifact, or any other quality issue. Reports are reviewed by the Deepdub team and feed into model improvements.
+
+To make a report actionable, include:
+
+- `generationId` — the ID of the affected generation
+- `generatedText` — the exact text passed to TTS
+- `problemWord` — the specific word or phrase that was generated incorrectly
+- `voicePromptId` — the voice prompt that was used
+- `problemSeconds` — timestamp (in seconds) where the problem occurs
+- `problemAudioFile` *(optional)* — base64-encoded clip of the problem audio
+- `additionalComments` *(optional)* — anything else that helps reproduce or explain the issue
+
+The response includes an `id` you can use with the [GET](/api-reference/issues/get-issue), [PUT](/api-reference/issues/update-issue), and [DELETE](/api-reference/issues/delete-issue) endpoints.

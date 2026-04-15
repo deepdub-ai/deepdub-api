@@ -1,0 +1,9 @@
+---
+openapi: get /tts/retroactive/{id}
+---
+
+## Polling for completion
+
+The endpoint returns the generated audio as raw MP3 bytes once it's ready. If the generation is still in progress, the request returns `404`. Retry with backoff until the audio is available — typical generations complete within a few seconds, but longer scripts may take longer.
+
+File extensions like `.mp3` in the `id` are stripped automatically, so both `abc123` and `abc123.mp3` resolve to the same generation.

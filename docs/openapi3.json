@@ -136,6 +136,192 @@
         }
       }
     },
+    "/tts/retroactive": {
+      "post": {
+        "operationId": "submitRetroactiveTTS",
+        "description": "Submit a TTS generation request for asynchronous processing. Returns a URL that can be polled later to retrieve the generated audio. Useful for long-form generations or workflows that don't need streaming. The request body is the same as `POST /tts`.",
+        "tags": ["TTS"],
+        "summary": "Submit a retroactive TTS generation request",
+        "parameters": [
+          {
+            "description": "API Key",
+            "name": "x-api-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "dd-00000000000000000000000065c9cbfe"
+            },
+            "example": "dd-00000000000000000000000065c9cbfe"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/model.GenerationRequest"
+              },
+              "example": {
+                "model": "dd-etts-3.0",
+                "targetText": "Hello world, welcome to Deepdub.",
+                "locale": "en-US",
+                "voicePromptId": "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Generation accepted. Returns a URL to fetch the generated audio when ready.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.URLResponse"
+                },
+                "example": {
+                  "url": "https://restapi.deepdub.ai/api/v1/tts/retroactive/abc123-def456"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — invalid or missing parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.APIError"
+                },
+                "example": {
+                  "success": false,
+                  "message": "Invalid request: missing required field 'targetText'"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.APIError"
+                },
+                "example": {
+                  "success": false,
+                  "message": "Unauthorized: invalid or missing API key"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.APIError"
+                },
+                "example": {
+                  "success": false,
+                  "message": "Internal server error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tts/retroactive/{id}": {
+      "get": {
+        "operationId": "getRetroactiveTTS",
+        "description": "Stream the generated audio for a previously submitted retroactive TTS request. Use the `id` from the URL returned by `POST /tts/retroactive`. The response is raw audio bytes (MP3).",
+        "tags": ["TTS"],
+        "summary": "Get audio for a retroactive TTS request",
+        "parameters": [
+          {
+            "description": "API Key",
+            "name": "x-api-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "dd-00000000000000000000000065c9cbfe"
+            },
+            "example": "dd-00000000000000000000000065c9cbfe"
+          },
+          {
+            "description": "Generation ID returned by the retroactive TTS submission. File extensions like `.mp3` are stripped automatically.",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "abc123-def456"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Audio stream (MP3). The response body is raw audio bytes."
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.APIError"
+                },
+                "example": {
+                  "success": false,
+                  "message": "Invalid generation ID"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.APIError"
+                },
+                "example": {
+                  "success": false,
+                  "message": "Unauthorized: invalid or missing API key"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Generation not found — the audio is not yet ready or the ID is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.APIError"
+                },
+                "example": {
+                  "success": false,
+                  "message": "Generation not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.APIError"
+                },
+                "example": {
+                  "success": false,
+                  "message": "Internal server error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/gender-detection/classify": {
       "post": {
         "operationId": "classifyGender",
@@ -799,6 +985,364 @@
         }
       }
     },
+    "/issues": {
+      "post": {
+        "operationId": "createIssue",
+        "description": "Report a problem with a TTS generation by creating a new issue. Issues are tracked internally by the Deepdub team and used to improve voice quality. The `problemAudioFile` field can optionally include base64-encoded audio attached to the issue, and `problemSeconds` indicates the timestamp in the audio where the problem appears.",
+        "tags": ["Issues"],
+        "summary": "Create a new issue",
+        "parameters": [
+          {
+            "description": "API Key",
+            "name": "x-api-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "dd-00000000000000000000000065c9cbfe"
+            },
+            "example": "dd-00000000000000000000000065c9cbfe"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/model.CreateIssueRequest"
+              },
+              "example": {
+                "generationId": "abc123-def456",
+                "generatedText": "Hello world, welcome to Deepdub.",
+                "problemWord": "Deepdub",
+                "voicePromptId": "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
+                "additionalComments": "Mispronunciation of brand name",
+                "problemSeconds": 2.5
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Issue created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.IssueResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — missing required fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.IssueErrorResponse"
+                },
+                "example": {
+                  "message": "generationId is required"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.IssueErrorResponse"
+                },
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.IssueErrorResponse"
+                },
+                "example": {
+                  "message": "Failed to create issue"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/issues/{id}": {
+      "get": {
+        "operationId": "getIssue",
+        "description": "Retrieve an issue by its ID, including its current state (e.g., open, in progress, resolved).",
+        "tags": ["Issues"],
+        "summary": "Get an issue by ID",
+        "parameters": [
+          {
+            "description": "API Key",
+            "name": "x-api-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "dd-00000000000000000000000065c9cbfe"
+            },
+            "example": "dd-00000000000000000000000065c9cbfe"
+          },
+          {
+            "description": "Issue ID returned by `POST /issues`",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Issue details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.IssueResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.IssueErrorResponse"
+                },
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Issue not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.IssueErrorResponse"
+                },
+                "example": {
+                  "message": "Issue not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.IssueErrorResponse"
+                },
+                "example": {
+                  "message": "Failed to fetch issue"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateIssue",
+        "description": "Update an existing issue. All fields are optional — only fields included in the body are updated.",
+        "tags": ["Issues"],
+        "summary": "Update an issue",
+        "parameters": [
+          {
+            "description": "API Key",
+            "name": "x-api-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "dd-00000000000000000000000065c9cbfe"
+            },
+            "example": "dd-00000000000000000000000065c9cbfe"
+          },
+          {
+            "description": "Issue ID",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/model.UpdateIssueRequest"
+              },
+              "example": {
+                "additionalComments": "Confirmed the mispronunciation reproduces with seed=42"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated issue",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.IssueResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.IssueErrorResponse"
+                },
+                "example": {
+                  "message": "Invalid request body"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.IssueErrorResponse"
+                },
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Issue not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.IssueErrorResponse"
+                },
+                "example": {
+                  "message": "Issue not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.IssueErrorResponse"
+                },
+                "example": {
+                  "message": "Failed to update issue"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteIssue",
+        "description": "Archive an issue. Archived issues are no longer visible via `GET /issues/{id}`.",
+        "tags": ["Issues"],
+        "summary": "Delete an issue",
+        "parameters": [
+          {
+            "description": "API Key",
+            "name": "x-api-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "dd-00000000000000000000000065c9cbfe"
+            },
+            "example": "dd-00000000000000000000000065c9cbfe"
+          },
+          {
+            "description": "Issue ID",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Issue deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.IssueMessageResponse"
+                },
+                "example": {
+                  "message": "Issue deleted"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.IssueErrorResponse"
+                },
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Issue not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.IssueErrorResponse"
+                },
+                "example": {
+                  "message": "Issue not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.IssueErrorResponse"
+                },
+                "example": {
+                  "message": "Failed to delete issue"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/concurrent_connections/batch": {
       "get": {
         "operationId": "getConcurrentConnectionsBatch",
@@ -1139,6 +1683,18 @@
         },
         "additionalProperties": true
       },
+      "model.URLResponse": {
+        "description": "Response containing a URL where the asynchronously generated TTS audio can be retrieved",
+        "type": "object",
+        "required": ["url"],
+        "properties": {
+          "url": {
+            "description": "URL to fetch the generated audio (issue a GET request with the same `x-api-key` header).",
+            "type": "string",
+            "example": "https://restapi.deepdub.ai/api/v1/tts/retroactive/abc123-def456"
+          }
+        }
+      },
       "model.GenderClassificationRequest": {
         "description": "Request for gender classification from audio",
         "type": "object",
@@ -1441,6 +1997,136 @@
             "type": "integer",
             "minimum": 0,
             "example": 5
+          }
+        }
+      },
+      "model.CreateIssueRequest": {
+        "description": "Payload for creating a new issue against a TTS generation",
+        "type": "object",
+        "required": ["generationId", "generatedText", "problemWord", "voicePromptId"],
+        "properties": {
+          "generationId": {
+            "description": "ID of the generation that has the problem",
+            "type": "string",
+            "example": "abc123-def456"
+          },
+          "generatedText": {
+            "description": "Text that was passed to the TTS endpoint",
+            "type": "string",
+            "example": "Hello world, welcome to Deepdub."
+          },
+          "problemWord": {
+            "description": "Word (or phrase) that was generated incorrectly",
+            "type": "string",
+            "example": "Deepdub"
+          },
+          "voicePromptId": {
+            "description": "ID of the voice prompt used in the generation",
+            "type": "string",
+            "example": "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773"
+          },
+          "additionalComments": {
+            "description": "Free-form comments describing the problem",
+            "type": "string",
+            "example": "Mispronunciation of brand name"
+          },
+          "problemAudioFile": {
+            "description": "Optional base64-encoded audio clip to attach to the issue",
+            "type": "string"
+          },
+          "problemSeconds": {
+            "description": "Seconds in the audio where the problem appears",
+            "type": "number",
+            "example": 2.5
+          }
+        }
+      },
+      "model.UpdateIssueRequest": {
+        "description": "Payload for updating an existing issue. All fields are optional.",
+        "type": "object",
+        "properties": {
+          "generationId": {
+            "type": "string"
+          },
+          "generatedText": {
+            "type": "string"
+          },
+          "problemWord": {
+            "type": "string"
+          },
+          "voicePromptId": {
+            "type": "string"
+          },
+          "additionalComments": {
+            "type": "string"
+          },
+          "problemAudioFile": {
+            "description": "Optional base64-encoded audio clip to attach to the issue",
+            "type": "string"
+          },
+          "problemSeconds": {
+            "type": "number"
+          }
+        }
+      },
+      "model.IssueResponse": {
+        "description": "Issue details",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "iss_12345abcde"
+          },
+          "state": {
+            "description": "Current state of the issue (e.g., open, in progress, resolved)",
+            "type": "string",
+            "example": "open"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "generationId": {
+            "type": "string"
+          },
+          "generatedText": {
+            "type": "string"
+          },
+          "problemWord": {
+            "type": "string"
+          },
+          "voicePromptId": {
+            "type": "string"
+          },
+          "additionalComments": {
+            "type": "string"
+          },
+          "problemSeconds": {
+            "type": "number"
+          }
+        }
+      },
+      "model.IssueMessageResponse": {
+        "description": "Simple message response",
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Issue deleted"
+          }
+        }
+      },
+      "model.IssueErrorResponse": {
+        "description": "Error response from the issues endpoints",
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Issue not found"
           }
         }
       }

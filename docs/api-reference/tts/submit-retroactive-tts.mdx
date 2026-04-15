@@ -1,0 +1,17 @@
+---
+openapi: post /tts/retroactive
+---
+
+## When to use the retroactive endpoint
+
+`POST /tts/retroactive` accepts the same request body as [`POST /tts`](/api-reference/tts/generate-and-stream-tts-audio), but instead of streaming audio in the HTTP response it queues the generation and returns a URL. Fetch that URL later (with the same `x-api-key` header) to retrieve the audio via [`GET /tts/retroactive/{id}`](/api-reference/tts/get-retroactive-tts-audio).
+
+| Use this when | Use streaming `POST /tts` when |
+|---------------|--------------------------------|
+| You're generating a long script and don't need bytes immediately | You need audio to start playing as soon as possible |
+| You're orchestrating a batch workflow (e.g., dubbing, prerendering) | You're building a real-time interaction |
+| You want to retry the download without re-running generation | The request fits comfortably in a single HTTP response |
+
+<Note>
+  The returned URL embeds the generation `id`. Store it (or the `id`) so you can retrieve the audio later.
+</Note>
