@@ -185,44 +185,6 @@ with open("cloned_output.mp3", "wb") as f:
 
 ---
 
-### `tts_retro()` — Retroactive generation
-
-Submit a TTS request and receive a URL for later retrieval.
-
-```python
-response = client.tts_retro(
-    text="Generate this audio for later retrieval.",
-    voice_prompt_id="your-voice-id",
-    model="dd-etts-2.5",
-    locale="en-US"
-)
-
-audio_url = response["url"]
-print(f"Audio available at: {audio_url}")
-```
-
-**Returns:** `dict` with a `url` key pointing to the generated audio.
-
-#### Parameters
-
-<ParamField body="text" type="string" required>
-  Text to convert to speech.
-</ParamField>
-
-<ParamField body="voice_prompt_id" type="string" required>
-  Voice prompt ID to use.
-</ParamField>
-
-<ParamField body="model" type="string" default="dd-etts-2.5">
-  Model ID.
-</ParamField>
-
-<ParamField body="locale" type="string" default="en-US">
-  Language locale code.
-</ParamField>
-
----
-
 ## Async / WebSocket TTS
 
 ### `async_tts()` — Streaming generation

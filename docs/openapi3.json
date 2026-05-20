@@ -985,6 +985,303 @@
         }
       }
     },
+    "/usage/concurrent": {
+      "get": {
+        "operationId": "getUsageConcurrent",
+        "description": "Get daily concurrent-capacity usage for the authenticated customer. Returns usage rows from the billing system, broken down by date, model, and region.",
+        "tags": ["Usage"],
+        "summary": "Get daily concurrent usage",
+        "parameters": [
+          {
+            "description": "API Key",
+            "name": "x-api-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "dd-00000000000000000000000065c9cbfe"
+            },
+            "example": "dd-00000000000000000000000065c9cbfe"
+          },
+          {
+            "description": "Start date (inclusive)",
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "example": "2026-05-01"
+          },
+          {
+            "description": "End date (inclusive). Must be on or after `from`. Maximum range is 366 days.",
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "example": "2026-05-31"
+          },
+          {
+            "description": "Filter by model ID",
+            "name": "model_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by region",
+            "name": "region",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daily usage data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "customerId": {
+                      "type": "string"
+                    },
+                    "from": {
+                      "type": "string",
+                      "format": "date"
+                    },
+                    "to": {
+                      "type": "string",
+                      "format": "date"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "date": {
+                            "type": "string",
+                            "format": "date"
+                          },
+                          "customerId": {
+                            "type": "string"
+                          },
+                          "modelId": {
+                            "type": "string",
+                            "description": "Dedicated model route ID"
+                          },
+                          "region": {
+                            "type": "string"
+                          },
+                          "usageSecondsTimesSize": {
+                            "type": "number",
+                            "description": "GPU-instance-seconds (instance size × seconds)"
+                          },
+                          "concurrencyHours": {
+                            "type": "number",
+                            "description": "usageSecondsTimesSize / 3600"
+                          },
+                          "averageSize": {
+                            "type": "number",
+                            "description": "Time-weighted average instance count"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or invalid date range or filters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.APIError"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Query timed out — try a smaller date range",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.APIError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/usage/concurrent/by-model": {
+      "get": {
+        "operationId": "getUsageConcurrentByModel",
+        "description": "Get concurrent-capacity usage rolled up per model and region over a date range. Returns aggregated totals instead of daily rows.",
+        "tags": ["Usage"],
+        "summary": "Get usage aggregated by model",
+        "parameters": [
+          {
+            "description": "API Key",
+            "name": "x-api-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "dd-00000000000000000000000065c9cbfe"
+            },
+            "example": "dd-00000000000000000000000065c9cbfe"
+          },
+          {
+            "description": "Start date (inclusive)",
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "example": "2026-05-01"
+          },
+          {
+            "description": "End date (inclusive). Must be on or after `from`. Maximum range is 366 days.",
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "example": "2026-05-31"
+          },
+          {
+            "description": "Filter by model ID",
+            "name": "model_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by region",
+            "name": "region",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Aggregated usage data by model",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "customerId": {
+                      "type": "string"
+                    },
+                    "from": {
+                      "type": "string",
+                      "format": "date"
+                    },
+                    "to": {
+                      "type": "string",
+                      "format": "date"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "modelId": {
+                            "type": "string",
+                            "description": "Dedicated model route ID"
+                          },
+                          "region": {
+                            "type": "string"
+                          },
+                          "totalUsageSecondsTimesSize": {
+                            "type": "number",
+                            "description": "Total GPU-instance-seconds over the date range"
+                          },
+                          "totalConcurrencyHours": {
+                            "type": "number",
+                            "description": "totalUsageSecondsTimesSize / 3600"
+                          },
+                          "averageInstancesOverRange": {
+                            "type": "number",
+                            "description": "Average instance count over the full date range (including days with no usage)"
+                          },
+                          "daysWithUsage": {
+                            "type": "integer",
+                            "description": "Number of distinct days with usage in the range"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or invalid date range or filters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.APIError"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Query timed out — try a smaller date range",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.APIError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/issues": {
       "post": {
         "operationId": "createIssue",
