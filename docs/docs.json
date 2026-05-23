@@ -44,9 +44,7 @@
           {
             "group": "TTS",
             "pages": [
-              "api-reference/tts/generate-and-stream-tts-audio",
-              "api-reference/tts/submit-retroactive-tts",
-              "api-reference/tts/get-retroactive-tts-audio"
+              "api-reference/tts/generate-and-stream-tts-audio"
             ]
           },
           {

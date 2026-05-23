@@ -50,13 +50,6 @@ Returns audio stream (MP3 by default).
 
 Optional fields: `generationId`, `targetDuration`, `tempo` (0.5–2.0), `variance` (0.0–1.0), `seed`, `temperature` (0.0–1.0), `sampleRate` (8000/16000/22050/24000/32000/36000/44100/48000), `format` (mp3/opus/mulaw/wav), `promptBoost`, `superStretch`, `realtime`, `cleanAudio`, `autoGain`, `publish`, `voiceReference` (base64 for instant cloning), `accentControl` (`accentBaseLocale`, `accentLocale`, `accentRatio` 0.0–1.0), `performanceReferencePromptId`.
 
-#### Retroactive (async) TTS
-
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | /tts/retroactive | Submit async TTS. Same body as `POST /tts`. Returns `{ "url": "..." }` to fetch later. |
-| GET | /tts/retroactive/{id} | Fetch the generated audio (MP3) once ready. Returns 404 while still generating. |
-
 #### Voice endpoints
 
 | Method | Path | Description |
