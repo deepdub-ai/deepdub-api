@@ -101,8 +101,8 @@ Both `generateToBuffer` and `generateToFile` accept these options:
   Voice prompt ID to use for generation.
 </ParamField>
 
-<ParamField body="model" type="string" default="dd-etts-3.0">
-  Model ID. Available: `dd-etts-3.0`, `dd-etts-2.5`.
+<ParamField body="model" type="string" default="dd-etts-3.3">
+  Model ID. Available: `dd-etts-3.3` (current), `dd-etts-3.0`, `dd-etts-2.5` (legacy).
 </ParamField>
 
 <ParamField body="generationId" type="string">
@@ -127,10 +127,18 @@ Both `generateToBuffer` and `generateToFile` accept these options:
 
 <ParamField body="tempo" type="number">
   Playback speed multiplier (0.5–2.0).
+
+  <Warning>
+    `tempo` is no longer actively maintained. Use a slow or fast variant `voicePromptId` for the relevant speaker instead. Existing integrations will continue to work.
+  </Warning>
 </ParamField>
 
 <ParamField body="targetDuration" type="number">
   Target audio duration in seconds.
+
+  <Warning>
+    `targetDuration` is no longer actively maintained. Use a slow or fast variant `voicePromptId` for the relevant speaker instead. Existing integrations will continue to work.
+  </Warning>
 </ParamField>
 
 <ParamField body="seed" type="number">
@@ -175,7 +183,7 @@ Receive audio data incrementally for real-time playback:
 const buffer = await deepdub.generateToBuffer("Streaming audio in real-time!", {
   locale: "en-US",
   voicePromptId: "your-voice-id",
-  model: "dd-etts-3.0",
+  model: "dd-etts-3.3",
   onChunk: (chunk) => {
     console.log(`Received ${chunk.length} bytes`);
     // Stream to audio player, network, etc.
@@ -222,7 +230,7 @@ async function main() {
       deepdub.generateToFile(`./output_${i}.wav`, text, {
         locale: "en-US",
         voicePromptId: "your-voice-id",
-        model: "dd-etts-3.0",
+        model: "dd-etts-3.3",
       })
     )
   );
@@ -250,7 +258,7 @@ async function main() {
     {
       locale: "en-US",
       voicePromptId: "your-voice-id",
-      model: "dd-etts-3.0",
+      model: "dd-etts-3.3",
       temperature: 0.7,
       variance: 0.6,
       accentControl: {
@@ -287,7 +295,7 @@ async function main() {
   const buffer = await deepdub.generateToBuffer("Cloning a voice from audio.", {
     locale: "en-US",
     voiceReference,
-    model: "dd-etts-3.0",
+    model: "dd-etts-3.3",
     sampleRate: 44100,
   });
 

@@ -1,0 +1,65 @@
+---
+title: Prompting Techniques
+description: "How to control emphasis, emotion, and delivery through text formatting"
+---
+
+## Capitalization for emphasis
+
+The model responds to capitalization. Writing a word in ALL CAPS emphasizes that word in delivery.
+
+```
+"I'm REALLY sorry for the inconvenience."
+"This is the MOST important thing to remember."
+"You absolutely CANNOT miss this."
+```
+
+This works across all supported locales.
+
+## Reactions in text
+
+Some sounds can be triggered directly by writing them in the text:
+
+| Reaction | English text | Notes |
+|----------|-------------|-------|
+| Laugh | `hahaha` | Length affects laugh duration — `hahahaha` is longer |
+| Short laugh | `hehe` | Lighter, shorter variant |
+
+<Note>
+  Reaction support varies by language and model version. Test in the playground when targeting non-English locales.
+</Note>
+
+## voicePromptId switching for emotion
+
+The most powerful way to control emotional delivery is to use different `voicePromptId`s for different sentences. Each `voicePromptId` represents a specific speaker delivering in a specific emotional mode.
+
+See [Core Concepts](/concepts) for a full explanation of the emotion-per-speaker model.
+
+### Question intonation
+
+Most speakers have a dedicated "question" `voicePromptId`. Use it when your text is a question — otherwise the model reads it with statement intonation.
+
+```python
+question_voice_id = "..."  # question variant for your speaker
+statement_voice_id = "..."  # neutral variant
+
+sentences = [
+    ("How can I help you today?", question_voice_id),
+    ("I'm here to assist.", statement_voice_id),
+]
+
+for text, voice_id in sentences:
+    audio = client.tts(text=text, voice_prompt_id=voice_id, model="dd-etts-3.3", locale="en-US")
+```
+
+## Text normalization
+
+Deepdub normalizes certain input automatically, server-side:
+
+- Email addresses
+- Numbers, currency, and dates
+- Hebrew contextual nikud (model 3.3+)
+
+**Normalize these yourself before sending:**
+- Brand names and product names in non-English locales — test in the playground
+- Acronyms (e.g., "X V I E W" vs "XVIEW" — spelling affects pronunciation)
+- Mid-word language switches (e.g., an English product name in a Spanish sentence)

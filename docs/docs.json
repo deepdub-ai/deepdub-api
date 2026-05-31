@@ -26,7 +26,20 @@
         "groups": [
           {
             "group": "Getting Started",
-            "pages": ["introduction", "quickstart", "authentication", "voice-presets"]
+            "pages": ["introduction", "quickstart", "authentication"]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": ["concepts", "models", "voice-presets", "billing"]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "streaming-text-input",
+              "production-best-practices",
+              "prompting-techniques",
+              "errors"
+            ]
           },
           {
             "group": "SDKs",

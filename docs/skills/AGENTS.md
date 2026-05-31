@@ -19,7 +19,7 @@ This is a monorepo containing Deepdub's platform services:
 |--------|-----|
 | US (default) | `https://restapi.deepdub.ai/api/v1` |
 | EU | `https://eu-restapi.deepdub.ai/api/v1` |
-| WebSocket | `wss://wsapi.deepdub.ai/ws` |
+| WebSocket | `wss://wsapi.deepdub.ai/open` |
 
 ### Authentication
 
@@ -31,7 +31,7 @@ Store production keys in a secrets manager, never in code.
 
 ### Default Model
 
-`dd-etts-3.0` — always use this unless specified otherwise.
+`dd-etts-3.3` — always use this unless specified otherwise.
 
 ### REST Endpoints
 
@@ -41,7 +41,7 @@ Returns audio stream (MP3 by default).
 
 ```json
 {
-  "model": "dd-etts-3.0",
+  "model": "dd-etts-3.3",
   "targetText": "Hello world",
   "locale": "en-US",
   "voicePromptId": "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773"
@@ -81,12 +81,12 @@ Same but accepts multipart file upload.
 
 ### WebSocket API
 
-Connect to `wss://wsapi.deepdub.ai/ws` with `x-api-key` header.
+Connect to `wss://wsapi.deepdub.ai/open` with `x-api-key` header.
 
 ```json
 {
   "action": "generate",
-  "model": "dd-etts-3.0",
+  "model": "dd-etts-3.3",
   "targetText": "Hello",
   "locale": "en-US",
   "voicePromptId": "..."
@@ -127,7 +127,7 @@ client = DeepdubClient(api_key="YOUR_KEY")
 audio = client.tts(
     text="Hello world",
     voice_prompt_id="bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
-    model="dd-etts-3.0",
+    model="dd-etts-3.3",
     locale="en-US",
 )
 
@@ -141,7 +141,7 @@ Async streaming:
 
 ```python
 async with client.async_connect() as conn:
-    async for chunk in conn.async_tts(text="...", voice_prompt_id="...", model="dd-etts-3.0", format="mp3"):
+    async for chunk in conn.async_tts(text="...", voice_prompt_id="...", model="dd-etts-3.3", format="mp3"):
         audio.extend(chunk)
 ```
 
@@ -162,7 +162,7 @@ await deepdub.connect();
 const buffer = await deepdub.generateToBuffer("Hello world", {
   locale: "en-US",
   voicePromptId: "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
-  model: "dd-etts-3.0",
+  model: "dd-etts-3.3",
 });
 
 await deepdub.generateToFile("./output.wav", "Hello world", { ... });
@@ -183,10 +183,10 @@ Env var: `DEEPDUB_API_KEY`.
 | News Broadcaster (M) | hi-IN | `731912b7-7e63-4de9-acf6-b16c4bdb0c9e_prompt-V2-Newscaster-Headlines` |
 | Storyteller (F) | es-ES | `4202cbc4-5862-4af5-83f4-286ef487d593_reading-neutral` |
 
-Full docs: https://docs.deepdub.app
+Full docs: https://docs.deepdub.ai
 
 ## Coding Conventions
 
 - Python: prefer `dict.get()` over `if key in dict`; use `logger.exception()` not `logger.error(f"...{e}")`; write module-level pytest tests, not class-based
 - Store secrets in secrets manager, not env vars or code
-- Default TTS model is always `dd-etts-3.0`
+- Default TTS model is always `dd-etts-3.3`

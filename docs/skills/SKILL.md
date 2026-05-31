@@ -11,7 +11,7 @@ description: Deepdub Text-to-Speech API reference for building TTS integrations.
 |--------|-----|
 | US (default) | `https://restapi.deepdub.ai/api/v1` |
 | EU | `https://eu-restapi.deepdub.ai/api/v1` |
-| WebSocket | `wss://wsapi.deepdub.ai/ws` |
+| WebSocket | `wss://wsapi.deepdub.ai/open` |
 
 ## Authentication
 
@@ -23,7 +23,7 @@ Store production keys in a secrets manager, never in code.
 
 ## Default Model
 
-`dd-etts-3.0` — always use this unless the user specifies otherwise.
+`dd-etts-3.3` — always use this unless the user specifies otherwise.
 
 ---
 
@@ -35,7 +35,7 @@ Returns audio stream (MP3 by default).
 
 ```json
 {
-  "model": "dd-etts-3.0",
+  "model": "dd-etts-3.3",
   "targetText": "Hello world",
   "locale": "en-US",
   "voicePromptId": "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773"
@@ -93,7 +93,7 @@ client = DeepdubClient(api_key="YOUR_KEY")
 audio = client.tts(
     text="Hello world",
     voice_prompt_id="bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
-    model="dd-etts-3.0",
+    model="dd-etts-3.3",
     locale="en-US",
 )
 
@@ -112,7 +112,7 @@ async def stream():
         async for chunk in conn.async_tts(
             text="Streaming audio",
             voice_prompt_id="...",
-            model="dd-etts-3.0",
+            model="dd-etts-3.3",
             format="mp3",
         ):
             audio.extend(chunk)
@@ -152,7 +152,7 @@ await deepdub.connect();
 const buffer = await deepdub.generateToBuffer("Hello world", {
   locale: "en-US",
   voicePromptId: "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
-  model: "dd-etts-3.0",
+  model: "dd-etts-3.3",
 });
 
 // Or write directly to file
@@ -165,7 +165,7 @@ await deepdub.generateToFile("./output.wav", "Hello world", { ... });
 const buffer = await deepdub.generateToBuffer("Hello", {
   locale: "en-US",
   voicePromptId: "...",
-  model: "dd-etts-3.0",
+  model: "dd-etts-3.3",
   onChunk: (chunk) => console.log(`Received ${chunk.length} bytes`),
   headerless: true, // raw PCM without WAV header
 });
@@ -185,14 +185,14 @@ Env var: `DEEPDUB_API_KEY`.
 
 ## WebSocket API (raw)
 
-Connect to `wss://wsapi.deepdub.ai/ws` with header `x-api-key`.
+Connect to `wss://wsapi.deepdub.ai/open` with header `x-api-key`.
 
 Send JSON message, receive chunked audio:
 
 ```json
 {
   "action": "generate",
-  "model": "dd-etts-3.0",
+  "model": "dd-etts-3.3",
   "targetText": "Hello",
   "locale": "en-US",
   "voicePromptId": "..."
@@ -246,5 +246,4 @@ Common presets for quick testing:
 ## Full API Reference
 
 For complete OpenAPI spec, parameter details, and interactive docs:
-- Local: `~/src/deepdub-docs/openapi3.json`
-- Live: https://docs.deepdub.app
+- Live: https://docs.deepdub.ai

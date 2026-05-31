@@ -47,7 +47,7 @@ client = DeepdubClient(api_key="dd-00000000000000000000000065c9cbfe")
 audio = client.tts(
     text="Welcome to Deepdub!",
     voice_prompt_id="bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
-    model="dd-etts-3.0",
+    model="dd-etts-3.3",
     locale="en-US",
 )
 
@@ -66,7 +66,7 @@ async function main() {
   await deepdub.generateToFile("./output.wav", "Welcome to Deepdub!", {
     locale: "en-US",
     voicePromptId: "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
-    model: "dd-etts-3.0",
+    model: "dd-etts-3.3",
   });
 }
 

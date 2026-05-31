@@ -1,0 +1,117 @@
+---
+title: Streaming Text Input
+description: "Lowest-latency TTS by forwarding LLM tokens directly to Deepdub"
+---
+
+## The latency opportunity
+
+Most LLMs stream their output token by token. By default, voice-agent integrations wait for the LLM's full response and then send it as a single request to Deepdub TTS. This works — but leaves significant latency on the table.
+
+A faster pattern: open a single WebSocket connection per call, then forward each LLM token to Deepdub as it arrives. Deepdub starts synthesizing audio for the first sentence before the LLM has finished the last one. You receive audio back on the same stream and can start playing it to your customer almost immediately.
+
+**Expected time-to-first-audio with this pattern: 100–250 ms.**
+
+If your integration is seeing 500 ms or more, the most common cause is opening a new WebSocket per request instead of reusing one connection per call.
+
+## How it works
+
+1. Open `async_stream_connect()` at the start of the call.
+2. As LLM tokens arrive, call `async_stream_text(token)`.
+3. When the LLM response is complete, call `async_stream_end()`.
+4. Receive audio chunks from `async_stream_recv_audio()` and play them.
+
+## Python example (with OpenAI streaming)
+
+```python
+import asyncio
+from deepdub import DeepdubClient
+from openai import AsyncOpenAI
+
+deepdub = DeepdubClient(api_key="YOUR_DEEPDUB_KEY")
+openai_client = AsyncOpenAI(api_key="YOUR_OPENAI_KEY")
+
+async def stream_llm_to_tts(user_message: str):
+    async with deepdub.async_stream_connect(
+        model="dd-etts-3.3",
+        locale="en-US",
+        voice_prompt_id="bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
+        format="wav",
+        sample_rate=16000,
+    ) as conn:
+
+        async def push_text():
+            stream = await openai_client.chat.completions.create(
+                model="gpt-4",
+                messages=[{"role": "user", "content": user_message}],
+                stream=True,
+            )
+            async for chunk in stream:
+                token = chunk.choices[0].delta.content
+                if token:
+                    await conn.async_stream_text(token)
+            await conn.async_stream_end()
+
+        async def pull_audio():
+            audio = bytearray()
+            while True:
+                chunk = await conn.async_stream_recv_audio()
+                if chunk is None:
+                    break
+                audio.extend(chunk)
+            return bytes(audio)
+
+        _, audio_bytes = await asyncio.gather(push_text(), pull_audio())
+        return audio_bytes
+
+# Usage
+audio = asyncio.run(stream_llm_to_tts("Tell me a short story."))
+with open("response.wav", "wb") as f:
+    f.write(audio)
+```
+
+## Python example (without LLM — manual text streaming)
+
+```python
+import asyncio
+from deepdub import DeepdubClient
+
+client = DeepdubClient(api_key="YOUR_KEY")
+
+async def streaming_input():
+    async with client.async_stream_connect(
+        model="dd-etts-3.3",
+        locale="en-US",
+        voice_prompt_id="bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
+        format="wav",
+        sample_rate=16000,
+    ) as conn:
+        # Send text incrementally
+        await conn.async_stream_text("Hello, ")
+        await conn.async_stream_text("this text arrives ")
+        await conn.async_stream_text("token by token.")
+        await conn.async_stream_end()
+
+        # Receive audio
+        audio_data = bytearray()
+        while True:
+            audio = await conn.async_stream_recv_audio()
+            if audio is None:
+                break
+            audio_data.extend(audio)
+            print(f"Received chunk: {len(audio)} bytes")
+
+    with open("streamed.wav", "wb") as f:
+        f.write(audio_data)
+
+asyncio.run(streaming_input())
+```
+
+## Connection reuse rule
+
+Open the WebSocket **once at the start of the call**. Reuse it for every request inside that call. Close it when the call ends.
+
+Per-request socket opens can add 200–400 ms per request and dominate your latency numbers.
+
+## Supported formats for streaming input
+
+When using `ctx`/`isFinal` streaming input, only `wav`, `s16le`, and `mulaw` formats are supported. `mp3` and `opus` are not available in streaming input mode.

@@ -40,7 +40,7 @@ The `AGENTS.md` file contains the full Deepdub API reference that Claude Code re
 
 ```json
 {
-  "model": "dd-etts-3.0",
+  "model": "dd-etts-3.3",
   "targetText": "Hello world",
   "locale": "en-US",
   "voicePromptId": "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773"
@@ -54,7 +54,7 @@ from deepdub import DeepdubClient
 client = DeepdubClient(api_key="YOUR_KEY")
 audio = client.tts(
     text="Hello", voice_prompt_id="...",
-    model="dd-etts-3.0", locale="en-US",
+    model="dd-etts-3.3", locale="en-US",
 )
 ```
 
@@ -67,7 +67,7 @@ await deepdub.connect();
 const buffer = await deepdub.generateToBuffer("Hello", {
   locale: "en-US",
   voicePromptId: "...",
-  model: "dd-etts-3.0",
+  model: "dd-etts-3.3",
 });
 ```
 

@@ -1,0 +1,81 @@
+---
+title: Production Best Practices
+description: "Guidelines for voice-agent and call-center integrations"
+---
+
+## Parameters to avoid in production
+
+The following parameters are exposed for power-user experimentation. **Do not set them in production voice-agent or call-center integrations.** They cause the model to behave inconsistently or produce hallucinated output:
+
+| Parameter | Why to avoid |
+|-----------|-------------|
+| `tempo` | Deprecated — use slow/fast voicePromptId variants instead |
+| `targetDuration` | Deprecated — same reason as tempo |
+| `variance` | Increases randomness in voice character; voice agents need consistency |
+| `temperature` | Increases randomness in delivery; same reasoning |
+| `seed` | Pins deterministic behavior useful for offline testing, not live calls |
+| `promptBoost` | Can over-fit to the voice reference and produce uncanny output |
+
+If your integration is currently setting any of these and you're seeing quality issues, remove them and re-test.
+
+## WebSocket connection reuse
+
+**Open one WebSocket connection per call. Reuse it for every TTS request within that call. Close it when the call ends.**
+
+Per-request socket opens dominate latency. Customers seeing 500 ms+ time-to-first-audio when they expect 100–250 ms are almost always opening a new socket per request.
+
+```python
+# Wrong: new connection per request
+async def generate(text):
+    async with client.async_connect() as conn:  # expensive!
+        async for chunk in conn.async_tts(text=text, ...):
+            ...
+
+# Correct: reuse one connection for the call
+async def handle_call():
+    async with client.async_connect() as conn:
+        for utterance in call_utterances:
+            async for chunk in conn.async_tts(text=utterance, ...):
+                ...
+```
+
+## Use streaming text input for lowest latency
+
+Most LLM integrations wait for the full LLM response before sending to TTS. This adds unnecessary latency. See [Streaming Text Input](/streaming-text-input) for the pattern that achieves 100–250 ms time-to-first-audio.
+
+## Use voicePromptId variants for speed and emotion
+
+- For slower or faster delivery: use slow/normal/fast `voicePromptId` variants for the speaker instead of `tempo`.
+- For questions: switch to the question `voicePromptId` for that sentence.
+- For emotional shifts: switch `voicePromptId` between sentences — see [Core Concepts](/concepts).
+
+## Concurrency sizing
+
+1 concurrency unit supports roughly **4–6 simultaneous calls** (generation runs 3–5× faster than real-time). Do not size concurrency 1:1 with expected simultaneous callers.
+
+Provision new concurrency capacity **8–10 minutes** before you need it — AWS provisioning is not instant.
+
+## Always specify model explicitly
+
+Never rely on SDK defaults. Always set `model="dd-etts-3.3"` explicitly so your integration is not affected by SDK version changes.
+
+## Retry strategy
+
+On `429 RateLimit` errors, retry with exponential backoff. Do not retry on `402 InsufficientCredits` — top up your balance first.
+
+On `500` errors, retry once after a short delay. If failures persist, contact support with the `generationId` from the response.
+
+## Include generationId in every request
+
+Setting a `generationId` (UUID) on each request makes debugging and pronunciation issue reporting possible. Without it, support cannot investigate specific failures.
+
+```python
+import uuid
+audio = client.tts(
+    text="...",
+    voice_prompt_id="...",
+    model="dd-etts-3.3",
+    locale="en-US",
+    generation_id=str(uuid.uuid4()),
+)
+```

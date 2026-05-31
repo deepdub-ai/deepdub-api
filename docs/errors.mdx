@@ -1,0 +1,77 @@
+---
+title: Errors
+description: "Error codes and how to handle them"
+---
+
+## REST API errors
+
+REST API errors return JSON with `success: false` and a `message` field:
+
+```json
+{
+  "success": false,
+  "message": "Invalid or missing API key"
+}
+```
+
+| HTTP status | Error type | Description | Action |
+|-------------|------------|-------------|--------|
+| `400` | Bad Request | Invalid or missing parameters | Check your request body against the API reference |
+| `401` | Unauthorized | Invalid or missing API key | Verify your `x-api-key` header |
+| `402` | Payment Required | Insufficient credits | Top up your credit balance |
+| `403` | Forbidden | Limit reached (e.g., voice prompt quota) | Contact support |
+| `404` | Not Found | Resource not found (voice, issue, etc.) | Check the ID in your request |
+| `429` | Too Many Requests | Rate limit exceeded | Retry with exponential backoff |
+| `500` | Internal Server Error | Server-side failure | Retry once; contact support if it persists |
+
+## WebSocket errors
+
+WebSocket errors arrive as JSON messages on the stream:
+
+```json
+{
+  "error": "Rate limit exceeded",
+  "errorType": "RateLimit",
+  "generationId": "4da9902b-9141-4fb7-9efb-d616ce266ed9"
+}
+```
+
+| errorType | Description | Action |
+|-----------|-------------|--------|
+| `RateLimit` | Too many concurrent requests | Reduce concurrency or upgrade your plan |
+| `MaxExceeded` | Maximum generation minutes reached | Contact support |
+| `InsufficientCredits` | Account has insufficient credits | Top up your balance |
+| `InvalidInput` | Invalid request parameters | Check your request against the API reference |
+
+## Rate limits
+
+| Limit | Default |
+|-------|---------|
+| Concurrent requests per customer | 5 |
+| Concurrent requests per IP | 3 |
+
+Rate limits apply to concurrent in-flight requests, not requests per second. If you hit `RateLimit` errors, check how many requests are in-flight simultaneously.
+
+## Retry strategy
+
+- **`429 RateLimit`**: Retry with exponential backoff (e.g., 1s, 2s, 4s).
+- **`500`**: Retry once after 1–2 seconds. If the failure persists, contact support with your `generationId`.
+- **`402 InsufficientCredits`**: Do not retry — top up your balance first.
+- **`401 Unauthorized`**: Do not retry — fix your API key.
+
+## Including generationId
+
+Always set `generationId` on your requests. It makes debugging possible:
+
+```python
+import uuid
+audio = client.tts(
+    text="Hello",
+    voice_prompt_id="...",
+    model="dd-etts-3.3",
+    locale="en-US",
+    generation_id=str(uuid.uuid4()),
+)
+```
+
+When contacting support about an error, always include the `generationId`.

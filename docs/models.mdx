@@ -1,0 +1,29 @@
+---
+title: Models
+description: "Available TTS models and how to choose between them"
+---
+
+## Available models
+
+| Model | Status | Notes |
+|-------|--------|-------|
+| `dd-etts-3.3` | **Current default** | Recommended for all new integrations |
+| `dd-etts-3.2` | Stable | Used in PyPI SDK ≤ 0.1.27 as default |
+| `dd-etts-3.0` | Stable | Previous default on most docs surfaces |
+| `dd-etts-2.5` | Legacy | Still functional; not recommended |
+
+<Warning>
+  Always specify `model` explicitly in your requests. Relying on the SDK default can land you on an older model if your SDK version is behind. The current recommended model is `dd-etts-3.3`.
+</Warning>
+
+## Choosing a model
+
+Use `dd-etts-3.3` for all new integrations. It has the best voice quality, most stable Hebrew nikud handling (3.3+), and is the model actively maintained by the Deepdub team.
+
+## Model roadmap
+
+`dd-etts-3.4` is in development. Expected improvements: better handling of long-form content (50–70 sentences per request), improved coherence, and lower latency. Contact your CS rep for timeline.
+
+## Private model versioning
+
+Private (dedicated) model instances version independently per customer account. Your private model may be on a different version than the public model. Contact support if you need your private model updated to a newer version.
