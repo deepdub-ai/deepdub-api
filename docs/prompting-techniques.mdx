@@ -19,13 +19,15 @@ This works across all supported locales.
 
 Some sounds can be triggered directly by writing them in the text:
 
-| Reaction | English text | Notes |
-|----------|-------------|-------|
-| Laugh | `hahaha` | Length affects laugh duration — `hahahaha` is longer |
-| Short laugh | `hehe` | Lighter, shorter variant |
+| Reaction | English text | Hebrew text | Notes |
+|----------|-------------|-------------|-------|
+| Laugh | `hahaha` | `חחח` | Length affects laugh duration — `hahahaha` / `חחחח` is longer |
+| Short laugh | `hehe` | `חחח` | Lighter, shorter variant |
+| Gasp | `[gasp]` | — | English only |
+| Sigh | `[sigh]` | — | English only |
 
 <Note>
-  Reaction support varies by language and model version. Test in the playground when targeting non-English locales.
+  Reaction support varies by language and model version. Hebrew reactions use the `ח` character repeated. `[gasp]` and `[sigh]` are currently English-only. Test in the playground when targeting non-English locales.
 </Note>
 
 ## voicePromptId switching for emotion

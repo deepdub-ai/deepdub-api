@@ -41,7 +41,7 @@ client = DeepdubClient()
 </ParamField>
 
 <ParamField body="base_websocket_streaming_url" type="string" default="wss://wss.deepdub.ai/ws">
-  Base URL for the WebSocket streaming API. Falls back to `DEEPDUB_BASE_WEBSOCKET_STREAMING_URL` environment variable.
+  Base URL for the **streaming text input** WebSocket endpoint — used by `async_stream_connect()` when forwarding LLM tokens incrementally. This is a separate endpoint from `base_websocket_url`. Falls back to `DEEPDUB_BASE_WEBSOCKET_STREAMING_URL` environment variable. See [Streaming Text Input](/streaming-text-input).
 </ParamField>
 
 <ParamField body="eu" type="boolean" default="false">

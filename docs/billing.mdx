@@ -17,7 +17,24 @@ There is no reservation cost. If you generate nothing, you pay nothing.
 
 A concurrency package reserves guaranteed capacity for your account. You pay for that reservation whether or not you use it.
 
-For a full explanation of how concurrency billing works — including the reservation formula, effective throughput per unit, and provisioning time — see [Core Concepts: Concurrency and billing](/concepts#concurrency-and-billing).
+The formula is:
+
+```
+1,000 credits × available minutes per day × concurrency units = daily cost
+```
+
+**Example:** A `concurrency=1` reservation, available 24 hours a day, costs `1,000 × 1,440 × 1 = 1,440,000 credits/day` — regardless of whether you make zero requests or thousands. `concurrency=2` doubles it.
+
+<Warning>
+  If you see 1,440,000 (or a multiple) on your dashboard, this is your **capacity reservation cost** — not audio you generated. Concurrency billing is constant per day.
+</Warning>
+
+Key facts:
+- **1 concurrency unit supports ~4–6 simultaneous calls** — generation runs 3–5× faster than real-time, so one unit handles multiple callers at once.
+- **Time-to-first-audio:** typically 100–300 ms on a private model.
+- **Provisioning time:** spinning up new concurrency capacity takes ~8–10 minutes. Provision ahead of expected peaks.
+
+For further detail see [Core Concepts: Concurrency and billing](/concepts#concurrency-and-billing).
 
 ## Reading your usage dashboard
 
