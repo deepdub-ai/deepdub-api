@@ -1,0 +1,153 @@
+---
+title: Subtitle-Only Flow
+description: "Generate subtitles and transcripts from a source video without producing a dubbed audio track"
+---
+
+The Managed Dub API can produce text deliverables — subtitles, captions, and
+transcripts — **without** rendering or delivering a dubbed video. This is the
+*subtitle-only* (deliverables-only) flow.
+
+It uses the same `POST /dubbing/job` endpoint as a full dubbing job (see the
+**Submit Dubbing Job** endpoint in the API Reference). The difference is entirely
+in the request body: you request one
+or more **additional products** and omit the dubbed-video **export path**.
+
+## How it works
+
+A dubbing job always runs intake, transcription, and translation against the
+source video. What the job *delivers* depends on the request:
+
+| You provide | The job delivers |
+| --- | --- |
+| `exportPath` only | A dubbed video at that location |
+| `additionalProducts` only | The requested subtitle/transcript files — **no dubbed video** |
+| Both | A dubbed video **and** the requested deliverables |
+
+For a subtitle-only job you therefore set `additionalProducts` and leave
+`exportPath` unset.
+
+<Note>
+A request must contain at least one of `exportPath` or `additionalProducts`. A
+job with neither has nothing to deliver and will fail at delivery time.
+</Note>
+
+## Available subtitle & transcript products
+
+Each entry in `additionalProducts` has a `product` type and an `assetPath` — the
+`s3://` destination where Deepdub writes the finished file.
+
+| `product` | Deliverable |
+| --- | --- |
+| `SRT` | SubRip subtitles |
+| `WEBVTT` | WebVTT subtitles |
+| `SDH` | Subtitles for the Deaf and Hard of Hearing |
+| `ITT_SUBTITLES` | iTunes Timed Text (iTT) subtitles |
+| `TRANSCRIPT` | Plain-text transcript |
+
+## Request
+
+<Steps>
+
+<Step title="Build the request body">
+
+Provide the source video and the target locale, then list the subtitle/transcript
+products you want under `additionalProducts`. Do **not** set `exportPath`.
+
+```json
+{
+  "sourceLocale": "en-US",
+  "targetLocale": "es-ES",
+  "sourceVideoPath": "s3://your-bucket/input/episode-01.mp4",
+  "additionalProducts": [
+    {
+      "product": "SRT",
+      "assetPath": "s3://your-bucket/output/episode-01.es-ES.srt"
+    },
+    {
+      "product": "TRANSCRIPT",
+      "assetPath": "s3://your-bucket/output/episode-01.es-ES.txt"
+    }
+  ]
+}
+```
+
+</Step>
+
+<Step title="Submit the job">
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://dubbing.deepdub.app/dubbing/job \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -d '{
+    "sourceLocale": "en-US",
+    "targetLocale": "es-ES",
+    "sourceVideoPath": "s3://your-bucket/input/episode-01.mp4",
+    "additionalProducts": [
+      { "product": "SRT", "assetPath": "s3://your-bucket/output/episode-01.es-ES.srt" },
+      { "product": "TRANSCRIPT", "assetPath": "s3://your-bucket/output/episode-01.es-ES.txt" }
+    ]
+  }'
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    "https://dubbing.deepdub.app/dubbing/job",
+    headers={
+        "Content-Type": "application/json",
+        "x-api-key": "YOUR_API_KEY",
+    },
+    json={
+        "sourceLocale": "en-US",
+        "targetLocale": "es-ES",
+        "sourceVideoPath": "s3://your-bucket/input/episode-01.mp4",
+        "additionalProducts": [
+            {"product": "SRT", "assetPath": "s3://your-bucket/output/episode-01.es-ES.srt"},
+            {"product": "TRANSCRIPT", "assetPath": "s3://your-bucket/output/episode-01.es-ES.txt"},
+        ],
+    },
+)
+response.raise_for_status()
+request_id = response.json()["requestId"]
+print(f"Submitted subtitle-only job: {request_id}")
+```
+
+</CodeGroup>
+
+</Step>
+
+</Steps>
+
+### Response
+
+```json
+{
+  "requestId": "a1b2c3d4-5678-90ab-cdef-1234567890ab"
+}
+```
+
+Use the `requestId` to track the job.
+
+## Tracking status
+
+Poll the `GET /dubbing/job/{requestId}` endpoint (see **Get Dubbing Job** in the
+API Reference) to follow the job. Each entry in the returned `additionalProducts`
+reports its delivery `state`:
+
+- `PENDING_DELIVERY` — awaiting delivery
+- `DELIVERED` — written to the requested `assetPath`
+
+Once every requested product reports `DELIVERED`, the subtitle files are available
+at their `assetPath` locations.
+
+## Notes
+
+- All S3 paths (`sourceVideoPath`, `assetPath`) must start with `s3://` and be in a
+  bucket Deepdub is authorized to read from and write to.
+- Authenticate every request with the `x-api-key` header. Contact your account
+  manager to obtain an API key.
+- The base URL is `https://dubbing.deepdub.app`.

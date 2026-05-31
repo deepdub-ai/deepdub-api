@@ -96,7 +96,25 @@
       },
       {
         "tab": "Managed Dub API",
-        "openapi": "managed-dub.openapi.json"
+        "groups": [
+          {
+            "group": "API Reference",
+            "openapi": "managed-dub.openapi.json",
+            "pages": [
+              "POST /dubbing/job",
+              "GET /dubbing/job/{request_id}",
+              "GET /dubbing/jobs",
+              "PUT /dubbing/job/{request_id}",
+              "POST /dubbing/job/{request_id}/sources",
+              "PATCH /dubbing/job/{request_id}",
+              "DELETE /dubbing/job/{request_id}"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": ["managed-dub/subtitle-only-flow"]
+          }
+        ]
       }
     ]
   },

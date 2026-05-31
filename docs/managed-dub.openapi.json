@@ -325,7 +325,8 @@
           "AS_RECORDED_SCRIPT",
           "AUDIO_HINTS",
           "SOURCE_VIDEO",
-          "SOURCE_AUDIO"
+          "SOURCE_AUDIO",
+          "ITT_SUBTITLES"
         ],
         "title": "AdditionalProductsEnum",
         "description": "Type of deliverable product that can be requested alongside (or instead of) the dubbed video."
@@ -335,7 +336,8 @@
         "enum": [
           "AUDIO_HINTS",
           "CC_SDH",
-          "MISC"
+          "MISC",
+          "DFXP_SUBTITLES"
         ],
         "title": "AdditionalSourcesEnum",
         "description": "Type of additional source asset that can be attached to a dubbing job as input reference material."
@@ -490,7 +492,7 @@
                 "$ref": "#/components/schemas/AdditionalSourcesEnum"
               }
             ],
-            "description": "Type of source asset (e.g., 'AUDIO_HINTS', 'CC_SDH', 'MISC')"
+            "description": "Type of source asset (e.g., 'AUDIO_HINTS', 'CC_SDH', 'MISC', 'DFXP_SUBTITLES')"
           },
           "assetPath": {
             "type": "string",
@@ -755,12 +757,18 @@
           "ADAPTGEN_QC_FIX",
           "READY_FOR_DMX",
           "DMX_DONE",
+          "READY_FOR_MIXING",
+          "MIXING_IN_PROGRESS",
+          "READY_FOR_MIX_QC",
+          "MIX_QC_IN_PROGRESS",
           "DELIVERED_TO_CLIENT",
           "CLIENT_REFIX_PROCESSING",
           "CLIENT_REFIX_REJECTED",
           "CLIENT_REFIX",
           "FAILURE",
           "READY_FOR_REDMX",
+          "PARKED_REQUEST",
+          "PARKED_REQUEST_RECEIVED",
           "REDMX_DONE",
           "REDELIVERED_TO_CLIENT"
         ],
