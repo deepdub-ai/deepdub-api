@@ -16,6 +16,20 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/DubbingSubmissionRequest"
+              },
+              "example": {
+                "sourceLocale": "en-US",
+                "targetLocale": "es-ES",
+                "sourceVideoPath": "s3://your-bucket/input/episode-01.mp4",
+                "exportPath": "s3://your-bucket/output/episode-01.es-ES.mp4",
+                "workflowType": "AUTOMATED",
+                "mixType": "REPLACEMENT",
+                "additionalProducts": [
+                  {
+                    "product": "SRT",
+                    "assetPath": "s3://your-bucket/output/episode-01.es-ES.srt"
+                  }
+                ]
               }
             }
           },
@@ -104,6 +118,12 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/DubbingSubmissionUpdateRequest"
+              },
+              "example": {
+                "needByDate": "2024-07-01T12:00:00Z",
+                "metadata": {
+                  "priority": "high"
+                }
               }
             }
           },
@@ -186,6 +206,26 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/RedubbingSubmissionRequest"
+              },
+              "example": {
+                "generalFeedback": "Lip-sync drifts in the second act.",
+                "issues": [
+                  {
+                    "timestampStart": 12345,
+                    "timestampEnd": 23456,
+                    "category": "TIMING",
+                    "severity": "MAJOR",
+                    "label": "TIMING_LIPSYNC",
+                    "details": "Dialogue starts roughly 300ms late.",
+                    "timestamp": "2024-06-01T15:30:00Z"
+                  }
+                ],
+                "additionalProducts": [
+                  {
+                    "product": "SDH",
+                    "assetPath": "s3://your-bucket/output/episode-01.sdh.srt"
+                  }
+                ]
               }
             }
           },
@@ -276,6 +316,10 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/DubbingSubmissionAdditionalSource"
+              },
+              "example": {
+                "source": "CC_SDH",
+                "assetPath": "s3://your-bucket/input/episode-01.captions.dfxp"
               }
             }
           },
