@@ -190,7 +190,7 @@ Full docs: https://docs.deepdub.ai
 Deepdub has two consumption modes:
 
 - **Public queue** (default): pay per second of audio. No concurrency to manage. Trial API key uses this.
-- **Dedicated model** (enterprise): reserved capacity. Customer pays per reserved minute. Account-specific model name (e.g. `VoiceSpin 2`, `Insait 4`).
+- **Dedicated model** (enterprise): reserved capacity. Customer pays per reserved minute. Account-specific model name (e.g. `MyCompany 2`, `MyCompany 4`).
 
 For trial / new-integration code, always default to the public queue with model `dd-etts-3.3`.
 
