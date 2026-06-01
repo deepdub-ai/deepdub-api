@@ -185,6 +185,17 @@ Env var: `DEEPDUB_API_KEY`.
 
 Full docs: https://docs.deepdub.ai
 
+## Concurrency model
+
+Deepdub has two consumption modes:
+
+- **Public queue** (default): pay per second of audio. No concurrency to manage. Trial API key uses this.
+- **Dedicated model** (enterprise): reserved capacity. Customer pays per reserved minute. Account-specific model name (e.g. `VoiceSpin 2`, `Insait 4`).
+
+For trial / new-integration code, always default to the public queue with model `dd-etts-3.3`.
+
+Full explanation: https://docs.deepdub.ai/concurrency
+
 ## Coding Conventions
 
 - Python: prefer `dict.get()` over `if key in dict`; use `logger.exception()` not `logger.error(f"...{e}")`; write module-level pytest tests, not class-based

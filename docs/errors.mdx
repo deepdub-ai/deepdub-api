@@ -38,8 +38,8 @@ WebSocket errors arrive as JSON messages on the stream:
 
 | errorType | Description | Action |
 |-----------|-------------|--------|
-| `RateLimit` | Too many concurrent requests | Reduce concurrency or upgrade your plan |
-| `MaxExceeded` | Maximum generation minutes reached | Contact support |
+| `RateLimit` | Too many concurrent requests | Reduce concurrency or upgrade your plan. If this happens regularly, consider a dedicated model — see [Concurrency & Capacity](/concurrency). |
+| `MaxExceeded` | Maximum generation minutes reached | Contact support. Consider a dedicated model for sustained high-volume workloads — see [Concurrency & Capacity](/concurrency). |
 | `InsufficientCredits` | Account has insufficient credits | Top up your balance |
 | `InvalidInput` | Invalid request parameters | Check your request against the API reference |
 

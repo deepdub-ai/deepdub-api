@@ -46,6 +46,8 @@ API requests are subject to rate limiting based on your subscription plan:
 
 Rate limit errors return a `429` status code or a WebSocket error with `errorType: "RateLimit"`.
 
+These limits apply to the public queue. If you have a dedicated model, your concurrency is reserved separately and is not subject to these limits. See [Concurrency & Capacity](/concurrency).
+
 ## Credits
 
 TTS generation consumes credits based on the duration of generated audio. If your account runs out of credits, requests will return an `InsufficientCredits` error.

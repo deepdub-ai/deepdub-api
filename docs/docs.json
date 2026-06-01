@@ -30,7 +30,7 @@
           },
           {
             "group": "Core Concepts",
-            "pages": ["concepts", "models", "capacity-guide", "voice-presets", "billing"]
+            "pages": ["concepts", "models", "concurrency", "voice-presets", "billing"]
           },
           {
             "group": "Guides",

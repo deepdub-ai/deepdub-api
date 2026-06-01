@@ -1,0 +1,294 @@
+---
+title: "Concurrency & Capacity"
+description: "Public queue vs. dedicated model, how concurrency works, and how to size and provision for production voice agents"
+---
+
+There are two ways to consume the Deepdub TTS API. This page covers both — what each one is, how each is billed, how concurrency actually works, and how to pick (or combine) them.
+
+If you only read one section, read [The key insight](#the-key-insight): one concurrency slot serves several live calls, which is why sizing concurrency to your peak call count overprovisions by 4–6×.
+
+---
+
+## The two ways to consume Deepdub TTS
+
+<CardGroup cols={2}>
+  <Card title="Public queue" icon="cloud">
+    Shared inference pool. Send a request, get audio back. We manage capacity, scaling, and routing — you manage nothing.
+
+    - **You don't manage concurrency.** Every request is just an HTTP/WebSocket call.
+    - **Pay per second of audio generated.** 60 seconds of output = 1,000 credits.
+    - **Shared with all other customers.** Peaks elsewhere can affect your latency.
+  </Card>
+  <Card title="Dedicated model (enterprise)" icon="server">
+    A private inference pool reserved for your account. You request N concurrency, we hold capacity. You decide how much, and when.
+
+    - **You pick the concurrency level.** Scale up before peak, down after.
+    - **Pay per minute of reserved capacity.** 1 concurrency × 60 minutes = 60,000 credits.
+    - **Isolated from public load.** Predictable latency, your own queue.
+  </Card>
+</CardGroup>
+
+---
+
+## The definition
+
+**Concurrency is a commitment, not a call cap.**
+
+Concurrency = N means: at any moment, **N requests can be in flight simultaneously** without waiting.
+
+- If the queue is empty, the next request starts processing immediately — that's the SLA.
+- If N+1 requests arrive at exactly the same instant, request N+1 waits until one of the in-flight slots frees up.
+- Each slot processes one TTS request at a time. When a slot finishes streaming, it picks up the next message from the queue.
+
+<Warning>
+**Concurrency is not the same as "number of calls."** One concurrency slot can comfortably handle several live calls. We'll show why next.
+</Warning>
+
+---
+
+## How a request travels
+
+From your bot to streamed audio in five steps:
+
+<Steps>
+  <Step title="Bot sends request">
+    Your voice bot sends a TTS request over REST or WebSocket — text, voice ID, prompt, target gender.
+  </Step>
+  <Step title="Request lands in the queue">
+    If a slot is free, it's picked up instantly. If all N slots are busy, it waits.
+  </Step>
+  <Step title="Inference slot generates audio">
+    An inference slot generates the audio. Time-to-first-audio: **~200–300 ms**.
+  </Step>
+  <Step title="Audio streams back">
+    Audio streams to your bot as it's generated — typically 3× faster than the audio's playback length.
+  </Step>
+  <Step title="Slot frees up">
+    The slot frees up as soon as generation finishes — **even though your bot is still playing the audio to the caller**.
+  </Step>
+</Steps>
+
+The last step is the foundation of the next section.
+
+---
+
+## The key insight
+
+**One concurrency slot serves several live calls.**
+
+This is because two things are true about voice-bot traffic that aren't true about, say, a render farm:
+
+### Reason 1 — A call has silence
+
+The bot only speaks part of the time. While the caller is speaking, the model isn't generating anything for that call.
+
+In a typical conversation, the bot speaks roughly half the time. The rest is the caller's turn — and the model isn't busy for that call. Across N concurrent calls, the bot's speaking windows are staggered in time; they don't line up at the same millisecond. That stagger is what lets one slot serve multiple calls without any single caller waiting.
+
+### Reason 2 — Generation beats playback
+
+A 9-second sentence is generated in **~3 seconds**. The slot is free during the remaining 6 seconds while your bot streams the audio to the caller in real time.
+
+| Metric | Value |
+| --- | --- |
+| Generation speed | 3–5× faster than real-time playback |
+| Time to first audio | 200–300 ms |
+| Free time per request | ~67% of audio length |
+
+**Together: a slot is busy generating for only a fraction of a call's duration. The rest of the time it can serve other calls.**
+
+---
+
+## Worked example
+
+### Scenario A — Concurrency = 1, single 9-second sentence
+
+| Phase | Duration |
+| --- | --- |
+| Generation time | ~3 s |
+| Playback time | 9 s |
+| Slot free after | 3 s |
+| Slot idle for | 6 s (while the caller hears the audio) |
+
+During those 6 idle seconds, the same slot can accept a request from another call.
+
+### Scenario B — Concurrency = 100, how many live calls can you run?
+
+- 100 slots, each busy ~⅓ of the time per call
+- Add call-side silence (caller's turn): another ~½ reduction
+- **Effective capacity: several hundred concurrent calls**
+
+<Note>
+**Concurrency = 100 doesn't mean 100 calls max.** It means at most 100 sentences being generated at the same instant. When sizing, start from **peak concurrent generations**, not peak concurrent calls. We recommend instrumenting your in-flight count (see [What to build on your side](#what-to-build-on-your-side)) and tuning from real data.
+</Note>
+
+---
+
+## Provisioning — new concurrency takes minutes to come online
+
+Requesting concurrency is a REST call. We then spin up GPU instances on AWS to back those slots. Cold-start time depends on AWS capacity at that moment — usually a few minutes, sometimes longer for large jumps.
+
+| Time | What's happening |
+| --- | --- |
+| t = 0 | You call the concurrency-set endpoint |
+| +30 s | Deepdub schedules GPU instances on AWS |
+| +2–5 min | Models warm up; new slots come online |
+| ready | All N slots serve traffic instantly |
+
+<Tip>
+**Rule of thumb:** pre-warm capacity at least 5 minutes before your expected peak. For large jumps (10× and up), pre-warm 15 minutes ahead.
+</Tip>
+
+If you know you'll need concurrency = 100 at 9:00 AM Monday, request it at 8:45 AM. Don't wait for the load to arrive first.
+
+---
+
+## Billing — public queue
+
+Public: pay for every second of audio generated. We meter the **length of the audio output**. That's the only signal — we don't see calls, sessions, or users.
+
+**Rate:** 60 seconds of audio = 1,000 credits. Linear: 30 s = 500 credits, 6 s = 100 credits.
+
+If you generate 10 minutes of speech across a thousand calls, you pay for 10 minutes — regardless of how the requests were distributed.
+
+**Example day · public queue:**
+
+| Metric | Value |
+| --- | --- |
+| Calls handled | 4,000 |
+| Avg. bot speech / call | 45 seconds |
+| Total audio | 180,000 s (3,000 min) |
+| **Credits** | **3,000,000** |
+| You manage | Nothing — we handle capacity |
+
+---
+
+## Billing — dedicated model
+
+Dedicated: pay for **reserved capacity over time**. When you request concurrency, the clock starts. We bill per minute of reserved slot, whether or not you use it.
+
+**Rate:** 1 concurrency × 1 hour = 60,000 credits (i.e., 1,000 credits per concurrency per minute, regardless of throughput).
+
+The flip side: with high utilization, you get many more output minutes per credit than the public rate.
+
+**Example day · dedicated model:**
+
+| Metric | Value |
+| --- | --- |
+| Reserved concurrency | 10 slots |
+| Hours reserved | 10 hours (business day) |
+| Audio generated | Doesn't affect billing |
+| **Credits** | **6,000,000** (10 × 10 × 60,000) |
+| You manage | Concurrency level + when to scale |
+
+---
+
+## Side-by-side
+
+|  | Public queue | Dedicated model |
+| --- | --- | --- |
+| **Who shares it** | All Deepdub customers | Only you |
+| **Latency under load** | Can be affected by peaks elsewhere | Predictable — you own the queue |
+| **Billing model** | Per second of audio generated | Per minute of reserved slot |
+| **Concurrency management** | None — we handle it | You set N; pre-warm before peaks |
+| **Region availability** | US today; EU rolling out | US and EU available now |
+| **Best fit for** | Early-stage, bursty, low-volume, off-peak | Production voice bots, peak hours, latency-critical |
+
+---
+
+## The hybrid pattern — use both
+
+A common production setup combines them:
+
+- **Business hours →** dedicated model. Predictable latency, sized for your peak.
+- **Overnight / low volume →** route to the public queue. No reserved capacity wasted.
+- **Overflow →** if dedicated is saturated and a small delay is acceptable, spill to public.
+
+The split is enforced in your code by switching the endpoint and model name per request.
+
+**A typical week:**
+
+| When | Routing |
+| --- | --- |
+| Mon–Fri, 09:00–17:00 | Dedicated, N = 50 |
+| Mon–Fri, 17:00–09:00 | Public queue |
+| Sat–Sun, all day | Public queue |
+
+**Result:** predictable latency when it matters, no idle reserved capacity when it doesn't.
+
+---
+
+## Where it runs
+
+### Regions
+
+- **US:** both public and dedicated available.
+- **EU:** dedicated model available now; EU public queue rolling out.
+
+End-user latency depends on where your bots run, not where your callers are.
+
+### Endpoints and models
+
+- **Public:** `dd-etts-3.3` — current generally-available model. See [Models](/models).
+- **Dedicated:** named after your account (e.g., `VoiceSpin 2`, `Insait 4`). Bumps to v3, v4… as we release.
+- **Switching:** change the endpoint URL and the `model` parameter per request.
+
+Full URLs, auth, and CI/CD parameters live in [Authentication](/authentication) and the [API Reference](/api-reference/tts/generate-and-stream-tts-audio).
+
+---
+
+## What to build on your side
+
+For dedicated-model operations to work smoothly, instrument these on your end:
+
+<AccordionGroup>
+  <Accordion title="In-flight dashboard">
+    Track requests sent, time-of-send, time-of-first-audio, time-of-completion. Plot concurrent in-flight count over time. This is what tells you whether your current concurrency is right-sized.
+  </Accordion>
+  <Accordion title="Pre-warm schedule">
+    A cron or scheduler that bumps concurrency 5–15 min before known peaks, then scales down after. Tie this to your business calendar (campaigns, weekday peaks, scheduled releases).
+  </Accordion>
+  <Accordion title="Routing layer">
+    A flag per request to choose dedicated vs. public. Default to dedicated; fall back to public when dedicated is saturated or it's off-hours.
+  </Accordion>
+  <Accordion title="Pre-recorded greeting">
+    Cache the first sentence of each call as audio. Saves credits, locks in a perfect first impression, and hides any cold-start latency on the very first request of a call.
+  </Accordion>
+  <Accordion title="Generation IDs in logs">
+    Store the `generationId` returned per request. It's what we need to debug any issue end-to-end.
+  </Accordion>
+  <Accordion title="A/B testing harness">
+    Same agent, two voices or two prompts. Compare drop-off and call success to tune from real data.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Recap
+
+Six things to take away:
+
+1. **Concurrency is a commitment** to N parallel in-flight generations, not a cap on calls.
+2. **One slot serves several live calls** because a call has silence and generation is 3–5× faster than playback.
+3. **Public = pay per second of audio**, no management. **Dedicated = pay per minute of reserved slot**, you manage scale.
+4. **Pre-warm 5–15 minutes before peaks.** AWS GPU provisioning is not instant.
+5. **Hybrid is the production pattern:** dedicated during business hours, public for the rest.
+6. **Instrument in-flight count** on your side and log `generationId` on every request.
+
+---
+
+## See also
+
+<CardGroup cols={2}>
+  <Card title="Billing" icon="receipt" href="/billing">
+    Credit rates and worked examples for both billing models.
+  </Card>
+  <Card title="Models" icon="cube" href="/models">
+    The current public model, dedicated-model versioning, and roadmap.
+  </Card>
+  <Card title="Production best practices" icon="circle-check" href="/production-best-practices">
+    Parameters not to set, connection reuse, retry strategy, latency tuning.
+  </Card>
+  <Card title="Streaming text input" icon="bolt" href="/streaming-text-input">
+    The lowest-latency LLM-to-TTS pattern for voice agents.
+  </Card>
+</CardGroup>

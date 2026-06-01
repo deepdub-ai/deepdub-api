@@ -51,9 +51,9 @@ Most LLM integrations wait for the full LLM response before sending to TTS. This
 
 ## Concurrency sizing
 
-1 concurrency unit supports roughly **4–6 simultaneous calls** (generation runs 3–5× faster than real-time). Do not size concurrency 1:1 with expected simultaneous callers.
+Concurrency sizing and provisioning have their own page. See [Concurrency & Capacity](/concurrency) for the full explanation of why one concurrency unit supports roughly 4–6 simultaneous calls and how to time pre-warming around AWS provisioning windows.
 
-Provision new concurrency capacity **8–10 minutes** before you need it — AWS provisioning is not instant.
+Quick reference: pre-warm **5–15 minutes before peaks**. AWS GPU provisioning is not instant.
 
 ## Always specify model explicitly
 
