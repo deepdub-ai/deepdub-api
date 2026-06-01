@@ -9,7 +9,7 @@ A `voicePromptId` is not a single voice. It represents a specific speaker delive
 
 When you switch `voicePromptId`s between sentences in your application, you are switching the emotional delivery of the same speaker — not switching speakers.
 
-**This is the primary lever for emotional control.** Customers coming from tag-based systems (where `<happy>`, `<sad>` are inline tags) should think of `voicePromptId` switching as the equivalent: instead of inline tags, you select the prompt that matches the mood for each sentence.
+**This is the primary lever for emotional control.** Customers coming from tag-based systems (where `[happy]`, `[sad]` are inline tags) should think of `voicePromptId` switching as the equivalent: instead of inline tags, you select the prompt that matches the mood for each sentence.
 
 ### Question intonation
 
@@ -25,11 +25,11 @@ Inline tags that switch `voicePromptId` mid-sentence within a single request are
 
 ### Public model
 
-Shared infrastructure, pay-per-call. The simplest way to get started. Available in US and EU regions. Billing is consumption-based: you pay for what you generate.
+Shared infrastructure, pay-per-use. The simplest way to get started. Available in the US region today; EU public queue not yet live. Billing is consumption-based: you pay for what you generate. Rate limits depend on your subscription package.
 
 ### Private (dedicated) model
 
-A model instance reserved for your account. Named after your account (e.g., "MyCompany 2"). Versioning is independent per customer — your private model evolves separately from the public model. Billing is reservation-based (see [Concurrency and billing](#concurrency-and-billing)).
+A model instance reserved for your account. Named after your account (e.g., "MyCompany 2"). Versioning is independent per customer — your private model evolves separately from the public model. Billing is reservation-based, and you control your concurrency level via the API.
 
 ### When to choose
 
@@ -39,47 +39,4 @@ A model instance reserved for your account. Named after your account (e.g., "MyC
 | Steady high-volume voice agent or call-center | Private |
 | Both patterns | Hybrid (private during peak hours, public as overflow) |
 
----
-
-## Concurrency and billing
-
-For the full operational guide — including how one concurrency slot serves several live calls, AWS provisioning timing, the hybrid public+dedicated pattern, and what to instrument on your side — see [Concurrency & Capacity](/concurrency).
-
-### Concurrency is reservation, not consumption
-
-If you have a concurrency package, you pay for guaranteed capacity to start a generation immediately. The formula is:
-
-```
-1,000 credits × available minutes per day × concurrency units = daily cost
-```
-
-A concurrency=1 reservation, available 24 hours, costs `1,000 × 1,440 × 1 = 1,440,000 credits/day` — regardless of whether you make zero requests or thousands.
-
-<Warning>
-  If you see a large number on your dashboard (e.g., 1,440,000 credits), this is your **capacity reservation cost**, not audio you generated. Concurrency billing is constant.
-</Warning>
-
-### Effective throughput per concurrency unit
-
-Generation runs 3–5× faster than real-time (a 9-second sentence generates in ~3 seconds). **1 concurrency unit supports roughly 4–6 simultaneous calls.** Size your concurrency with that ratio in mind — not 1:1.
-
-### Time-to-first-audio
-
-Expected time-to-first-audio on a private model: **100–300 ms**.
-
-### Provisioning time
-
-Spinning up new concurrency capacity takes **8–10 minutes** (AWS provisioning + model warm-up). Provision ahead of expected peaks — do not expect instant scale-up.
-
-### Reading your usage dashboard
-
-The dashboard updates once per day at 12:00 AM UTC. Same-day numbers appear after rollover.
-
-| Row | What it means |
-|-----|---------------|
-| Concurrency usage | Your reservation cost. Constant per day at your fixed concurrency level. |
-| TTS generation (API) | Public model consumption. Varies by traffic. |
-
-### Public model billing
-
-Public model usage is the opposite of concurrency packages: you pay only for what you generate, measured in generated audio duration.
+For the full operational guide — billing formulas, sizing, provisioning timing, the hybrid pattern, and what to instrument on your side — see [Concurrency & Capacity](/concurrency). For credit and dashboard details, see [Billing](/billing).

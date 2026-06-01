@@ -9,7 +9,7 @@ Most LLMs stream their output token by token. By default, voice-agent integratio
 
 A faster pattern: open a single WebSocket connection per call, then forward each LLM token to Deepdub as it arrives. Deepdub starts synthesizing audio for the first sentence before the LLM has finished the last one. You receive audio back on the same stream and can start playing it to your customer almost immediately.
 
-**Expected time-to-first-audio with this pattern: 100–250 ms.**
+**Expected time-to-first-audio with this pattern: 100–300 ms.**
 
 If your integration is seeing 500 ms or more, the most common cause is opening a new WebSocket per request instead of reusing one connection per call.
 
@@ -32,7 +32,7 @@ openai_client = AsyncOpenAI(api_key="YOUR_OPENAI_KEY")
 
 async def stream_llm_to_tts(user_message: str):
     async with deepdub.async_stream_connect(
-        model="dd-etts-3.3",
+        model="dd-etts-3.2",
         locale="en-US",
         voice_prompt_id="bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
         format="wav",
@@ -79,7 +79,7 @@ client = DeepdubClient(api_key="YOUR_KEY")
 
 async def streaming_input():
     async with client.async_stream_connect(
-        model="dd-etts-3.3",
+        model="dd-etts-3.2",
         locale="en-US",
         voice_prompt_id="bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
         format="wav",
@@ -111,6 +111,54 @@ asyncio.run(streaming_input())
 Open the WebSocket **once at the start of the call**. Reuse it for every request inside that call. Close it when the call ends.
 
 Per-request socket opens can add 200–400 ms per request and dominate your latency numbers.
+
+## JavaScript example
+
+The Node SDK exposes the same streaming-input pattern. Open the connection once per call, push tokens as the LLM emits them, and consume audio chunks via the `onChunk` callback.
+
+```javascript
+const { DeepdubClient } = require("@deepdub/node");
+const OpenAI = require("openai");
+
+const deepdub = new DeepdubClient(process.env.DEEPDUB_API_KEY);
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+async function streamLlmToTts(userMessage) {
+  await deepdub.connect();
+
+  const audioChunks = [];
+
+  // Start the TTS streaming session
+  const tts = deepdub.streamInput({
+    model: "dd-etts-3.2",
+    locale: "en-US",
+    voicePromptId: "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
+    format: "wav",
+    sampleRate: 16000,
+    onChunk: (chunk) => audioChunks.push(chunk),
+  });
+
+  // Forward LLM tokens as they arrive
+  const llmStream = await openai.chat.completions.create({
+    model: "gpt-4",
+    messages: [{ role: "user", content: userMessage }],
+    stream: true,
+  });
+
+  for await (const part of llmStream) {
+    const token = part.choices[0]?.delta?.content;
+    if (token) await tts.pushText(token);
+  }
+
+  await tts.end();
+  return Buffer.concat(audioChunks);
+}
+
+(async () => {
+  const audio = await streamLlmToTts("Tell me a short story.");
+  require("fs").writeFileSync("response.wav", audio);
+})();
+```
 
 ## Supported formats for streaming input
 

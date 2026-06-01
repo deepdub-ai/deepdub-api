@@ -31,7 +31,7 @@ client = DeepdubClient(api_key="dd-00000000000000000000000065c9cbfe")
 audio = client.tts(
     text="Welcome to Deepdub! This is your first generated audio.",
     voice_prompt_id="50a537cf-1ec8-4714-b07e-c589ab76be4b",  # Promo / Commercials
-    model="dd-etts-3.3",
+    model="dd-etts-3.2",
     locale="en-US",
 )
 
@@ -71,7 +71,7 @@ async function main() {
     {
       locale: "en-US",
       voicePromptId: "50a537cf-1ec8-4714-b07e-c589ab76be4b",  // Promo / Commercials
-      model: "dd-etts-3.3",
+      model: "dd-etts-3.2",
     }
   );
 
@@ -93,7 +93,7 @@ curl -X POST https://restapi.deepdub.ai/api/v1/tts \
   -H "Content-Type: application/json" \
   -H "x-api-key: dd-00000000000000000000000065c9cbfe" \
   -d '{
-    "model": "dd-etts-3.3",
+    "model": "dd-etts-3.2",
     "targetText": "Welcome to Deepdub! This is your first generated audio.",
     "locale": "en-US",
     "voicePromptId": "50a537cf-1ec8-4714-b07e-c589ab76be4b"
@@ -113,7 +113,7 @@ Fine-tune your audio with accent blending and tuned parameters:
 audio = client.tts(
     text="This demonstrates accent blending with tuned parameters.",
     voice_prompt_id="bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",  # Storyteller
-    model="dd-etts-3.3",
+    model="dd-etts-3.2",
     locale="en-US",
     # Experimental parameters — do not use in production:
     temperature=0.7,
@@ -150,7 +150,7 @@ async def stream():
         async for chunk in conn.async_tts(
             text="Streaming audio in real time!",
             voice_prompt_id="bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
-            model="dd-etts-3.3",
+            model="dd-etts-3.2",
             locale="en-US",
             format="wav",
             sample_rate=16000,
@@ -176,7 +176,7 @@ async function main() {
   const buffer = await deepdub.generateToBuffer("Streaming audio in real time!", {
     locale: "en-US",
     voicePromptId: "50a537cf-1ec8-4714-b07e-c589ab76be4b",
-    model: "dd-etts-3.3",
+    model: "dd-etts-3.2",
     onChunk: (chunk) => {
       console.log(`Received ${chunk.length} bytes`);
     },

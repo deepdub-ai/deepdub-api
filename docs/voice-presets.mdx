@@ -12,12 +12,12 @@ Use the free trial API key to start generating speech instantly — no sign-up r
 dd-00000000000000000000000065c9cbfe
 ```
 ```bash Recommended Model
-dd-etts-3.3
+dd-etts-3.2
 ```
 </CodeGroup>
 
 <Warning>
-  The free trial key is rate-limited by IP address. For production use, [contact us](mailto:support@deepdub.ai) for a dedicated API key.
+  The free trial key is rate-limited by IP address. For production use, contact your Deepdub representative for a dedicated API key.
 </Warning>
 
 ---
@@ -27,7 +27,7 @@ dd-etts-3.3
 Below is a small sample of curated voice presets from our library of **thousands of voices**. Use the **Voice Prompt ID** with the `voicePromptId` parameter in your API calls.
 
 <Info>
-  These presets are just a starting point. Deepdub offers thousands of voices across dozens of languages and speaking styles. [Contact us](mailto:support@deepdub.ai) to explore the full voice catalog.
+  These presets are just a starting point. Deepdub offers thousands of voices across dozens of languages and speaking styles. Contact your Deepdub representative to explore the full voice catalog.
 </Info>
 
 ### English (EN)
@@ -103,7 +103,7 @@ client = DeepdubClient(api_key="dd-00000000000000000000000065c9cbfe")
 audio = client.tts(
     text="Once upon a time, in a land far far away, there lived a brave knight.",
     voice_prompt_id="bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
-    model="dd-etts-3.3",
+    model="dd-etts-3.2",
     locale="en-US",
 )
 
@@ -126,7 +126,7 @@ async function main() {
     {
       locale: "en-US",
       voicePromptId: "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
-      model: "dd-etts-3.3",
+      model: "dd-etts-3.2",
     }
   );
 }
@@ -140,7 +140,7 @@ curl -X POST https://restapi.deepdub.ai/api/v1/tts \
   -H "Content-Type: application/json" \
   -H "x-api-key: dd-00000000000000000000000065c9cbfe" \
   -d '{
-    "model": "dd-etts-3.3",
+    "model": "dd-etts-3.2",
     "targetText": "Once upon a time, in a land far far away, there lived a brave knight.",
     "locale": "en-US",
     "voicePromptId": "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773"
@@ -159,7 +159,7 @@ curl -X POST https://restapi.deepdub.ai/api/v1/tts \
 audio = client.tts(
     text="Take a deep breath in... and slowly let it out. Feel the tension leaving your body.",
     voice_prompt_id="c0866c1c-0731-45b2-9c90-21be974513b4",
-    model="dd-etts-3.3",
+    model="dd-etts-3.2",
     locale="en-US",
 )
 ```
@@ -168,7 +168,7 @@ audio = client.tts(
 ```javascript
 await deepdub.generateToFile("./meditation.wav",
   "Take a deep breath in... and slowly let it out. Feel the tension leaving your body.",
-  { locale: "en-US", voicePromptId: "c0866c1c-0731-45b2-9c90-21be974513b4", model: "dd-etts-3.3" }
+  { locale: "en-US", voicePromptId: "c0866c1c-0731-45b2-9c90-21be974513b4", model: "dd-etts-3.2" }
 );
 ```
 </Tab>
@@ -182,7 +182,7 @@ await deepdub.generateToFile("./meditation.wav",
 audio = client.tts(
     text="आज की ताज़ा ख़बरें: प्रधानमंत्री ने नई योजना की घोषणा की।",
     voice_prompt_id="731912b7-7e63-4de9-acf6-b16c4bdb0c9e_prompt-V2-Newscaster-Headlines",
-    model="dd-etts-3.3",
+    model="dd-etts-3.2",
     locale="hi-IN",
 )
 ```
@@ -191,7 +191,7 @@ audio = client.tts(
 ```javascript
 await deepdub.generateToFile("./news_hindi.wav",
   "आज की ताज़ा ख़बरें: प्रधानमंत्री ने नई योजना की घोषणा की।",
-  { locale: "hi-IN", voicePromptId: "731912b7-7e63-4de9-acf6-b16c4bdb0c9e_prompt-V2-Newscaster-Headlines", model: "dd-etts-3.3" }
+  { locale: "hi-IN", voicePromptId: "731912b7-7e63-4de9-acf6-b16c4bdb0c9e_prompt-V2-Newscaster-Headlines", model: "dd-etts-3.2" }
 );
 ```
 </Tab>
@@ -205,7 +205,7 @@ await deepdub.generateToFile("./news_hindi.wav",
 audio = client.tts(
     text="Érase una vez, en un reino muy lejano, vivía una princesa valiente.",
     voice_prompt_id="4202cbc4-5862-4af5-83f4-286ef487d593_reading-neutral",
-    model="dd-etts-3.3",
+    model="dd-etts-3.2",
     locale="es-ES",
 )
 ```
@@ -214,7 +214,7 @@ audio = client.tts(
 ```javascript
 await deepdub.generateToFile("./storyteller_es.wav",
   "Érase una vez, en un reino muy lejano, vivía una princesa valiente.",
-  { locale: "es-ES", voicePromptId: "4202cbc4-5862-4af5-83f4-286ef487d593_reading-neutral", model: "dd-etts-3.3" }
+  { locale: "es-ES", voicePromptId: "4202cbc4-5862-4af5-83f4-286ef487d593_reading-neutral", model: "dd-etts-3.2" }
 );
 ```
 </Tab>
@@ -228,7 +228,7 @@ await deepdub.generateToFile("./storyteller_es.wav",
 audio = client.tts(
     text="Entdecken Sie jetzt unser neuestes Angebot — nur für kurze Zeit verfügbar!",
     voice_prompt_id="24c20fcb-b04c-46fc-82d6-0eabac3cc563_prompt-V2-Commercial-Soft-Sell",
-    model="dd-etts-3.3",
+    model="dd-etts-3.2",
     locale="de-DE",
 )
 ```
@@ -237,7 +237,7 @@ audio = client.tts(
 ```javascript
 await deepdub.generateToFile("./promo_de.wav",
   "Entdecken Sie jetzt unser neuestes Angebot — nur für kurze Zeit verfügbar!",
-  { locale: "de-DE", voicePromptId: "24c20fcb-b04c-46fc-82d6-0eabac3cc563_prompt-V2-Commercial-Soft-Sell", model: "dd-etts-3.3" }
+  { locale: "de-DE", voicePromptId: "24c20fcb-b04c-46fc-82d6-0eabac3cc563_prompt-V2-Commercial-Soft-Sell", model: "dd-etts-3.2" }
 );
 ```
 </Tab>
@@ -251,7 +251,7 @@ await deepdub.generateToFile("./promo_de.wav",
 audio = client.tts(
     text="और गेंद जाती है... छक्का! क्या शानदार शॉट!",
     voice_prompt_id="4b51aefb-4d72-4e2f-8a41-6d546b23eba1_sports-commentator-high-energy",
-    model="dd-etts-3.3",
+    model="dd-etts-3.2",
     locale="hi-IN",
 )
 ```
@@ -260,7 +260,7 @@ audio = client.tts(
 ```javascript
 await deepdub.generateToFile("./sports_hi.wav",
   "और गेंद जाती है... छक्का! क्या शानदार शॉट!",
-  { locale: "hi-IN", voicePromptId: "4b51aefb-4d72-4e2f-8a41-6d546b23eba1_sports-commentator-high-energy", model: "dd-etts-3.3" }
+  { locale: "hi-IN", voicePromptId: "4b51aefb-4d72-4e2f-8a41-6d546b23eba1_sports-commentator-high-energy", model: "dd-etts-3.2" }
 );
 ```
 </Tab>

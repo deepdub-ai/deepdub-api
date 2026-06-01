@@ -31,7 +31,7 @@ Visit your [Deepdub dashboard](https://app.deepdub.ai) to generate an API key.
   Never expose your API key in client-side code or public repositories. Always store keys in environment variables or a secrets manager.
 </Warning>
 
-- Store API keys in a secrets manager (e.g., AWS Secrets Manager, HashiCorp Vault, GCP Secret Manager)
+- Store API keys in a secrets manager (e.g., HashiCorp Vault, or your cloud provider's secrets manager)
 - Rotate keys periodically
 - Use different keys for development and production environments
 
@@ -61,8 +61,8 @@ Deepdub operates in two regions:
 | Region | Base URL |
 |--------|----------|
 | US (default) | `https://restapi.deepdub.ai/api/v1` |
-| EU | `https://eu-restapi.deepdub.ai/api/v1` |
+| EU | `https://restapi.eu.deepdub.ai/api/v1` |
 
 <Warning>
-  The EU region is **not available** with the free trial API key. To access the EU region, [contact us](mailto:support@deepdub.ai) for a production API key.
+  The EU region is **not available** with the free trial API key. To access the EU region, contact your Deepdub representative for a production API key.
 </Warning>

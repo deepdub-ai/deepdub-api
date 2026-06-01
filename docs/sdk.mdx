@@ -45,7 +45,7 @@ client = DeepdubClient()
 </ParamField>
 
 <ParamField body="eu" type="boolean" default="false">
-  Use EU region endpoints (`eu-restapi.deepdub.ai`, `wsapi.eu.deepdub.ai`). Falls back to `DD_EU` environment variable (`"1"` to enable).
+  Use EU region endpoints (`restapi.eu.deepdub.ai`, `wsapi.eu.deepdub.ai`). Falls back to `DD_EU` environment variable (`"1"` to enable).
 </ParamField>
 
 ### Region endpoints
@@ -53,7 +53,7 @@ client = DeepdubClient()
 | Region | REST API | WebSocket API |
 |--------|----------|---------------|
 | **US (default)** | `https://restapi.deepdub.ai/api/v1` | `wss://wsapi.deepdub.ai/open` |
-| **EU** | `https://eu-restapi.deepdub.ai/api/v1` | `wss://wsapi.eu.deepdub.ai/open` |
+| **EU** | `https://restapi.eu.deepdub.ai/api/v1` | `wss://wsapi.eu.deepdub.ai/open` |
 
 ---
 
@@ -67,7 +67,7 @@ Generate speech and receive the complete audio as bytes.
 audio_data = client.tts(
     text="Hello, welcome to Deepdub!",
     voice_prompt_id="your-voice-id",
-    model="dd-etts-3.3",
+    model="dd-etts-3.2",
     locale="en-US"
 )
 
@@ -91,8 +91,8 @@ with open("output.mp3", "wb") as f:
   Audio reference for instant voice cloning. Accepts a file `Path`, raw `bytes`, or a base64-encoded `string`. Either this or `voice_prompt_id` must be provided.
 </ParamField>
 
-<ParamField body="model" type="string" default="dd-etts-3.3">
-  Model ID. Available models: `dd-etts-3.3` (current), `dd-etts-3.0`, `dd-etts-2.5` (legacy).
+<ParamField body="model" type="string" default="dd-etts-3.2">
+  Model ID. Available models: `dd-etts-3.2` (current), `dd-etts-3.0`, `dd-etts-2.5` (legacy).
 </ParamField>
 
 <ParamField body="locale" type="string" default="en-US">
@@ -113,10 +113,6 @@ with open("output.mp3", "wb") as f:
 
 <ParamField body="duration" type="float">
   Target audio duration in seconds. Mutually exclusive with `tempo`.
-
-  <Warning>
-    `duration` / `targetDuration` is no longer actively maintained. Use a slow or fast variant `voicePromptId` for the relevant speaker instead. Existing integrations will continue to work.
-  </Warning>
 </ParamField>
 
 <ParamField body="tempo" type="float">
@@ -136,7 +132,7 @@ with open("output.mp3", "wb") as f:
 </ParamField>
 
 <ParamField body="sample_rate" type="int">
-  Output sample rate in Hz. Supported: `8000`, `16000`, `22050`, `24000`, `32000`, `36000`, `44100`, `48000`.
+  Output sample rate in Hz. Supported: `8000`, `16000`, `22050`, `24000`, `44100`, `48000`.
 </ParamField>
 
 <ParamField body="accent_base_locale" type="string">
@@ -157,7 +153,7 @@ with open("output.mp3", "wb") as f:
 audio_data = client.tts(
     text="This demonstrates all available TTS parameters.",
     voice_prompt_id="your-voice-id",
-    model="dd-etts-3.3",
+    model="dd-etts-3.2",
     locale="en-US",
     format="mp3",
     temperature=0.7,
@@ -183,7 +179,7 @@ from pathlib import Path
 audio_data = client.tts(
     text="Cloning a voice from an audio sample.",
     voice_reference=Path("reference_audio.mp3"),
-    model="dd-etts-3.3",
+    model="dd-etts-3.2",
     locale="en-US",
 )
 
@@ -211,7 +207,7 @@ async def stream_audio():
         async for chunk in conn.async_tts(
             text="Streaming audio in real time!",
             voice_prompt_id="bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
-            model="dd-etts-3.3",
+            model="dd-etts-3.2",
             locale="en-US",
             format="wav",
             sample_rate=16000,
@@ -261,7 +257,7 @@ async def generate_multiple():
             async for chunk in conn.async_tts(
                 text=text,
                 voice_prompt_id="bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
-                model="dd-etts-3.3",
+                model="dd-etts-3.2",
                 locale="en-US",
                 format="wav",
                 sample_rate=16000,
@@ -295,7 +291,7 @@ client = DeepdubClient(api_key="dd-your-api-key")
 
 async def streaming_input():
     async with client.async_stream_connect(
-        model="dd-etts-3.3",
+        model="dd-etts-3.2",
         locale="en-US",
         voice_prompt_id="your-voice-id",
         format="wav",
@@ -512,6 +508,6 @@ except Exception as e:
 
 | Model ID | Description |
 |----------|-------------|
-| `dd-etts-3.3` | Current default — best quality, recommended for all new integrations |
+| `dd-etts-3.2` | Current default — best quality, recommended for all new integrations |
 | `dd-etts-3.0` | Stable |
 | `dd-etts-2.5` | Legacy — still functional, not recommended |

@@ -1,6 +1,6 @@
 ---
 title: Billing
-description: "Credits, concurrency packages, and usage dashboard"
+description: "Credits, billing modes, and your usage dashboard"
 ---
 
 ## Credits
@@ -9,43 +9,36 @@ All Deepdub usage is measured in credits. Credits are consumed differently depen
 
 ## Public model billing
 
-On the public model, you pay only for what you generate. Usage is measured in generated audio duration and converted to credits.
+On the public model you pay only for what you generate. Usage is measured in generated audio duration:
 
-There is no reservation cost. If you generate nothing, you pay nothing.
+- **Rate:** 60 seconds of generated audio = 1,000 credits.
 
-## Concurrency packages
+There is no reservation cost. If you generate nothing, you pay nothing. Rate limits on the public queue depend on your subscription package — larger packages allow more concurrent in-flight requests.
 
-A concurrency package reserves guaranteed capacity for your account. You pay for that reservation whether or not you use it.
+## Concurrency packages (dedicated model)
 
-The formula is:
+A concurrency package reserves guaranteed capacity for your account. You pay for the reservation whether or not you use it.
 
-```
-1,000 credits × available minutes per day × concurrency units = daily cost
-```
-
-**Example:** A `concurrency=1` reservation, available 24 hours a day, costs `1,000 × 1,440 × 1 = 1,440,000 credits/day` — regardless of whether you make zero requests or thousands. `concurrency=2` doubles it.
+- **Rate:** 1,000 credits per slot-minute. So `1,000 × minutes-reserved × concurrency units = total cost`.
 
 <Warning>
-  If you see 1,440,000 (or a multiple) on your dashboard, this is your **capacity reservation cost** — not audio you generated. Concurrency billing is constant per day.
+  If you see large constant daily numbers on your dashboard, this is your **capacity reservation cost** — not audio you generated. Concurrency billing is constant per day at your fixed reservation.
 </Warning>
 
-Key facts:
-- **1 concurrency unit supports ~4–6 simultaneous calls** — generation runs 3–5× faster than real-time, so one unit handles multiple callers at once.
-- **Time-to-first-audio:** typically 100–300 ms on a private model.
-- **Provisioning time:** spinning up new concurrency capacity takes ~8–10 minutes. Provision ahead of expected peaks.
-
-For further detail see [Core Concepts: Concurrency and billing](/concepts#concurrency-and-billing).
+For worked examples, sizing guidance, and the hybrid public+dedicated pattern, see [Concurrency & Capacity](/concurrency).
 
 ## Reading your usage dashboard
 
 The dashboard updates once per day at 12:00 AM UTC. Same-day numbers appear after rollover.
 
 <Info>
-  If you see a large number on your dashboard and you haven't generated much audio, it is most likely your concurrency reservation cost — not audio you generated. Concurrency billing is constant and appears as a fixed daily charge.
+  If you see a large number on your dashboard and you haven't generated much audio, it is most likely your concurrency reservation cost — not audio you generated.
 </Info>
 
-For how concurrency actually works under the hood — why one slot can serve several live calls, how to size and pre-warm capacity, and the public-vs-dedicated decision — see [Concurrency & Capacity](/concurrency).
+## Pricing
+
+Per-credit pricing is shown inside your subscription page once you sign in to the [Deepdub dashboard](https://app.deepdub.ai).
 
 ## Questions and plan changes
 
-Contact [support@deepdub.ai](mailto:support@deepdub.ai) to top up credits, adjust your concurrency package, or ask about enterprise plans.
+Contact your Deepdub representative to top up credits, adjust your concurrency package, or ask about enterprise plans.

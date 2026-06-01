@@ -18,7 +18,7 @@ This is a monorepo containing Deepdub's platform services:
 | Region | URL |
 |--------|-----|
 | US (default) | `https://restapi.deepdub.ai/api/v1` |
-| EU | `https://eu-restapi.deepdub.ai/api/v1` |
+| EU | `https://restapi.eu.deepdub.ai/api/v1` |
 | WebSocket | `wss://wsapi.deepdub.ai/open` |
 
 ### Authentication
@@ -31,7 +31,7 @@ Store production keys in a secrets manager, never in code.
 
 ### Default Model
 
-`dd-etts-3.3` — always use this unless specified otherwise.
+`dd-etts-3.2` — always use this unless specified otherwise.
 
 ### REST Endpoints
 
@@ -41,14 +41,14 @@ Returns audio stream (MP3 by default).
 
 ```json
 {
-  "model": "dd-etts-3.3",
+  "model": "dd-etts-3.2",
   "targetText": "Hello world",
   "locale": "en-US",
   "voicePromptId": "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773"
 }
 ```
 
-Optional fields: `generationId`, `targetDuration`, `tempo` (0.5–2.0), `variance` (0.0–1.0), `seed`, `temperature` (0.0–1.0), `sampleRate` (8000/16000/22050/24000/32000/36000/44100/48000), `format` (mp3/opus/mulaw/wav), `promptBoost`, `superStretch`, `realtime`, `cleanAudio`, `autoGain`, `publish`, `voiceReference` (base64 for instant cloning), `accentControl` (`accentBaseLocale`, `accentLocale`, `accentRatio` 0.0–1.0), `performanceReferencePromptId`.
+Optional fields: `generationId`, `targetDuration`, `tempo` (0.5–2.0), `variance` (0.0–1.0), `seed`, `temperature` (0.0–1.0), `sampleRate` (8000/16000/22050/24000/44100/48000), `format` (mp3/opus/mulaw/wav), `promptBoost`, `superStretch`, `realtime`, `cleanAudio`, `autoGain`, `publish`, `voiceReference` (base64 for instant cloning), `accentControl` (`accentBaseLocale`, `accentLocale`, `accentRatio` 0.0–1.0), `performanceReferencePromptId`.
 
 #### Voice endpoints
 
@@ -86,7 +86,7 @@ Connect to `wss://wsapi.deepdub.ai/open` with `x-api-key` header.
 ```json
 {
   "action": "generate",
-  "model": "dd-etts-3.3",
+  "model": "dd-etts-3.2",
   "targetText": "Hello",
   "locale": "en-US",
   "voicePromptId": "..."
@@ -127,7 +127,7 @@ client = DeepdubClient(api_key="YOUR_KEY")
 audio = client.tts(
     text="Hello world",
     voice_prompt_id="bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
-    model="dd-etts-3.3",
+    model="dd-etts-3.2",
     locale="en-US",
 )
 
@@ -141,7 +141,7 @@ Async streaming:
 
 ```python
 async with client.async_connect() as conn:
-    async for chunk in conn.async_tts(text="...", voice_prompt_id="...", model="dd-etts-3.3", format="mp3"):
+    async for chunk in conn.async_tts(text="...", voice_prompt_id="...", model="dd-etts-3.2", format="mp3"):
         audio.extend(chunk)
 ```
 
@@ -162,7 +162,7 @@ await deepdub.connect();
 const buffer = await deepdub.generateToBuffer("Hello world", {
   locale: "en-US",
   voicePromptId: "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
-  model: "dd-etts-3.3",
+  model: "dd-etts-3.2",
 });
 
 await deepdub.generateToFile("./output.wav", "Hello world", { ... });
@@ -192,7 +192,7 @@ Deepdub has two consumption modes:
 - **Public queue** (default): pay per second of audio. No concurrency to manage. Trial API key uses this.
 - **Dedicated model** (enterprise): reserved capacity. Customer pays per reserved minute. Account-specific model name (e.g. `MyCompany 2`, `MyCompany 4`).
 
-For trial / new-integration code, always default to the public queue with model `dd-etts-3.3`.
+For trial / new-integration code, always default to the public queue with model `dd-etts-3.2`.
 
 Full explanation: https://docs.deepdub.ai/concurrency
 
@@ -200,4 +200,4 @@ Full explanation: https://docs.deepdub.ai/concurrency
 
 - Python: prefer `dict.get()` over `if key in dict`; use `logger.exception()` not `logger.error(f"...{e}")`; write module-level pytest tests, not class-based
 - Store secrets in secrets manager, not env vars or code
-- Default TTS model is always `dd-etts-3.3`
+- Default TTS model is always `dd-etts-3.2`

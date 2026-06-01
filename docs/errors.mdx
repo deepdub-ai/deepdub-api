@@ -18,11 +18,11 @@ REST API errors return JSON with `success: false` and a `message` field:
 |-------------|------------|-------------|--------|
 | `400` | Bad Request | Invalid or missing parameters | Check your request body against the API reference |
 | `401` | Unauthorized | Invalid or missing API key | Verify your `x-api-key` header |
-| `402` | Payment Required | Insufficient credits | Top up your credit balance |
-| `403` | Forbidden | Limit reached (e.g., voice prompt quota) | Contact support |
+| `402` | Payment Required | Insufficient credits *(status code pending confirmation)* | Top up your credit balance |
+| `403` | Forbidden | Limit reached (e.g., voice prompt quota) | Contact your Deepdub representative |
 | `404` | Not Found | Resource not found (voice, issue, etc.) | Check the ID in your request |
 | `429` | Too Many Requests | Rate limit exceeded | Retry with exponential backoff |
-| `500` | Internal Server Error | Server-side failure | Retry once; contact support if it persists |
+| `500` | Internal Server Error | Server-side failure | Retry once; contact your Deepdub representative if it persists |
 
 ## WebSocket errors
 
@@ -38,40 +38,31 @@ WebSocket errors arrive as JSON messages on the stream:
 
 | errorType | Description | Action |
 |-----------|-------------|--------|
-| `RateLimit` | Too many concurrent requests | Reduce concurrency or upgrade your plan. If this happens regularly, consider a dedicated model — see [Concurrency & Capacity](/concurrency). |
-| `MaxExceeded` | Maximum generation minutes reached | Contact support. Consider a dedicated model for sustained high-volume workloads — see [Concurrency & Capacity](/concurrency). |
+| `RateLimit` | Too many concurrent requests | Reduce concurrency or upgrade your subscription package. If this happens regularly, consider a dedicated model — see [Concurrency & Capacity](/concurrency). |
+| `MaxExceeded` | Maximum generation minutes reached | Contact your Deepdub representative. Consider a dedicated model for sustained high-volume workloads — see [Concurrency & Capacity](/concurrency). |
 | `InsufficientCredits` | Account has insufficient credits | Top up your balance |
 | `InvalidInput` | Invalid request parameters | Check your request against the API reference |
 
 ## Rate limits
 
-| Limit | Default |
-|-------|---------|
-| Concurrent requests per customer | 5 |
-| Concurrent requests per IP | 3 |
+Public-queue rate limits are tied to your subscription package — larger packages allow more concurrent in-flight requests. If you exceed your limit you get a `429` (REST) or `RateLimit` (WebSocket) error.
 
-Rate limits apply to concurrent in-flight requests, not requests per second. If you hit `RateLimit` errors, check how many requests are in-flight simultaneously.
+If you need a higher limit or predictable capacity, see [Concurrency & Capacity](/concurrency) for the dedicated-model option.
 
 ## Retry strategy
 
 - **`429 RateLimit`**: Retry with exponential backoff (e.g., 1s, 2s, 4s).
-- **`500`**: Retry once after 1–2 seconds. If the failure persists, contact support with your `generationId`.
+- **`500`**: Retry once after 1–2 seconds. If the failure persists, contact your Deepdub representative with your `generationId`.
 - **`402 InsufficientCredits`**: Do not retry — top up your balance first.
 - **`401 Unauthorized`**: Do not retry — fix your API key.
 
-## Including generationId
+## generationId — save the response
 
-Always set `generationId` on your requests. It makes debugging possible:
+Every TTS response includes a `generationId`. **Save it.** It's what lets Deepdub trace exactly what was generated when you report a pronunciation issue, audio artifact, or any other quality problem.
 
-```python
-import uuid
-audio = client.tts(
-    text="Hello",
-    voice_prompt_id="...",
-    model="dd-etts-3.3",
-    locale="en-US",
-    generation_id=str(uuid.uuid4()),
-)
-```
+You have two options:
 
-When contacting support about an error, always include the `generationId`.
+- **Let Deepdub assign one.** Don't pass `generationId`; the response will include the value the server picked.
+- **Provide your own.** Pass any UUID you like via the `generationId` field — useful if you want it to match an internal trace ID.
+
+Either way, log the `generationId` from the response and include it when contacting your Deepdub representative about an issue.
