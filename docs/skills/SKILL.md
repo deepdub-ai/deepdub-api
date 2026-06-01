@@ -228,7 +228,7 @@ REST errors return JSON with `{ "success": false, "message": "..." }`.
 
 ## Voice Presets (sample)
 
-For the full voice presets list with IDs, see the [docs voice-presets page](../../../deepdub-docs/voice-presets.mdx) or the live documentation.
+For the full voice presets list with IDs, see the [live documentation](https://docs.deepdub.app/voice-presets).
 
 Common presets for quick testing:
 
@@ -246,5 +246,5 @@ Common presets for quick testing:
 ## Full API Reference
 
 For complete OpenAPI spec, parameter details, and interactive docs:
-- Local: `~/src/deepdub-docs/openapi3.json`
+- OpenAPI spec: `docs/openapi3.json` in this repo
 - Live: https://docs.deepdub.app
