@@ -1,0 +1,278 @@
+---
+title: Private vs Public — Capacity Guide
+description: "Two ways to consume Deepdub TTS: public queue and dedicated model. How each is billed, sized, and operated."
+---
+
+## Two ways to consume Deepdub TTS
+
+One decision. Here's what each option is, how each is billed, and how to pick.
+
+<CardGroup cols={2}>
+<Card title="Public queue" icon="globe">
+  Shared inference pool. Send TTS requests, get audio. We handle all the capacity. Pay only for audio generated.
+</Card>
+<Card title="Private (dedicated model)" icon="server">
+  Reserved inference units. You pick N concurrency units and own the queue. Pay per reserved minute.
+</Card>
+</CardGroup>
+
+---
+
+## Mode A — Public queue
+
+Shared inference pool. Send a request, get audio back. We manage capacity, scaling, and routing — you manage nothing.
+
+- **No concurrency management.** Every request is just an HTTP or WebSocket call.
+- **Pay per second of audio generated.** 60 seconds of output = 1,000 credits.
+- **Shared with all other customers.** Peaks elsewhere can affect your latency.
+
+---
+
+## Mode B — Dedicated model (Enterprise)
+
+A private inference pool reserved for you. You request N concurrency units and we hold capacity.
+
+- **You pick the concurrency level.** Scale up before peak, down after.
+- **Pay per minute of reserved capacity.** 1 concurrency for 60 min = 60,000 credits.
+- **Isolated from public load.** Predictable latency, your own queue.
+
+---
+
+## What concurrency actually means
+
+**Concurrency is a commitment, not a call cap.**
+
+`Concurrency = N` means: we guarantee that at any moment, N requests can be in flight simultaneously without waiting. If a slot is free, the next request starts processing immediately. If N+1 requests arrive at exactly the same instant, request N+1 waits until one of the in-flight slots frees up.
+
+<Info>
+  Concurrency is **not** the same as "number of simultaneous calls." One concurrency slot can comfortably handle several live calls. See the sizing section below.
+</Info>
+
+---
+
+## How a request travels
+
+<Steps>
+
+<Step title="Your bot sends a TTS request">
+  Text, voice ID, locale, and target gender — sent over REST or WebSocket.
+</Step>
+
+<Step title="The request lands in the queue">
+  If a slot is free, it's picked up instantly. If all N slots are busy, it waits.
+</Step>
+
+<Step title="An inference slot generates audio">
+  Time-to-first-audio: ~200–300 ms.
+</Step>
+
+<Step title="Audio streams back to your bot">
+  Typically 3–5× faster than the audio's playback length.
+</Step>
+
+<Step title="The slot frees up">
+  The slot is free as soon as generation finishes — even while your bot is still playing the audio to the caller.
+</Step>
+
+</Steps>
+
+---
+
+## Why one slot serves several live calls
+
+Two things are true about voice-bot traffic that mean concurrency goes much further than 1:1:
+
+### Reason 1 — A call has silence
+
+The bot only speaks part of the time. While the caller speaks, the model isn't generating anything for that call. In a typical conversation, the bot speaks roughly half the time.
+
+Across N concurrent calls, the bot's speaking windows are staggered in time — they don't line up at the same millisecond. That stagger is what lets one slot serve multiple calls without any single caller waiting.
+
+### Reason 2 — Generation beats playback
+
+A 9-second sentence is generated in ~3 seconds. The slot is free during the remaining 6 seconds while your bot streams the audio to the caller.
+
+| Metric | Value |
+|--------|-------|
+| Generation speed | 3–5× faster than playback |
+| Time to first audio | 200–300 ms |
+| Slot free time per request | ~67% of audio length |
+
+---
+
+## Sizing worked examples
+
+### Scenario A — Concurrency = 1
+
+| Step | Time |
+|------|------|
+| Generation time (9-second sentence) | ~3 s |
+| Playback time | 9 s |
+| Slot free after | 3 s |
+| Slot idle (can serve another call) | 6 s |
+
+During those 6 idle seconds, the same slot can accept a request from another call.
+
+### Scenario B — Concurrency = 100
+
+- 100 slots, each busy ~⅓ of the time per generation
+- Add call-side silence (caller's turn): another ~½ reduction
+- **Effective capacity: several hundred concurrent calls**
+
+<Warning>
+  Concurrency = 100 does not mean 100 calls maximum. It means at most 100 sentences being generated at the same instant. Size from peak concurrent **generations**, not peak concurrent calls.
+</Warning>
+
+**How to size:** Instrument your in-flight generation count and tune from real data. Start from your peak concurrent TTS requests — not your peak concurrent callers.
+
+---
+
+## Provisioning
+
+Requesting concurrency is a REST call. Deepdub then spins up GPU instances on AWS to back those slots.
+
+Cold-start time depends on AWS capacity at that moment — usually a few minutes, sometimes longer for large jumps.
+
+| Time | Event |
+|------|-------|
+| t = 0 | You call the concurrency-set endpoint |
+| +30s | Deepdub schedules GPU instances on AWS |
+| +2–5m | Models warm up; new slots come online |
+| Ready | All N slots serve traffic instantly |
+
+<Warning>
+  **Pre-warm capacity at least 5 minutes before your expected peak.** For large jumps (10× and up), pre-warm 15 minutes ahead. Do not wait for the load to arrive first.
+</Warning>
+
+---
+
+## Billing — public queue
+
+We meter the **length of the audio output**. That's the only signal — we don't see calls, sessions, or users.
+
+| Usage | Credits |
+|-------|---------|
+| 60 seconds of audio | 1,000 credits |
+| 30 seconds of audio | 500 credits |
+| 6 seconds of audio | 100 credits |
+
+**Example day (public model):**
+
+| Metric | Value |
+|--------|-------|
+| Calls handled | 4,000 |
+| Avg. bot speech per call | 45 seconds |
+| Total audio generated | 180,000 s (3,000 min) |
+| Credits consumed | 3,000,000 |
+| What you manage | Nothing |
+
+---
+
+## Billing — dedicated model
+
+When you request concurrency, the clock starts. We bill per **minute of reserved slot**, whether or not you use it.
+
+| Usage | Credits |
+|-------|---------|
+| 1 concurrency · 1 hour | 60,000 credits |
+| 1 concurrency · 1 day (24h) | 1,440,000 credits |
+
+The formula: `1,000 credits × concurrency units × reserved minutes = cost`
+
+<Info>
+  With high utilization, you get significantly more audio output per credit than the public rate — because generation is 3–5× faster than playback.
+</Info>
+
+**Example day (dedicated model):**
+
+| Metric | Value |
+|--------|-------|
+| Reserved concurrency | 10 slots |
+| Hours reserved | 10 hours (business day) |
+| Audio generated | Doesn't affect billing |
+| Credits | 6,000,000 (10 × 10h × 60,000) |
+| What you manage | Concurrency level + when to scale |
+
+---
+
+## Public vs. dedicated at a glance
+
+| | Public queue | Dedicated model |
+|--|-------------|-----------------|
+| **Who shares it** | All Deepdub customers | Only you |
+| **Latency under load** | Can be affected by peaks elsewhere | Predictable — you own the queue |
+| **Billing model** | Per second of audio generated | Per minute of reserved slot |
+| **Concurrency management** | None — we handle it | You set N; pre-warm before peaks |
+| **Region availability** | US · EU (rolling out) | US and EU |
+| **Best fit for** | Early-stage, bursty, low-volume, off-peak | Production voice bots, peak hours, latency-critical |
+
+---
+
+## The hybrid pattern
+
+Use both. Dedicated for peak, public for the long tail.
+
+A common production setup:
+
+- **Business hours → dedicated model.** Predictable latency, sized for your peak.
+- **Overnight / low volume → public queue.** No reserved capacity wasted.
+- **Overflow → public queue.** If dedicated is saturated and a delay is acceptable, spill to public.
+
+The split is enforced in your code by switching the endpoint and model name per request.
+
+**Example week:**
+
+| Time | Mode |
+|------|------|
+| Mon–Fri, 09:00–17:00 | Dedicated (N = 50) |
+| Evenings + weekends | Public queue |
+
+---
+
+## Regions
+
+| Region | Public queue | Dedicated model |
+|--------|-------------|-----------------|
+| US | Available | Available |
+| EU | Rolling out | Available |
+
+The free trial API key is only available on the US public queue. Contact [support@deepdub.ai](mailto:support@deepdub.ai) for production keys and EU access.
+
+---
+
+## What to build on your side
+
+<AccordionGroup>
+
+<Accordion title="In-flight dashboard">
+  Track requests sent, time-of-send, time-of-first-audio, and time-of-completion. Plot concurrent in-flight count over time. This is your primary sizing signal.
+</Accordion>
+
+<Accordion title="Pre-warm schedule">
+  A cron or scheduler that bumps concurrency 5–15 minutes before known peaks, then scales down after.
+</Accordion>
+
+<Accordion title="Routing layer">
+  A flag per request to choose dedicated vs. public. Default to dedicated; fall back to public when saturated or off-hours.
+</Accordion>
+
+<Accordion title="Pre-recorded greeting">
+  Cache the first sentence as audio. Saves credits, locks in a perfect first impression, and hides any cold-start latency.
+</Accordion>
+
+<Accordion title="generationId logging">
+  Store the `generationId` returned per request. It's what Deepdub needs to debug any issue end-to-end. See [Errors](/errors) for guidance.
+</Accordion>
+
+</AccordionGroup>
+
+---
+
+## Key takeaways
+
+1. **Concurrency is a commitment to N parallel in-flight generations** — not a cap on calls.
+2. **One slot serves several live calls** because calls have silence and generation is 3–5× faster than playback.
+3. **Public = pay per second of audio, no management.** Dedicated = pay per minute of reserved slot, you manage scale.
+4. **Pre-warm 5–15 minutes before peaks.** GPU provisioning is not instant.
+5. **Hybrid is common.** Dedicated during business hours, public overnight.
+6. **Size from generations, not calls.** Instrument first, then tune.
