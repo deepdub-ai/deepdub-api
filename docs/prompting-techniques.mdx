@@ -21,13 +21,14 @@ Some sounds can be triggered directly by writing them in the text:
 
 | Reaction | English text | Hebrew text | Notes |
 |----------|-------------|-------------|-------|
-| Laugh | `hahaha` | `חחח` | Length affects laugh duration — `hahahaha` / `חחחח` is longer |
+| Laugh (textual) | `hahaha` | `חחח` | Length affects laugh duration — `hahahaha` / `חחחח` is longer |
 | Short laugh | `hehe` | `חחח` | Lighter, shorter variant |
+| Laugh (tag) | `[laugh]` | — | Works well as an inline tag |
 | Gasp | `[gasp]` | — | English only |
 | Sigh | `[sigh]` | — | English only |
 
 <Note>
-  Reaction support varies by language and model version. Hebrew reactions use the `ח` character repeated. `[gasp]` and `[sigh]` are currently English-only. Test in the playground when targeting non-English locales.
+  Reaction support varies by language and model version. Hebrew reactions use the `ח` character repeated. `[laugh]`, `[gasp]`, and `[sigh]` are currently English-only. Test in the playground when targeting non-English locales.
 </Note>
 
 ## voicePromptId switching for emotion
@@ -59,9 +60,24 @@ Deepdub normalizes certain input automatically, server-side:
 
 - Email addresses
 - Numbers, currency, and dates
-- Hebrew contextual nikud (model 3.3+)
+- Hebrew contextual nikud (model 3.2+)
+- Stress placement in supported languages
+
+### Hebrew specifics
+
+- **Currency:** `298 שקלים` and `298 ש"ח` are read correctly. `298 ₪` is not yet supported — a fix is planned.
+- **Acronyms:** Hebrew acronym handling is partial. Spell out anything important until coverage improves.
 
 **Normalize these yourself before sending:**
 - Brand names and product names in non-English locales — test in the playground
 - Acronyms (e.g., "X V I E W" vs "XVIEW" — spelling affects pronunciation)
 - Mid-word language switches (e.g., an English product name in a Spanish sentence)
+
+## Voice cloning — reference audio requirements
+
+When you clone a voice via `voiceReference` (instant clone) or `add_voice()` (persistent clone), the quality of the reference clip determines the quality of the clone. Use a sample that meets all of these:
+
+- **Length:** up to **6 seconds** — longer doesn't help and can hurt
+- **Speakers:** single-speaker only — no overlapping voices
+- **Background:** no music, no noise — clean room or studio recording
+- **Audio quality:** clear, well-recorded sound; no heavy compression artifacts

@@ -55,10 +55,6 @@ Send a JSON message on the WebSocket connection:
 
 <ParamField body="tempo" type="number">
   Playback speed multiplier (0.5-2.0).
-
-  <Warning>
-    `tempo` is no longer actively maintained. Use a slow or fast variant `voicePromptId` for the relevant speaker instead. Existing integrations will continue to work.
-  </Warning>
 </ParamField>
 
 <ParamField body="variance" type="number">
@@ -312,20 +308,22 @@ async function streamingTts() {
   await deepdub.connect();
 
   const chunks = [];
-  const buffer = await deepdub.generateToBuffer("Hello, this is streamed text input.", {
+  for await (const chunk of deepdub.streamTts("Hello, this is streamed text input.", {
     locale: "en-US",
     voicePromptId: "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
     model: "dd-etts-3.2",
     format: "wav",
     sampleRate: 16000,
-    onChunk: (chunk) => {
-      chunks.push(chunk);
-      console.log(`Received chunk: ${chunk.length} bytes`);
-    },
-  });
+  })) {
+    chunks.push(chunk);
+    console.log(`Received chunk: ${chunk.length} bytes`);
+  }
 
-  fs.writeFileSync("output.wav", buffer);
-  console.log(`Total audio: ${buffer.length} bytes`);
+  const audio = Buffer.concat(chunks);
+  fs.writeFileSync("output.wav", audio);
+  console.log(`Total audio: ${audio.length} bytes`);
+
+  deepdub.disconnect();
 }
 
 streamingTts();

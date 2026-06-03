@@ -117,10 +117,6 @@ with open("output.mp3", "wb") as f:
 
 <ParamField body="tempo" type="float">
   Playback speed multiplier. Mutually exclusive with `duration`.
-
-  <Warning>
-    `tempo` is no longer actively maintained. Use a slow or fast variant `voicePromptId` for the relevant speaker instead. Existing integrations will continue to work.
-  </Warning>
 </ParamField>
 
 <ParamField body="seed" type="int">
@@ -232,8 +228,8 @@ Same as `tts()`, plus:
   Optional UUID for request tracking. Auto-generated if not provided.
 </ParamField>
 
-<ParamField body="target_gender" type="string">
-  Target gender for the output voice.
+<ParamField body="target_gender" type="string" default="male">
+  Target gender for the output voice. Defaults to `male` if not specified.
 </ParamField>
 
 <ParamField body="verbose" type="bool" default="false">
