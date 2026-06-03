@@ -25,29 +25,96 @@
         "tab": "Documentation",
         "groups": [
           {
-            "group": "Getting Started",
-            "pages": ["introduction", "quickstart", "authentication"]
-          },
-          {
-            "group": "Core Concepts",
-            "pages": ["concepts", "models", "concurrency", "voice-presets", "billing"]
-          },
-          {
-            "group": "Guides",
+            "group": "⚡ Quick Links",
             "pages": [
-              "streaming-text-input",
-              "production-best-practices",
-              "prompting-techniques",
-              "errors"
+              "voice-presets",
+              "quick-reference",
+              "errors",
+              "concurrency",
+              "production-best-practices"
             ]
           },
           {
-            "group": "SDKs",
-            "pages": ["sdk", "sdk-javascript"]
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "authentication",
+              "choose-your-path"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts",
+              "voice-prompt-model",
+              "concurrency",
+              "models",
+              "billing"
+            ]
+          },
+          {
+            "group": "Build a Voice Agent",
+            "pages": [
+              "voice-agent/overview",
+              "voice-agent/protocols",
+              "streaming-text-input",
+              "voice-agent/voice-selection",
+              "voice-agent/emotion-and-reactions",
+              "voice-agent/gender-detection",
+              "voice-agent/greetings-and-caching",
+              "voice-agent/complete-example"
+            ]
+          },
+          {
+            "group": "Build for Content & Dubbing",
+            "pages": [
+              "content/overview",
+              "content/long-form",
+              "voice-cloning",
+              "content/retroactive",
+              "voice-presets"
+            ]
+          },
+          {
+            "group": "Languages & Voices",
+            "pages": [
+              "languages",
+              "languages/supported",
+              "languages/configuration",
+              "languages/accent-control",
+              "languages/text-normalization",
+              "languages/pronunciation"
+            ]
+          },
+          {
+            "group": "Operate in Production",
+            "pages": [
+              "production-best-practices",
+              "production/migration",
+              "production/observability",
+              "production/deployment",
+              "production/sla"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "errors",
+              "glossary",
+              "reference/deprecated",
+              "reference/issues",
+              "quick-reference",
+              "sdk",
+              "sdk-javascript"
+            ]
           },
           {
             "group": "AI Agent Integration",
-            "pages": ["cursor-skill", "claude-code"]
+            "pages": [
+              "cursor-skill",
+              "claude-code"
+            ]
           }
         ]
       },
@@ -61,13 +128,6 @@
             ]
           },
           {
-            "group": "Gender Detection",
-            "pages": [
-              "api-reference/gender-detection/classify-speaker-gender",
-              "api-reference/gender-detection/classify-speaker-gender-file-upload"
-            ]
-          },
-          {
             "group": "Voice",
             "pages": [
               "api-reference/voice/get-voice-prompts",
@@ -75,6 +135,13 @@
               "api-reference/voice/update-a-voice-prompt",
               "api-reference/voice/get-a-voice-prompt-by-id",
               "api-reference/voice/delete-a-voice-prompt"
+            ]
+          },
+          {
+            "group": "Gender Detection",
+            "pages": [
+              "api-reference/gender-detection/classify-speaker-gender",
+              "api-reference/gender-detection/classify-speaker-gender-file-upload"
             ]
           },
           {
@@ -103,13 +170,19 @@
           },
           {
             "group": "WebSocket",
-            "pages": ["api-reference/websocket/overview"]
+            "pages": [
+              "api-reference/websocket/overview"
+            ]
           }
         ]
       },
       {
         "tab": "Managed Dub API",
         "openapi": "managed-dub.openapi.json"
+      },
+      {
+        "tab": "Changelog",
+        "pages": ["changelog"]
       }
     ]
   },
