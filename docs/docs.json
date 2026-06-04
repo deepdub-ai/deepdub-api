@@ -178,7 +178,19 @@
       },
       {
         "tab": "Managed Dub API",
-        "openapi": "managed-dub.openapi.json"
+        "groups": [
+          {
+            "group": "API Reference",
+            "openapi": "managed-dub.openapi.json"
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "managed-dub/overview",
+              "managed-dub/subtitle-only-flow"
+            ]
+          }
+        ]
       },
       {
         "tab": "Changelog",
