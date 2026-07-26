@@ -201,23 +201,38 @@ Multiple attributes can be set in one tag:
 - Tags may be split across multiple `stream-text` messages — incomplete tags are buffered until the closing `>` arrives.
 - Closing tags (`</config>`) are stripped and ignored.
 
-## `end-stream`, `cancel`, and `ping`
+## `end-stream`
 
-<ParamField body="end-stream" type="action">
-  Flushes any remaining buffered text and marks the current turn as finished. The last audio chunk of the turn is tagged with `"isFinal": true`.
-</ParamField>
+`end-stream` marks the end of a **turn** — a logical unit of text that should be spoken as one continuous utterance (for example, a single assistant reply).
 
-<ParamField body="cancel" type="action">
-  Aborts in-flight generation and clears all buffers. The server emits a synthetic finish message with `"isCancelled": true`.
-</ParamField>
+Because the server buffers and batches incoming text to optimize prosody and latency, it does not know when you have finished sending text unless you tell it. `end-stream` does two things:
 
-<ParamField body="ping" type="action">
-  Keepalive. The server replies with `{"action": "pong"}`.
-</ParamField>
+1. **Flushes** any text still held in the buffer, so the tail of your turn is synthesized even if it was shorter than a normal batch.
+2. **Closes the turn**, so the final audio chunk is tagged with `"isFinal": true`. This is the signal your client should wait for to know the whole turn is done.
 
 ```json
 { "action": "end-stream" }
 ```
+
+<Info>
+  You must send `end-stream` to reliably receive the tail of your text. If you stop sending `stream-text` messages without an `end-stream`, buffered text may never be flushed and you will not receive an `isFinal` chunk.
+</Info>
+
+### Multi-turn conversations
+
+The connection is persistent and can be reused across many turns. After you receive the `isFinal` chunk for one turn, simply start sending `stream-text` again for the next turn — the session configuration from your initial `stream-config` is retained. Send `end-stream` again to close each subsequent turn.
+
+This makes a single connection ideal for a back-and-forth conversation: keep it open for the whole session, configure once, and bracket each assistant reply with `stream-text` messages followed by an `end-stream`.
+
+## `cancel` and `ping`
+
+<ParamField body="cancel" type="action">
+  Aborts in-flight generation and clears all buffers. Useful for barge-in — when the user interrupts, cancel the current turn so you stop generating audio the user will never hear. The server emits a synthetic finish message with `"isCancelled": true`, after which you can start a new turn.
+</ParamField>
+
+<ParamField body="ping" type="action">
+  Keepalive. The server replies with `{"action": "pong"}`. Use it to hold a conversation connection open between turns.
+</ParamField>
 
 ```json
 { "action": "cancel" }
@@ -387,3 +402,92 @@ async def main():
 
 asyncio.run(main())
 ```
+
+## Streaming from an LLM
+
+The streaming API is built for exactly this pattern: forward tokens from a streaming LLM response into `stream-text` as they arrive, then send `end-stream` once the LLM finishes, and play the audio chunks as they come back.
+
+Because sending text and receiving audio happen concurrently, run a **producer** (LLM → `stream-text`) and a **consumer** (audio chunks → playback) at the same time. The key rule is: **call `end-stream` as soon as the LLM has produced its last token**, and treat the `isFinal` chunk as "the assistant has finished speaking."
+
+```python
+import asyncio
+import base64
+import json
+import os
+
+import websockets
+from openai import AsyncOpenAI
+
+WS_URL = "wss://wss.deepdub.ai/ws"
+API_KEY = os.environ["DEEPDUB_API_KEY"]
+
+openai = AsyncOpenAI()
+
+
+async def produce(ws, prompt):
+    """Forward LLM tokens into the TTS stream, then close the turn."""
+    stream = await openai.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": prompt}],
+        stream=True,
+    )
+    async for chunk in stream:
+        token = chunk.choices[0].delta.content
+        if token:
+            # Send each token as it arrives; the server batches them for you.
+            await ws.send(json.dumps({"action": "stream-text", "text": token}))
+
+    # The LLM is done — flush the buffer and close the turn.
+    await ws.send(json.dumps({"action": "end-stream"}))
+
+
+async def consume(ws):
+    """Receive audio chunks until the turn is final."""
+    pcm = bytearray()
+    while True:
+        msg = json.loads(await ws.recv())
+        if msg.get("action") == "error":
+            raise RuntimeError(msg["message"])
+        if msg.get("data"):
+            audio = base64.b64decode(msg["data"])
+            pcm += audio
+            # play(audio)  # feed to your audio output here for real-time playback
+        if msg.get("isFinished") and msg.get("isFinal"):
+            break  # the assistant has finished speaking this turn
+    return bytes(pcm)
+
+
+async def main():
+    async with websockets.connect(
+        WS_URL,
+        additional_headers={"x-api-key": API_KEY},
+        ping_timeout=90,
+    ) as ws:
+        # Wait for the welcome message, then configure the session once.
+        await ws.recv()
+        await ws.send(json.dumps({
+            "action": "stream-config",
+            "data": {
+                "model": "dd-etts-3.0",
+                "voicePromptId": "59da0f21-63de-4aef-9ade-e5cabfe639ab",
+                "locale": "en-US",
+                "format": "s16le",
+                "sampleRate": 16000,
+                "realtime": True,
+            },
+        }))
+
+        # Run the LLM producer and the audio consumer concurrently.
+        producer = asyncio.create_task(produce(ws, "Tell me a fun fact about the ocean."))
+        audio = await consume(ws)
+        await producer
+
+        print(f"Received {len(audio)} bytes of audio")
+
+
+asyncio.run(main())
+```
+
+<Tip>
+  For a multi-turn conversation, keep the connection open and repeat the producer/consumer cycle per turn: stream the next LLM reply with `stream-text`, send `end-stream`, and wait for the next `isFinal`. If the user interrupts mid-reply, send `cancel` before starting the next turn.
+</Tip>
