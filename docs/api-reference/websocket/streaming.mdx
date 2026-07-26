@@ -207,7 +207,7 @@ Multiple attributes can be set in one tag:
 
 Because the server buffers and batches incoming text to optimize prosody and latency, it does not know when you have finished sending text unless you tell it. `end-stream` does two things:
 
-1. **Flushes** any text still held in the buffer, so the tail of your turn is synthesized even if it was shorter than a normal batch.
+1. **Flushes the tail as the final segment.** Any remaining buffered text is synthesized and marked as the last segment of the turn. This gives the tail clean sentence-final intonation instead of the "more is coming" prosody used for mid-stream segments.
 2. **Closes the turn**, so the final audio chunk is tagged with `"isFinal": true`. This is the signal your client should wait for to know the whole turn is done.
 
 ```json
@@ -215,7 +215,7 @@ Because the server buffers and batches incoming text to optimize prosody and lat
 ```
 
 <Info>
-  You must send `end-stream` to reliably receive the tail of your text. If you stop sending `stream-text` messages without an `end-stream`, buffered text may never be flushed and you will not receive an `isFinal` chunk.
+  Even without `end-stream`, buffered text is eventually flushed and synthesized on its own — the tail is not lost. What you lose by omitting it is the explicit turn-end signal: no chunk is tagged `"isFinal": true`, so your client can't tell a turn boundary from an ordinary segment boundary, and the tail is spoken as a continuation rather than a clean ending. Always send `end-stream` to close a turn cleanly.
 </Info>
 
 ### Multi-turn conversations
@@ -268,7 +268,7 @@ Audio arrives as JSON messages. Decode the base64 `data` field and append the by
 </ResponseField>
 
 <ResponseField name="isFinal" type="boolean">
-  `true` on the final chunk of the whole turn (after `end-stream` or the final flush).
+  `true` on the final chunk of the whole turn. Only produced after you send `end-stream`.
 </ResponseField>
 
 <ResponseField name="isCancelled" type="boolean">
