@@ -44,7 +44,9 @@
           {
             "group": "TTS",
             "pages": [
-              "api-reference/tts/generate-and-stream-tts-audio"
+              "api-reference/tts/generate-and-stream-tts-audio",
+              "api-reference/websocket/overview",
+              "api-reference/websocket/streaming"
             ]
           },
           {
@@ -86,13 +88,6 @@
             "pages": [
               "api-reference/usage/get-daily-concurrent-usage",
               "api-reference/usage/get-usage-aggregated-by-model"
-            ]
-          },
-          {
-            "group": "WebSocket",
-            "pages": [
-              "api-reference/websocket/overview",
-              "api-reference/websocket/streaming"
             ]
           }
         ]
