@@ -11,6 +11,10 @@ The WebSocket API enables real-time, chunked audio streaming for low-latency TTS
   The WebSocket API uses the same generation parameters as the [REST TTS endpoint](/api-reference/tts/generate-and-stream-tts-audio), but delivers audio as a stream of chunks rather than a single response.
 </Info>
 
+<Note>
+  For incremental, agent-driven use cases where text arrives token-by-token (e.g., from an LLM), use the [Real-Time Streaming API](/api-reference/websocket/streaming) (`/ws`) instead. This page documents the single-request `text-to-speech` protocol (`/open`).
+</Note>
+
 ## Connection
 
 Connect to the WebSocket endpoint with your API key:
