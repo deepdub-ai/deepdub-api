@@ -109,6 +109,22 @@ Send a JSON message on the WebSocket connection:
   ID of a performance reference prompt to guide delivery style.
 </ParamField>
 
+<ParamField body="targetGender" type="string">
+  Target speaker gender, `male` or `female`. Used for language-specific handling such as Hebrew diacritics. Any other value is rejected.
+</ParamField>
+
+<ParamField body="outputDiacritized" type="boolean" default="false">
+  Return the diacritized (menukad) form of the Hebrew `targetText` alongside the audio. When enabled, the first audio chunk carries a [`diacritized`](#audio-chunks) field.
+</ParamField>
+
+<ParamField body="enableLogging" type="boolean" default="true">
+  Whether Deepdub may record this request's text in its server-side logs. Set to `false` for confidential scripts to keep the text out of the logs.
+</ParamField>
+
+<Note>
+  `outputDiacritized` is available on request rather than enabled for every account. Contact [support@deepdub.ai](mailto:support@deepdub.ai) to have it turned on before integrating against it.
+</Note>
+
 ### Example request
 
 ```json
@@ -143,6 +159,10 @@ Audio is delivered as a series of JSON messages. Each chunk contains a portion o
 
 <ResponseField name="isFinished" type="boolean">
   `true` when this is the final chunk of the generation.
+</ResponseField>
+
+<ResponseField name="diacritized" type="string">
+  Diacritized (menukad) Hebrew text for the request. Sent only when `outputDiacritized` was enabled, and only on the first audio chunk — later chunks omit the field entirely.
 </ResponseField>
 
 ### Example response stream
@@ -185,6 +205,18 @@ Audio is delivered as a series of JSON messages. Each chunk contains a portion o
   "generationId": "4da9902b-9141-4fb7-9efb-d616ce266ed9",
   "data": "AAAAAAAAAA==",
   "isFinished": true
+}
+```
+
+**First chunk when `outputDiacritized` is enabled:**
+
+```json
+{
+  "index": 0,
+  "generationId": "4da9902b-9141-4fb7-9efb-d616ce266ed9",
+  "data": "//uQxAAAAAANIAAAAAExBTUUzLjEwMFVVVVVV...",
+  "isFinished": false,
+  "diacritized": "שָׁלוֹם עוֹלָם"
 }
 ```
 

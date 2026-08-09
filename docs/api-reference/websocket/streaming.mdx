@@ -140,6 +140,14 @@ Sets the session-level TTS configuration. Must be sent before any `stream-text` 
   Target speaker gender, `male` or `female`. Used for language-specific handling such as Hebrew diacritics.
 </ParamField>
 
+<ParamField body="outputDiacritized" type="boolean" default="false">
+  Return the diacritized (menukad) form of the synthesized Hebrew text alongside the audio. When enabled, the first audio chunk of each generation carries a [`diacritized`](#audio-chunks) field. Only an explicit `true` opts in — sending `false` behaves the same as omitting the field.
+</ParamField>
+
+<ParamField body="enableLogging" type="boolean" default="true">
+  Whether Deepdub may record this session's text in its server-side logs. Set to `false` for confidential scripts to keep the text out of the logs. Applies to the whole connection.
+</ParamField>
+
 <ParamField body="firstAudioTimeout" type="integer" default="50">
   Maximum time in milliseconds to wait for more text before flushing the first buffered segment to a worker. Lower values reduce time-to-first-audio.
 </ParamField>
@@ -147,6 +155,10 @@ Sets the session-level TTS configuration. Must be sent before any `stream-text` 
 <ParamField body="acceptEmojis" type="boolean" default="false">
   Enable emoji tokens to be interpreted as inline locale/voice configuration hints.
 </ParamField>
+
+<Note>
+  `outputDiacritized` is available on request rather than enabled for every account. Contact [support@deepdub.ai](mailto:support@deepdub.ai) to have it turned on before integrating against it.
+</Note>
 
 ## `stream-text`
 
@@ -275,6 +287,10 @@ Audio arrives as JSON messages. Decode the base64 `data` field and append the by
   `true` when the generation was aborted via `cancel`.
 </ResponseField>
 
+<ResponseField name="diacritized" type="string">
+  Diacritized (menukad) Hebrew text for this generation's segment. Sent only when the session opted in via `outputDiacritized`, and only on the first chunk of each generation — later chunks omit the field entirely. In a multi-segment turn, each segment's first chunk carries its own diacritized text.
+</ResponseField>
+
 **In-progress chunk:**
 
 ```json
@@ -283,6 +299,18 @@ Audio arrives as JSON messages. Decode the base64 `data` field and append the by
   "index": 0,
   "isFinished": false,
   "data": "//uQxAAAAAANIAAAAAExBTUUzLjEwMFVVVVVV..."
+}
+```
+
+**First chunk when `outputDiacritized` is enabled:**
+
+```json
+{
+  "generationId": "4da9902b-9141-4fb7-9efb-d616ce266ed9",
+  "index": 0,
+  "isFinished": false,
+  "data": "//uQxAAAAAANIAAAAAExBTUUzLjEwMFVVVVVV...",
+  "diacritized": "שָׁלוֹם עוֹלָם"
 }
 ```
 

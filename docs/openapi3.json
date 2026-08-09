@@ -1766,7 +1766,7 @@
         }
       },
       "model.GenerationRequest": {
-        "description": "Request structure for TTS generation endpoints.\n\n**Optional parameters** (not shown in playground): `generationId` (string), `targetDuration` (number, seconds), `tempo` (number, 0.5–2.0), `variance` (number, 0.0–1.0), `seed` (integer), `temperature` (number, 0.0–1.0), `sampleRate` (integer), `format` (string: mp3/opus/mulaw — default mp3), `promptBoost` (boolean), `superStretch` (boolean), `realtime` (boolean), `cleanAudio` (boolean, default true), `autoGain` (boolean), `publish` (boolean), `accentControl` (object with accentBaseLocale, accentLocale, accentRatio), `performanceReferencePromptId` (string), `voiceReference` (string, base64-encoded audio).",
+        "description": "Request structure for TTS generation endpoints.\n\n**Optional parameters** (not shown in playground): `generationId` (string), `targetDuration` (number, seconds), `tempo` (number, 0.5–2.0), `variance` (number, 0.0–1.0), `seed` (integer), `temperature` (number, 0.0–1.0), `sampleRate` (integer), `format` (string: mp3/opus/mulaw — default mp3), `promptBoost` (boolean), `superStretch` (boolean), `realtime` (boolean), `cleanAudio` (boolean, default true), `autoGain` (boolean), `publish` (boolean), `accentControl` (object with accentBaseLocale, accentLocale, accentRatio), `performanceReferencePromptId` (string), `voiceReference` (string, base64-encoded audio), `targetGender` (string: male/female — used for language-specific handling such as Hebrew diacritics; any other value returns 400).",
         "type": "object",
         "required": ["locale", "model", "targetText", "voicePromptId"],
         "properties": {
