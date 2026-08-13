@@ -89,6 +89,10 @@
               "api-reference/usage/get-daily-concurrent-usage",
               "api-reference/usage/get-usage-aggregated-by-model"
             ]
+          },
+          {
+            "group": "Live Streaming (Beta)",
+            "pages": ["api-reference/live/overview"]
           }
         ]
       },

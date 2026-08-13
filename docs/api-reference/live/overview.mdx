@@ -1,0 +1,227 @@
+---
+title: Live Streaming API
+description: "Live captions and voice dubbing on top of HLS, SRT, RTMP, and CMAF broadcast inputs"
+---
+
+<Warning>
+  The Live Streaming API is in early access. Endpoints, request shapes, and stream-type identifiers may change. Contact `support@deepdub.ai` to enable it on your account.
+</Warning>
+
+## Overview
+
+The Live Streaming API turns a broadcast video feed into live translated captions and dubbed audio in one or more target languages. You point Deepdub at your source stream (HLS, SRT, RTMP, or CMAF), pick target languages and voices, and receive back:
+
+- **Captions** in the target languages, delivered as an HLS WebVTT subtitle track and available in real time via WebSocket.
+- **Dubbed audio** rendered by Deepdub's TTS engine and packaged back into a broadcast output (HLS, SRT, or RTMP).
+
+Under the hood the API drives a live-broadcast orchestration provider on your behalf. You never authenticate to that provider directly — you use your standard Deepdub `x-api-key`.
+
+## Base URL
+
+```
+https://restapi.deepdub.ai/live
+```
+
+Authentication is the same `x-api-key` header used everywhere else in the Deepdub API. See [Authentication](/authentication).
+
+## Concepts
+
+<CardGroup cols={2}>
+  <Card title="Service">
+    A running or startable pipeline that ingests one source and produces one or more output streams. Services are long-lived resources that you `create` once and `start` / `stop` as needed. Accounts have a limit on the number of defined services — reuse and update them rather than creating a new one per broadcast.
+  </Card>
+  <Card title="Input source">
+    The upstream broadcast feed. Selected by an input stream type (e.g. `HlsPullSource`, `SrtPushSource`).
+  </Card>
+  <Card title="Output">
+    Where translated captions and/or dubbed audio are delivered. Each service can have one or more outputs of types compatible with the chosen input.
+  </Card>
+  <Card title="Translation">
+    A `(language, TTS engine, voice)` triple. Multiple translations can run on the same service to produce several target languages simultaneously.
+  </Card>
+</CardGroup>
+
+## Supported stream types
+
+<Note>
+  This matrix is dynamic — always call the enum endpoints below for the authoritative list. The values shown reflect what is enabled at the time of writing.
+</Note>
+
+### Input stream types
+
+Returned by `GET /live/enums/input-stream-types`:
+
+| Identifier | Protocol | Notes |
+|------------|----------|-------|
+| `HlsPullSource` | HLS (pull) | Deepdub pulls your `.m3u8` playlist. |
+| `HlsPushSource` | HLS (push) | You push an HLS stream to a URL provided by Deepdub. |
+| `SrtPushSource` | SRT (push) | You push a Secure Reliable Transport stream to a URL provided by Deepdub. |
+| `SrtPullSource` | SRT (pull) | Deepdub pulls from your SRT listener. |
+| `RtmpPushSource` | RTMP (push) | You push an RTMP(S) stream to a URL provided by Deepdub. |
+| `CmafIngestSource` | CMAF ingest | Standards-based CMAF push ingest. |
+
+### Output stream types
+
+Returned by `GET /live/enums/output-stream-types/{inputStreamType}`. The available outputs depend on the input. As of writing:
+
+| Input | Compatible outputs |
+|-------|--------------------|
+| `HlsPullSource`, `HlsPushSource` | `HlsPushOutput`, `608` |
+| `SrtPushSource`, `SrtPullSource` | `SrtPushOutput`, `SrtPullOutput`, `RtmpPullOutput`, `RtmpPushOutput`, `608` |
+| `RtmpPushSource` | `SrtPushOutput`, `SrtPullOutput`, `RtmpPullOutput`, `RtmpPushOutput`, `608` |
+| `CmafIngestSource` | `HlsPushOutput`, `608` |
+
+`608` refers to CEA-608 line-21 captions embedded into the video output.
+
+## Endpoints
+
+### Services
+
+CRUD and lifecycle for live services.
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `GET` | `/live/services` | List services on your account. Query params: `page`, `perPage`, `search`, `scope`. |
+| `GET` | `/live/services/{serviceId}` | Fetch a single service and its full `config`. |
+| `POST` | `/live/services` | Create a new service. Returns `201` with the created service. |
+| `PUT` | `/live/services/{serviceId}` | Replace a service's `config` in place — use this to update the HLS/SRT URL, translations, or outputs without burning a slot on a new service. Same body shape as `POST`. |
+| `DELETE` | `/live/services/{serviceId}` | Delete a service. Returns `204`. |
+| `GET` | `/live/services/{serviceId}/status` | Runtime status (active, input connected, etc.). |
+| `POST` | `/live/services/{serviceId}/start` | Start a stopped service. |
+| `POST` | `/live/services/{serviceId}/stop` | Stop a running service. |
+
+<Info>
+  The service `config` object is deep and evolves — build it by fetching a known-good service with `GET /live/services/{id}` and modifying the fields you need, then send it back with `PUT`. Deepdub Support can share a starter template if you don't have one yet.
+</Info>
+
+### Enums
+
+Read-only endpoints for the discriminated unions that appear inside `config`. Call these when constructing a service to get the currently supported identifiers.
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `GET` | `/live/enums/build-versions` | Available live pipeline build versions. |
+| `GET` | `/live/enums/input-stream-types` | Input stream identifiers. |
+| `GET` | `/live/enums/output-stream-types/{inputStreamType}` | Output identifiers compatible with an input. |
+| `GET` | `/live/enums/translation-languages` | Target languages available for live translation. |
+| `GET` | `/live/enums/translation-tts-engines` | TTS engines you can pick for dubbing (`Deepdub`, `Amazon`, `Azure`, `ElevenLabs`, ...). |
+| `GET` | `/live/enums/translation-tts-voices/{language}/{ttsEngine}` | Voices available for a `(language, engine)` pair. Response shape varies per engine. |
+
+### Captions WebSocket
+
+Real-time caption fan-out for a running service.
+
+```
+wss://restapi.deepdub.ai/live/services/{serviceId}/captions/ws?lang=es
+```
+
+Query parameters:
+
+<ParamField query="lang" type="string" required>
+  BCP-47 language tag of the caption track to subscribe to (for example `es`, `fr-FR`, `de`).
+</ParamField>
+
+<ParamField query="playlist_url" type="string">
+  Optional explicit HLS WebVTT subtitle playlist URL. Only needed if the service's caption output URL can't be discovered automatically from its config.
+</ParamField>
+
+On connect the server first sends a `hello` frame with the resolved playlist URL, then a stream of caption frames as new cues appear. A `heartbeat` frame is emitted every few seconds when no cues are pending.
+
+```json
+{ "type": "hello", "serviceId": 41823, "lang": "es", "playlistUrl": "https://.../subs/es.m3u8" }
+```
+
+```json
+{ "type": "cue", "seq": 42, "start": 128.500, "end": 131.100, "text": "Hola, bienvenidos." }
+```
+
+```json
+{ "type": "heartbeat" }
+```
+
+## Quick start
+
+<Steps>
+  <Step title="Discover supported stream types">
+    ```bash
+    curl -H "x-api-key: $DEEPDUB_API_KEY" \
+      https://restapi.deepdub.ai/live/enums/input-stream-types
+
+    curl -H "x-api-key: $DEEPDUB_API_KEY" \
+      https://restapi.deepdub.ai/live/enums/output-stream-types/SrtPushSource
+    ```
+  </Step>
+
+  <Step title="List existing services">
+    ```bash
+    curl -H "x-api-key: $DEEPDUB_API_KEY" \
+      "https://restapi.deepdub.ai/live/services?page=1&perPage=50"
+    ```
+  </Step>
+
+  <Step title="Fetch a template service">
+    Pick one with a working `config` and use it as your starting point:
+
+    ```bash
+    curl -H "x-api-key: $DEEPDUB_API_KEY" \
+      https://restapi.deepdub.ai/live/services/41823
+    ```
+  </Step>
+
+  <Step title="Create or update a service">
+    To adjust the input URL on an existing service (no new slot):
+
+    ```bash
+    curl -X PUT -H "x-api-key: $DEEPDUB_API_KEY" -H "Content-Type: application/json" \
+      --data @service.json \
+      https://restapi.deepdub.ai/live/services/41823
+    ```
+
+    Or create a new one:
+
+    ```bash
+    curl -X POST -H "x-api-key: $DEEPDUB_API_KEY" -H "Content-Type: application/json" \
+      --data @service.json \
+      https://restapi.deepdub.ai/live/services
+    ```
+  </Step>
+
+  <Step title="Start and monitor">
+    ```bash
+    curl -X POST -H "x-api-key: $DEEPDUB_API_KEY" \
+      https://restapi.deepdub.ai/live/services/41823/start
+
+    curl -H "x-api-key: $DEEPDUB_API_KEY" \
+      https://restapi.deepdub.ai/live/services/41823/status
+    ```
+  </Step>
+
+  <Step title="Delete when no longer needed">
+    Accounts are capped on the number of defined services (active or not). Delete or archive unused ones to free slots:
+
+    ```bash
+    curl -X DELETE -H "x-api-key: $DEEPDUB_API_KEY" \
+      https://restapi.deepdub.ai/live/services/41823
+    ```
+  </Step>
+</Steps>
+
+## Errors
+
+Errors are proxied from the underlying orchestration provider and normalized to standard HTTP codes:
+
+| Code | Meaning |
+|------|---------|
+| 400  | Invalid request body. |
+| 401  | Missing or invalid `x-api-key`. |
+| 403  | Feature not enabled for your account. |
+| 404  | Service or resource not found. |
+| 422  | The `config` failed validation upstream. The response body includes an `upstream` field with the provider's original error for troubleshooting. |
+| 429  | Rate limit exceeded. |
+| 5xx  | Deepdub or upstream provider error. |
+
+## Notes and limits
+
+- Accounts have a **soft cap on the number of defined services** (typically 10) regardless of whether they are running. If you hit the cap, `PUT` an existing service to change its source instead of creating a new one, or `DELETE` unused ones.
+- The API is regional. Prefer `https://restapi.deepdub.ai/live` for accounts in North America and use the EU host (`https://eu-restapi.deepdub.ai/live`) once your account is provisioned there.
+- Live pipelines are billed separately from batch TTS. Contact `support@deepdub.ai` for pricing and to enable additional TTS engines beyond `Deepdub`.
