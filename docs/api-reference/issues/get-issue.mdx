@@ -1,3 +1,17 @@
 ---
 openapi: get /issues/{id}
 ---
+
+## Issue states
+
+The `state` field tracks where a report sits in the review process:
+
+| State | Meaning |
+|-------|---------|
+| `open` | Received and waiting for review. |
+| `uploaded_for_correction` | Accepted and queued for a correction. |
+| `in_progress` | Actively being worked on. |
+| `resolved` | Fixed. |
+| `rejected` | Not actionable — see `rejectionReason`. |
+
+`rejectionReason` is returned only when `state` is `rejected`. A report closed as a repeat of an existing one comes back as `duplicate report`.

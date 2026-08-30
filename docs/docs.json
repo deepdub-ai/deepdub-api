@@ -72,6 +72,7 @@
               "api-reference/issues/create-issue",
               "api-reference/issues/get-issue",
               "api-reference/issues/update-issue",
+              "api-reference/issues/update-issue-state",
               "api-reference/issues/delete-issue"
             ]
           },

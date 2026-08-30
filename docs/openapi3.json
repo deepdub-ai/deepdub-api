@@ -1454,6 +1454,113 @@
         }
       }
     },
+    "/issues/{id}/state": {
+      "patch": {
+        "operationId": "updateIssueState",
+        "description": "Move an issue through the review workflow. You can only change the state of issues your own API key created.",
+        "tags": ["Issues"],
+        "summary": "Update an issue's state",
+        "parameters": [
+          {
+            "description": "API Key",
+            "name": "x-api-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "dd-00000000000000000000000065c9cbfe"
+            },
+            "example": "dd-00000000000000000000000065c9cbfe"
+          },
+          {
+            "description": "Issue ID",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/model.UpdateIssueStateRequest"
+              },
+              "example": {
+                "state": "resolved"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated issue",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.IssueResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unrecognized state, or `rejectionReason` omitted when setting state to `rejected`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.IssueErrorResponse"
+                },
+                "example": {
+                  "message": "rejectionReason is required when state is rejected"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.IssueErrorResponse"
+                },
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Issue not found, or not owned by this API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.IssueErrorResponse"
+                },
+                "example": {
+                  "message": "Issue not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.IssueErrorResponse"
+                },
+                "example": {
+                  "message": "Failed to update issue state"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/concurrent_connections/batch": {
       "get": {
         "operationId": "getConcurrentConnectionsBatch",
@@ -2124,6 +2231,13 @@
             "type": "string",
             "example": "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773"
           },
+          "type": {
+            "description": "Category of problem being reported. Omit to default to `hallucinations`. Any other value returns 400.",
+            "type": "string",
+            "enum": ["hallucinations", "glossary"],
+            "default": "hallucinations",
+            "example": "hallucinations"
+          },
           "additionalComments": {
             "description": "Free-form comments describing the problem",
             "type": "string",
@@ -2137,6 +2251,16 @@
             "description": "Seconds in the audio where the problem appears",
             "type": "number",
             "example": 2.5
+          },
+          "phoneticHeard": {
+            "description": "Optional phonetic transcription of how the word actually sounded",
+            "type": "string",
+            "example": "deep-dubb"
+          },
+          "phoneticExpected": {
+            "description": "Optional phonetic transcription of how the word should sound",
+            "type": "string",
+            "example": "deep-dub"
           }
         }
       },
@@ -2156,6 +2280,11 @@
           "voicePromptId": {
             "type": "string"
           },
+          "type": {
+            "description": "Category of problem being reported. Any value outside the enum returns 400.",
+            "type": "string",
+            "enum": ["hallucinations", "glossary"]
+          },
           "additionalComments": {
             "type": "string"
           },
@@ -2165,6 +2294,32 @@
           },
           "problemSeconds": {
             "type": "number"
+          },
+          "phoneticHeard": {
+            "description": "Optional phonetic transcription of how the word actually sounded",
+            "type": "string"
+          },
+          "phoneticExpected": {
+            "description": "Optional phonetic transcription of how the word should sound",
+            "type": "string"
+          }
+        }
+      },
+      "model.UpdateIssueStateRequest": {
+        "description": "Payload for moving an issue to a new workflow state",
+        "type": "object",
+        "required": ["state"],
+        "properties": {
+          "state": {
+            "description": "State to move the issue to.",
+            "type": "string",
+            "enum": ["open", "uploaded_for_correction", "in_progress", "resolved", "rejected"],
+            "example": "resolved"
+          },
+          "rejectionReason": {
+            "description": "Why the issue is being rejected. Required when `state` is `rejected`, ignored otherwise.",
+            "type": "string",
+            "example": "not reproducible"
           }
         }
       },
@@ -2177,9 +2332,15 @@
             "example": "iss_12345abcde"
           },
           "state": {
-            "description": "Current state of the issue (e.g., open, in progress, resolved)",
+            "description": "Current state of the issue.",
             "type": "string",
+            "enum": ["open", "uploaded_for_correction", "in_progress", "resolved", "rejected"],
             "example": "open"
+          },
+          "rejectionReason": {
+            "description": "Why the issue was rejected. Present only when `state` is `rejected`.",
+            "type": "string",
+            "example": "duplicate report"
           },
           "createdAt": {
             "type": "string",
@@ -2201,11 +2362,29 @@
           "voicePromptId": {
             "type": "string"
           },
+          "type": {
+            "description": "Category of problem being reported.",
+            "type": "string",
+            "enum": ["hallucinations", "glossary"]
+          },
+          "locale": {
+            "description": "Locale of the reported generation, when known.",
+            "type": "string",
+            "example": "en-US"
+          },
           "additionalComments": {
             "type": "string"
           },
           "problemSeconds": {
             "type": "number"
+          },
+          "phoneticHeard": {
+            "description": "Phonetic transcription of how the word actually sounded",
+            "type": "string"
+          },
+          "phoneticExpected": {
+            "description": "Phonetic transcription of how the word should sound",
+            "type": "string"
           }
         }
       },

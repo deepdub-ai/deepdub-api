@@ -1,0 +1,26 @@
+---
+openapi: patch /issues/{id}/state
+---
+
+Moves an issue through the review workflow. This is separate from [`PUT /issues/{id}`](/api-reference/issues/update-issue), which edits the contents of a report — this endpoint only changes its `state`.
+
+You can only change the state of issues created by your own API key; anything else returns `404`.
+
+## States
+
+| State | Meaning |
+|-------|---------|
+| `open` | Received and waiting for review. |
+| `uploaded_for_correction` | Accepted and queued for a correction. |
+| `in_progress` | Actively being worked on. |
+| `resolved` | Fixed. |
+| `rejected` | Not actionable. Requires `rejectionReason`. |
+
+Setting `state` to `rejected` without a `rejectionReason` returns `400`, as does any value outside the table above.
+
+```json
+{
+  "state": "rejected",
+  "rejectionReason": "not reproducible"
+}
+```

@@ -13,7 +13,14 @@ To make a report actionable, include:
 - `problemWord` — the specific word or phrase that was generated incorrectly
 - `voicePromptId` — the voice prompt that was used
 - `problemSeconds` — timestamp (in seconds) where the problem occurs
+- `type` *(optional)* — `hallucinations` (the default) or `glossary`
+- `phoneticHeard` *(optional)* — how the word actually sounded, written phonetically
+- `phoneticExpected` *(optional)* — how the word should have sounded, written phonetically
 - `problemAudioFile` *(optional)* — base64-encoded clip of the problem audio
 - `additionalComments` *(optional)* — anything else that helps reproduce or explain the issue
+
+Use `type` to say what kind of problem you're reporting: `hallucinations` for words the model got wrong or invented, `glossary` for terms that need a permanent pronunciation entry. Omitting it defaults to `hallucinations`; any other value returns `400`.
+
+The `phoneticHeard` and `phoneticExpected` pair is the fastest way to make a mispronunciation actionable — it tells the team exactly what the model produced and what it should have produced, without anyone having to listen to the audio.
 
 The response includes an `id` you can use with the [GET](/api-reference/issues/get-issue), [PUT](/api-reference/issues/update-issue), and [DELETE](/api-reference/issues/delete-issue) endpoints.
