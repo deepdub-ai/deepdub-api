@@ -1097,6 +1097,117 @@
       }
     },
     "/issues": {
+      "get": {
+        "operationId": "listIssues",
+        "description": "List the issues reported by your account, newest first. Pagination is cursor-based: pass the `nextCursor` from a response as the next request's `cursor`, and stop once a response omits it.",
+        "tags": ["Issues"],
+        "summary": "List issues",
+        "parameters": [
+          {
+            "description": "API Key",
+            "name": "x-api-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "dd-00000000000000000000000065c9cbfe"
+            },
+            "example": "dd-00000000000000000000000065c9cbfe"
+          },
+          {
+            "description": "Maximum issues to return per page. Values above 100 are capped at 100.",
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "description": "The `nextCursor` value from a previous response. Omit to start from the newest issue.",
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only return issues reported on or after this date. Accepts `YYYY-MM-DD` or an RFC3339 timestamp.",
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "2026-08-01"
+          },
+          {
+            "description": "Only return issues reported on or before this date. Accepts `YYYY-MM-DD` or an RFC3339 timestamp; a bare date covers that entire UTC day.",
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "2026-08-31"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of issues",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.ListIssuesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed `from`/`to` date, or `from` later than `to`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.IssueErrorResponse"
+                },
+                "example": {
+                  "message": "invalid argument: \"08-2026\" must be YYYY-MM-DD or an RFC3339 timestamp"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.IssueErrorResponse"
+                },
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.IssueErrorResponse"
+                },
+                "example": {
+                  "message": "Failed to list issues"
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "operationId": "createIssue",
         "description": "Report a problem with a TTS generation by creating a new issue. Issues are tracked internally by the Deepdub team and used to improve voice quality. The `problemAudioFile` field can optionally include base64-encoded audio attached to the issue, and `problemSeconds` indicates the timestamp in the audio where the problem appears.",
@@ -1873,7 +1984,7 @@
         }
       },
       "model.GenerationRequest": {
-        "description": "Request structure for TTS generation endpoints.\n\n**Optional parameters** (not shown in playground): `generationId` (string), `targetDuration` (number, seconds), `tempo` (number, 0.5–2.0), `variance` (number, 0.0–1.0), `seed` (integer), `temperature` (number, 0.0–1.0), `sampleRate` (integer), `format` (string: mp3/opus/mulaw — default mp3), `promptBoost` (boolean), `superStretch` (boolean), `realtime` (boolean), `cleanAudio` (boolean, default true), `autoGain` (boolean), `publish` (boolean), `accentControl` (object with accentBaseLocale, accentLocale, accentRatio), `performanceReferencePromptId` (string), `voiceReference` (string, base64-encoded audio), `targetGender` (string: male/female — used for language-specific handling such as Hebrew diacritics; any other value returns 400).",
+        "description": "Request structure for TTS generation endpoints.\n\n**Optional parameters** (not shown in playground): `generationId` (string), `targetDuration` (number, seconds), `tempo` (number, 0.5–2.0), `variance` (number, 0.0–1.0), `seed` (integer — `dd-etts-1.1` only; newer models do not use it), `temperature` (number, 0.0–1.0), `sampleRate` (integer), `format` (string: mp3/opus/mulaw — default mp3), `promptBoost` (boolean), `superStretch` (boolean), `realtime` (boolean), `cleanAudio` (boolean, default true), `autoGain` (boolean), `publish` (boolean), `accentControl` (object with accentBaseLocale, accentLocale, accentRatio), `performanceReferencePromptId` (string), `voiceReference` (string, base64-encoded audio), `targetGender` (string: male/female — used for language-specific handling such as Hebrew diacritics; any other value returns 400).",
         "type": "object",
         "required": ["locale", "model", "targetText", "voicePromptId"],
         "properties": {
@@ -2301,6 +2412,23 @@
           },
           "phoneticExpected": {
             "description": "Optional phonetic transcription of how the word should sound",
+            "type": "string"
+          }
+        }
+      },
+      "model.ListIssuesResponse": {
+        "description": "A page of issues reported by your account",
+        "type": "object",
+        "properties": {
+          "issues": {
+            "description": "Issues on this page, newest first.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/model.IssueResponse"
+            }
+          },
+          "nextCursor": {
+            "description": "Pass as `cursor` to fetch the next page. Absent on the last page.",
             "type": "string"
           }
         }

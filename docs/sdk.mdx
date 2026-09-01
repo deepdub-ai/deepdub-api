@@ -120,7 +120,7 @@ with open("output.mp3", "wb") as f:
 </ParamField>
 
 <ParamField body="seed" type="int">
-  Random seed for deterministic generation.
+  Random seed for deterministic generation. Applies to `dd-etts-1.1` only — newer models do not use it, and setting it has no effect on their output.
 </ParamField>
 
 <ParamField body="prompt_boost" type="bool">
@@ -155,7 +155,6 @@ audio_data = client.tts(
     temperature=0.7,
     variance=0.6,
     tempo=1.1,
-    seed=42,
     prompt_boost=True,
     sample_rate=44100,
     accent_base_locale="en-US",

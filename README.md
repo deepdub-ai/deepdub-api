@@ -94,7 +94,7 @@ async with websockets.connect("wss://wsapi.deepdub.ai/open", extra_headers={"x-a
 - **tempo** (number, optional): The tempo of the speech mutually exclusive with targetDuration. value should be between 0 and 2.0.
 - **variance** (number, optional): The variance within a single output of speech. value should be between 0 and 1.0. (system default is 1).
 - **promptBoost** (boolean, optional): Overrides the default prompt boost logic. Boosting the prompt affects the behavior of tempo, targetDuration and accentControl.
-- **seed** (number, optional): The seed value for the random number generator send same seed to keep consistency between generations.
+- **seed** (number, optional): The seed value for the random number generator — send the same seed to keep consistency between generations. Applies to `dd-etts-1.1` only; newer models do not use it, and setting it has no effect on their output.
 - **accentControl** (object, optional): An object to control accent settings.
   - **accentBaseLocale** (string, required if `accentControl` is used): The base locale for the accent, e.g., `"en-US"`.
   - **accentLocale** (string, required if `accentControl` is used): The locale for the accent, e.g., `"fr-FR"`.

@@ -1,0 +1,47 @@
+---
+openapi: get /issues
+---
+
+Returns the issues reported by your account, newest first. Only your own reports are visible — an API key never sees another customer's issues.
+
+## Pagination
+
+Paging is cursor-based. Make the first request without a `cursor`, then pass the `nextCursor` from each response as the `cursor` of the next request:
+
+```bash
+curl "https://restapi.deepdub.ai/api/v1/issues?limit=50" \
+  -H "x-api-key: $DEEPDUB_API_KEY"
+```
+
+```json
+{
+  "issues": [{ "id": "iss_12345abcde", "state": "open" }],
+  "nextCursor": "eyJvZmZzZXQiOjUwfQ=="
+}
+```
+
+`nextCursor` is only returned when another page actually exists, so you can loop until it's absent without ever fetching an empty page:
+
+```python
+cursor, all_issues = None, []
+while True:
+    params = {"limit": 100, **({"cursor": cursor} if cursor else {})}
+    page = requests.get(f"{BASE_URL}/issues", params=params, headers=headers).json()
+    all_issues.extend(page["issues"])
+    cursor = page.get("nextCursor")
+    if not cursor:
+        break
+```
+
+`limit` defaults to 50 and is capped at 100 — asking for more returns 100 rather than an error.
+
+## Filtering by date
+
+`from` and `to` bound the report date inclusively, and each accepts either `YYYY-MM-DD` or a full RFC3339 timestamp. A bare `to` date covers that entire UTC day, so `to=2026-08-31` includes issues reported at 23:59 that evening.
+
+```bash
+curl "https://restapi.deepdub.ai/api/v1/issues?from=2026-08-01&to=2026-08-31" \
+  -H "x-api-key: $DEEPDUB_API_KEY"
+```
+
+A date that parses as neither format returns `400`, as does a `from` later than the `to`.

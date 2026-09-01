@@ -48,7 +48,7 @@ Returns audio stream (MP3 by default).
 }
 ```
 
-Optional fields: `generationId`, `targetDuration`, `tempo` (0.5–2.0), `variance` (0.0–1.0), `seed`, `temperature` (0.0–1.0), `sampleRate` (8000/16000/22050/24000/32000/36000/44100/48000), `format` (mp3/opus/mulaw/wav), `promptBoost`, `superStretch`, `realtime`, `cleanAudio`, `autoGain`, `publish`, `voiceReference` (base64 for instant cloning), `accentControl` (`accentBaseLocale`, `accentLocale`, `accentRatio` 0.0–1.0), `performanceReferencePromptId`, `targetGender` (male/female — language-specific handling such as Hebrew diacritics).
+Optional fields: `generationId`, `targetDuration`, `tempo` (0.5–2.0), `variance` (0.0–1.0), `seed` (dd-etts-1.1 only — newer models ignore it), `temperature` (0.0–1.0), `sampleRate` (8000/16000/22050/24000/32000/36000/44100/48000), `format` (mp3/opus/mulaw/wav), `promptBoost`, `superStretch`, `realtime`, `cleanAudio`, `autoGain`, `publish`, `voiceReference` (base64 for instant cloning), `accentControl` (`accentBaseLocale`, `accentLocale`, `accentRatio` 0.0–1.0), `performanceReferencePromptId`, `targetGender` (male/female — language-specific handling such as Hebrew diacritics).
 
 #### Voice endpoints
 
@@ -67,6 +67,7 @@ Report and manage TTS quality issues (mispronunciations, artifacts, etc.).
 | Method | Path | Description |
 |--------|------|-------------|
 | POST | /issues | Create an issue. Required: `generationId`, `generatedText`, `problemWord`, `voicePromptId`. Optional: `type` (hallucinations/glossary, default hallucinations), `additionalComments`, `problemAudioFile` (base64), `problemSeconds`, `phoneticHeard`, `phoneticExpected`. |
+| GET | /issues | List your issues, newest first. Query: `limit` (1–100, default 50), `cursor` (from a previous `nextCursor`), `from`/`to` (YYYY-MM-DD or RFC3339, inclusive). |
 | GET | /issues/{id} | Get an issue by ID. Response `state` is one of open, uploaded_for_correction, in_progress, resolved, rejected; `rejectionReason` is set only when rejected. |
 | PUT | /issues/{id} | Update an issue (all fields optional) |
 | PATCH | /issues/{id}/state | Move an issue to a new `state`. `rejectionReason` required when state is `rejected`. |
