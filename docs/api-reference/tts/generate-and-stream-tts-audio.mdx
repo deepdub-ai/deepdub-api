@@ -43,6 +43,12 @@ openapi: post /tts
 | Thai (Standard) | `th-TH` |
 | Turkish (Standard) | `tr-TR` |
 
+## Model-specific parameters
+
+<Warning>
+  `seed` applies to `dd-etts-1.1` only. Newer models — including the default `dd-etts-3.0` — do not use it, and setting it has no effect on their output. Do not rely on it to reproduce a generation on any model other than `dd-etts-1.1`.
+</Warning>
+
 ## Supported output formats
 
 The REST API streams audio as raw bytes in the HTTP response body. Supported formats:
@@ -59,7 +65,11 @@ The REST API streams audio as raw bytes in the HTTP response body. Supported for
 
 ## Sample rates
 
-The sample rate is passed through to the audio conversion layer. The internal generation runs at 48 kHz and is resampled to the requested rate. If no sample rate is specified, `mulaw` defaults to 8000 Hz.
+Valid values are `8000`, `16000`, `22050`, `24000`, `32000`, `36000`, `44100`, and `48000` Hz; any other value is rejected with a 400. The internal generation runs at 48 kHz and is resampled to the requested rate. If no sample rate is specified, `mulaw` defaults to 8000 Hz.
+
+## Generation ID
+
+Every successful response carries an `x-generation-id` header identifying the generation. Keep it — it is what you quote when [reporting a problem](/api-reference/issues/create-issue) with the audio.
 
 ### REST vs WebSocket comparison
 
@@ -67,7 +77,7 @@ The sample rate is passed through to the audio conversion layer. The internal ge
 |---------|----------|---------------|
 | **Delivery** | Streaming HTTP response (chunked audio bytes) | Chunked audio delivered incrementally as base64-encoded JSON messages |
 | **Formats** | `mp3`, `opus`, `mulaw` | `wav` (default), `mp3`, `opus`, `mulaw`, `s16le` |
-| **Streaming input (ctx/isFinal)** | Not supported | `wav`, `s16le`, `mulaw` only |
+| **Incremental text input** | Not supported | Not supported here either — use the [Live Streaming API](/api-reference/websocket/streaming) |
 | **Default format** | `mp3` | `wav` |
 | **Default mulaw sample rate** | 8000 Hz | 8000 Hz |
 | **Best for** | Simple integrations, file generation | Real-time playback, low-latency applications |

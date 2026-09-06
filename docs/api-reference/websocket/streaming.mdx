@@ -86,6 +86,8 @@ Sets the session-level TTS configuration. Must be sent before any `stream-text` 
 { "action": "error", "message": "please send 'stream-config' action with model before streaming text" }
 ```
 
+It can be sent again later in the same session to reconfigure it. The new settings apply to text flushed after that point; generations already in flight keep the configuration they started with. A successful `stream-config` produces no reply — only failures are reported.
+
 ### Example
 
 ```json
@@ -120,12 +122,14 @@ Sets the session-level TTS configuration. Must be sent before any `stream-text` 
   Language/locale code for the generated speech (e.g., `en-US`, `he-IL`, `es-MX`). Determines the language model and pronunciation rules. Can be changed mid-stream via [inline config tags](#inline-config-changes).
 </ParamField>
 
-<ParamField body="format" type="string">
-  Output audio format, e.g., `s16le`, `wav`, or `mp3`. Defaults to the worker's default when omitted.
+<ParamField body="format" type="string" default="wav">
+  Output audio format: `wav` (default), `mp3`, `opus`, `mulaw`, or `s16le`. Unlike the [single-request endpoint](/api-reference/websocket/overview), this one does not reject unknown values — an unrecognized format silently produces `wav`, so check your spelling.
+
+  For low-latency playback, `s16le` and `mulaw` avoid the container and decoder overhead of `wav` and `mp3`.
 </ParamField>
 
 <ParamField body="sampleRate" type="integer">
-  Output sample rate in Hz (e.g., `16000`, `24000`, `48000`).
+  Output sample rate in Hz — `8000`, `16000`, `22050`, `24000`, `32000`, `36000`, `44100`, or `48000`. Internal generation is 48 kHz and is resampled to the requested rate. `mulaw` defaults to 8000 Hz; other formats default to 48 kHz.
 </ParamField>
 
 <ParamField body="realtime" type="boolean" default="true">
@@ -153,7 +157,7 @@ Sets the session-level TTS configuration. Must be sent before any `stream-text` 
 </ParamField>
 
 <ParamField body="acceptEmojis" type="boolean" default="false">
-  Enable emoji tokens to be interpreted as inline locale/voice configuration hints.
+  Interpret a set of emoji in the streamed text as inline locale and emotion changes instead of speaking them. See [Emoji tags](#emoji-tags).
 </ParamField>
 
 <Note>
@@ -185,7 +189,7 @@ A shorthand form with a top-level `text` field is also accepted:
 </ParamField>
 
 <ParamField body="ctx" type="string">
-  Optional opaque context blob forwarded to the worker with this flush. Useful for correlating audio with an upstream request.
+  Optional opaque blob forwarded to the TTS worker alongside the next flush. It is not echoed back on any response frame — use `generationId` to correlate audio with a generation.
 </ParamField>
 
 ### Inline config changes
@@ -212,6 +216,37 @@ Multiple attributes can be set in one tag:
 - The new config applies to all text after the tag.
 - Tags may be split across multiple `stream-text` messages — incomplete tags are buffered until the closing `>` arrives.
 - Closing tags (`</config>`) are stripped and ignored.
+
+### Emotion tags
+
+If your voice has emotion variants configured, you can switch between them mid-stream by writing the emotion name in square brackets:
+
+```json
+{ "action": "stream-text", "data": { "text": "That's wonderful! [excited] I can't believe it! [default] Anyway, back to business." } }
+```
+
+**Behavior:**
+
+- `[default]` and `[normal]` revert to the **base voice** — the one set by `stream-config`, or by the most recent `<config voicePromptId="..." />` tag.
+- Any other name is looked up in the emotion set configured for your model and base voice. On a match, all text after the tag uses that emotion's voice. Switching emotions does not change the base voice, so `[default]` always returns to it.
+- Names are matched case-insensitively, and surrounding whitespace is ignored (`[Excited]` and `[ excited ]` both work).
+- An unrecognized tag is left in place and spoken as literal text, so bracketed text that isn't an emotion passes through unchanged.
+- Tags may be split across `stream-text` messages; an incomplete fragment is buffered until the `]` arrives.
+
+Emotion sets are provisioned per voice. Contact [support@deepdub.ai](mailto:support@deepdub.ai) to find out which emotions are available for your voices.
+
+### Emoji tags
+
+When the session is configured with `acceptEmojis: true`, a small set of emoji are also interpreted as inline configuration rather than spoken:
+
+| Emoji | Effect |
+| --- | --- |
+| A flag, e.g. 🇺🇸 🇪🇸 🇩🇪 | Switch locale to that country's locale |
+| A globe, e.g. 🌎 | Switch to the associated regional locale |
+| An emoji bound to one of your voice's emotions | Switch to that emotion's voice |
+| 😐 | Revert to the base voice, same as `[default]` |
+
+Any other emoji is left in the text. With `acceptEmojis: false` (the default), all emoji are treated as ordinary text.
 
 ## `end-stream`
 
@@ -288,7 +323,7 @@ Audio arrives as JSON messages. Decode the base64 `data` field and append the by
 </ResponseField>
 
 <ResponseField name="diacritized" type="string">
-  Diacritized (menukad) Hebrew text for this generation's segment. Sent only when the session opted in via `outputDiacritized`, and only on the first chunk of each generation — later chunks omit the field entirely. In a multi-segment turn, each segment's first chunk carries its own diacritized text.
+  Diacritized (menukad) Hebrew text for this generation's segment. Sent only when the session opted in via `outputDiacritized`, and only on the first chunk of each generation — later chunks omit the field entirely. In a multi-segment turn, each segment's first chunk carries its own diacritized text. If a generation produces no audio at all, the field rides its `isFinished` chunk instead.
 </ResponseField>
 
 **In-progress chunk:**
@@ -355,7 +390,23 @@ Audio arrives as JSON messages. Decode the base64 `data` field and append the by
 }
 ```
 
-Worker-level errors are reported per generation:
+Session-level errors always carry `action: "error"`, a human-readable `message`, and a Unix-seconds `time`. Common messages:
+
+| Message | Cause |
+| --- | --- |
+| `Invalid message format` | The message was not valid JSON |
+| `model is required in configuration` | `stream-config` omitted `model` |
+| `queue route not found for model: <model>` | `model` is not a model your account can use |
+| `please send 'stream-config' action with model before streaming text` | `stream-text` arrived before the session was configured |
+| `voicePrompt exceeds maximum size of 1MB` | Inline `voicePrompt` is too large |
+| `voicePrompt must be base64-encoded: ...` | Inline `voicePrompt` is not valid base64 |
+| `voicePrompt must be mono (1 channel), got N channels` | Inline `voicePrompt` is not mono |
+| `voicePrompt must be 48000Hz sample rate, got NHz` | Inline `voicePrompt` is not 48 kHz |
+| `voicePrompt is not a WAV file: ...` | Inline `voicePrompt` is not a RIFF/WAVE file |
+
+The session stays open after a session-level error, so you can correct the configuration and continue.
+
+Worker-level errors are reported per generation and are shaped differently — no `action`, but a `generationId` identifying the generation that failed:
 
 ```json
 {
@@ -363,6 +414,8 @@ Worker-level errors are reported per generation:
   "error": "error message"
 }
 ```
+
+A generation that fails this way sends no further chunks. Other generations in the turn are unaffected.
 
 ## Code example
 

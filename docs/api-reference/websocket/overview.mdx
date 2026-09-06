@@ -58,7 +58,7 @@ Send a JSON message on the WebSocket connection:
 </ParamField>
 
 <ParamField body="tempo" type="number">
-  Playback speed multiplier (0.5-2.0).
+  Playback speed multiplier, between 0 and 2. Mutually exclusive with `targetDuration` — sending both is rejected.
 </ParamField>
 
 <ParamField body="variance" type="number">
@@ -74,11 +74,11 @@ Send a JSON message on the WebSocket connection:
 </ParamField>
 
 <ParamField body="sampleRate" type="integer">
-  Output sample rate in Hz. Internal generation is 48 kHz, resampled to the requested rate. Defaults to 8000 Hz for `mulaw` if not specified.
+  Output sample rate in Hz. One of `8000`, `16000`, `22050`, `24000`, `32000`, `36000`, `44100`, or `48000`; any other value is rejected. Internal generation is 48 kHz, resampled to the requested rate. Defaults to 8000 Hz for `mulaw` if not specified.
 </ParamField>
 
 <ParamField body="format" type="string" default="wav">
-  Output audio format: `wav` (default), `mp3`, `opus`, `mulaw`, or `s16le`. Streaming input with `ctx`/`isFinal` only supports `wav`, `s16le`, and `mulaw`.
+  Output audio format: `wav` (default), `mp3`, `opus`, `mulaw`, or `s16le`.
 </ParamField>
 
 <ParamField body="promptBoost" type="boolean">
@@ -110,7 +110,7 @@ Send a JSON message on the WebSocket connection:
 </ParamField>
 
 <ParamField body="targetGender" type="string">
-  Target speaker gender, `male` or `female`. Used for language-specific handling such as Hebrew diacritics. Any other value is rejected.
+  Target speaker gender, `male` or `female`. Used for language-specific handling such as Hebrew diacritics. Other values are ignored rather than rejected.
 </ParamField>
 
 <ParamField body="outputDiacritized" type="boolean" default="false">
@@ -229,7 +229,7 @@ When an error occurs, the WebSocket sends a JSON error message:
 </ResponseField>
 
 <ResponseField name="errorType" type="string">
-  Error category. One of: `RateLimit`, `MaxExceeded`, `InsufficientCredits`, `InvalidInput`.
+  Error category. One of: `RateLimit`, `MaxExceeded`, `InsufficientCredits`, `InvalidInput`. Present on requests rejected up front; errors raised later, once generation is already under way, carry only `error` and `generationId`.
 </ResponseField>
 
 <ResponseField name="generationId" type="string">
@@ -250,6 +250,10 @@ When an error occurs, the WebSocket sends a JSON error message:
 | `MaxExceeded` | Maximum generation minutes reached for your plan. |
 | `InsufficientCredits` | Account has insufficient credits. Top up your balance. |
 | `InvalidInput` | Invalid request parameters. Check your request body. |
+
+<Note>
+  The free trial key is additionally capped at 10 generations per IP per day. Once that is used up, requests fail with `errorType: "RateLimit"` and a message of the form `Free tier quota exceeded (used: 10). Please get an API key to continue.` Get your own API key to lift the cap.
+</Note>
 
 ## Accent control
 
@@ -275,21 +279,21 @@ Blend accents between two locales using the `accentControl` object:
 
 Audio chunks are delivered as base64-encoded data in JSON messages.
 
-| Format | Standard requests | Streaming input (ctx/isFinal) |
-|--------|-------------------|-------------------------------|
-| `wav` | Yes (**default**) | Yes |
-| `mp3` | Yes | No |
-| `opus` | Yes | No |
-| `mulaw` | Yes | Yes |
-| `s16le` | Yes | Yes |
+| Format | Description |
+|--------|-------------|
+| `wav` | Uncompressed PCM in a WAV container (**default**) |
+| `mp3` | MP3 |
+| `opus` | Opus |
+| `mulaw` | 8-bit μ-law, common in telephony |
+| `s16le` | Raw signed 16-bit little-endian PCM, no container |
 
 <Note>
-  Streaming input with `ctx`/`isFinal` only supports `wav`, `s16le`, and `mulaw` formats.
+  This endpoint synthesizes one complete text per request. To feed text in incrementally as it is produced — for example from an LLM — use the [Live Streaming API](/api-reference/websocket/streaming) instead.
 </Note>
 
 ## Sample rates
 
-The internal generation runs at 48 kHz and is resampled to the requested rate. If no sample rate is specified, `mulaw` defaults to 8000 Hz.
+Valid values are `8000`, `16000`, `22050`, `24000`, `32000`, `36000`, `44100`, and `48000` Hz. The internal generation runs at 48 kHz and is resampled to the requested rate. If no sample rate is specified, `mulaw` defaults to 8000 Hz.
 
 ### REST vs WebSocket comparison
 
@@ -297,7 +301,7 @@ The internal generation runs at 48 kHz and is resampled to the requested rate. I
 |---------|----------|---------------|
 | **Delivery** | Streaming HTTP response (chunked audio bytes) | Chunked audio delivered incrementally as base64-encoded JSON messages |
 | **Formats** | `mp3`, `opus`, `mulaw` | `wav` (default), `mp3`, `opus`, `mulaw`, `s16le` |
-| **Streaming input (ctx/isFinal)** | Not supported | `wav`, `s16le`, `mulaw` only |
+| **Incremental text input** | Not supported | Not supported here — use the [Live Streaming API](/api-reference/websocket/streaming) |
 | **Default format** | `mp3` | `wav` |
 | **Default mulaw sample rate** | 8000 Hz | 8000 Hz |
 | **Best for** | Simple integrations, file generation | Real-time playback, low-latency applications |

@@ -128,7 +128,7 @@ with open("output.mp3", "wb") as f:
 </ParamField>
 
 <ParamField body="sample_rate" type="int">
-  Output sample rate in Hz. Supported: `8000`, `16000`, `22050`, `24000`, `44100`, `48000`.
+  Output sample rate in Hz. Supported: `8000`, `16000`, `22050`, `24000`, `44100`, `48000`. The REST and WebSocket APIs additionally accept `32000` and `36000`, which the Python SDK rejects — call those APIs directly if you need them.
 </ParamField>
 
 <ParamField body="accent_base_locale" type="string">

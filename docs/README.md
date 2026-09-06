@@ -10,24 +10,25 @@ Developer documentation for [Deepdub](https://deepdub.com) voice AI APIs. Built 
 |-----|----------|-------------|
 | [REST TTS](/api-reference/tts/generate-and-stream-tts-audio) | HTTP POST | Stream generated audio as a chunked HTTP response |
 | [WebSocket TTS](/api-reference/websocket/overview) | WebSocket | Stream audio chunks in real-time for low-latency playback |
+| [Live Streaming](/api-reference/websocket/streaming) | WebSocket | Feed text in incrementally, as an LLM produces it, and get audio back as it is generated |
 | [Gender Detection](/api-reference/gender-detection/classify-speaker-gender) | HTTP POST | Classify speaker gender from audio |
 | [Voice Management](/api-reference/voice/get-voice-prompts) | HTTP REST | Upload, list, update, and delete voice prompts |
 
 ## Supported output formats
 
-| Format | REST API | WebSocket | WebSocket streaming input (ctx/isFinal) |
-|--------|----------|-----------|------------------------------------------|
-| `mp3` | Yes (**default**) | Yes | No |
-| `opus` | Yes | Yes | No |
-| `mulaw` | Yes | Yes | Yes |
-| `wav` | No | Yes (**default**) | Yes |
-| `s16le` | No | Yes | Yes |
+| Format | REST API | WebSocket |
+|--------|----------|-----------|
+| `mp3` | Yes (**default**) | Yes |
+| `opus` | Yes | Yes |
+| `mulaw` | Yes | Yes |
+| `wav` | No | Yes (**default**) |
+| `s16le` | No | Yes |
 
 > **Note:** The REST API only supports `mp3`, `opus`, and `mulaw`. For `wav` or `s16le` output, use the WebSocket API.
 
 ## Sample rates
 
-The internal generation runs at 48 kHz and is resampled to the requested rate. If no sample rate is specified, `mulaw` defaults to 8000 Hz.
+Valid values are `8000`, `16000`, `22050`, `24000`, `32000`, `36000`, `44100`, and `48000` Hz. The internal generation runs at 48 kHz and is resampled to the requested rate. If no sample rate is specified, `mulaw` defaults to 8000 Hz.
 
 ## SDKs
 

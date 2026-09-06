@@ -61,7 +61,13 @@
         },
         "responses": {
           "200": {
-            "description": "Audio stream in the requested format (MP3, Opus, or mulaw depending on `format` parameter). The response body is raw audio bytes."
+            "description": "Audio stream in the requested format (MP3, Opus, or mulaw depending on `format` parameter). The response body is raw audio bytes.",
+            "headers": {
+              "x-generation-id": {
+                "description": "Generation ID assigned to this request. Quote it when reporting a problem with the generation.",
+                "schema": { "type": "string" }
+              }
+            }
           },
           "400": {
             "description": "Bad request — invalid or missing parameters",
@@ -101,6 +107,34 @@
                 "example": {
                   "success": false,
                   "message": "InsufficientCredits: your account has no remaining credits"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — the plan's maximum generation minutes has been reached",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.APIError"
+                },
+                "example": {
+                  "success": false,
+                  "message": "Max generation minutes allowed reached"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found — a referenced resource, such as `voicePromptId`, does not exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.APIError"
+                },
+                "example": {
+                  "success": false,
+                  "message": "Voice prompt `bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773` does not exist"
                 }
               }
             }
@@ -1984,7 +2018,7 @@
         }
       },
       "model.GenerationRequest": {
-        "description": "Request structure for TTS generation endpoints.\n\n**Optional parameters** (not shown in playground): `generationId` (string), `targetDuration` (number, seconds), `tempo` (number, 0.5–2.0), `variance` (number, 0.0–1.0), `seed` (integer — `dd-etts-1.1` only; newer models do not use it), `temperature` (number, 0.0–1.0), `sampleRate` (integer), `format` (string: mp3/opus/mulaw — default mp3), `promptBoost` (boolean), `superStretch` (boolean), `realtime` (boolean), `cleanAudio` (boolean, default true), `autoGain` (boolean), `publish` (boolean), `accentControl` (object with accentBaseLocale, accentLocale, accentRatio), `performanceReferencePromptId` (string), `voiceReference` (string, base64-encoded audio), `targetGender` (string: male/female — used for language-specific handling such as Hebrew diacritics; any other value returns 400).",
+        "description": "Request structure for TTS generation endpoints.\n\n**Optional parameters** (not shown in playground): `generationId` (string), `targetDuration` (number, seconds — mutually exclusive with `tempo`), `tempo` (number, 0–2 — mutually exclusive with `targetDuration`), `variance` (number, 0.0–1.0), `temperature` (number, 0.0–1.0), `sampleRate` (integer: 8000, 16000, 22050, 24000, 32000, 36000, 44100 or 48000), `format` (string: mp3/opus/mulaw — default mp3), `promptBoost` (boolean), `superStretch` (boolean), `realtime` (boolean), `cleanAudio` (boolean, default false on REST), `autoGain` (boolean, default true on REST), `publish` (boolean), `accentControl` (object with accentBaseLocale, accentLocale, accentRatio), `performanceReferencePromptId` (string), `voiceReference` (string, base64-encoded audio), `targetGender` (string: male/female — used for language-specific handling such as Hebrew diacritics; other values are ignored).",
         "type": "object",
         "required": ["locale", "model", "targetText", "voicePromptId"],
         "properties": {
@@ -2008,6 +2042,11 @@
             "description": "ID of the voice prompt to use for generation",
             "type": "string",
             "example": "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773"
+          },
+          "seed": {
+            "description": "Random seed for deterministic generation. Applies to `dd-etts-1.1` only — newer models do not use it, and setting it has no effect on their output.",
+            "type": "integer",
+            "example": 42
           }
         },
         "additionalProperties": true
