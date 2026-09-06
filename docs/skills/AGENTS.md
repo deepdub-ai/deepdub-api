@@ -15,12 +15,15 @@ This is a monorepo containing Deepdub's platform services:
 
 ### Base URLs
 
-| Region | URL |
-|--------|-----|
-| US (default) | `https://restapi.deepdub.ai/api/v1` |
-| EU | `https://eu-restapi.deepdub.ai/api/v1` |
-| Streaming Out (WebSocket) | `wss://wsapi.deepdub.ai/open` |
-| Streaming In and Out (WebSocket) | `wss://wss.deepdub.ai/ws` (US), `wss://wss.eu.deepdub.ai/ws` (EU) |
+Every API runs in two regions. The EU host is the US host with `.eu` inserted before `.deepdub.ai`.
+
+| API | US (default) | EU |
+|-----|--------------|-----|
+| REST | `https://restapi.deepdub.ai/api/v1` | `https://restapi.eu.deepdub.ai/api/v1` |
+| Streaming Out | `wss://wsapi.deepdub.ai/open` | `wss://wsapi.eu.deepdub.ai/open` |
+| Streaming In and Out | `wss://wss.deepdub.ai/ws` | `wss://wss.eu.deepdub.ai/ws` |
+
+An API key is bound to one region. The EU region is not available with the free trial key.
 
 ### Authentication
 
@@ -104,7 +107,7 @@ Errors: `{ "error": "...", "errorType": "InvalidInput" | "RateLimit" | "MaxExcee
 
 ### Streaming In and Streaming Out API (WebSocket)
 
-Use when text is not complete up front (e.g. token-by-token from an LLM). Connect to `wss://wss.deepdub.ai/ws`, send `stream-config` once, then `stream-text` repeatedly, then `end-stream`. See the [full reference](https://docs.deepdub.com/api-reference/websocket/streaming).
+Use when text is not complete up front (e.g. token-by-token from an LLM). Connect to `wss://wss.deepdub.ai/ws`, send `stream-config` once, then `stream-text` repeatedly, then `end-stream`. See the [full reference](https://docs.deepdub.app/api-reference/websocket/streaming).
 
 ### Error Responses
 

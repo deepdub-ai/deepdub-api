@@ -17,11 +17,12 @@ You send one complete text, and the audio **streams out** to you as it is genera
 
 ## Connection
 
-Connect to the WebSocket endpoint with your API key:
+Connect to the `/open` endpoint with your API key:
 
-```
-wss://wsapi.deepdub.ai/open
-```
+| Region | URL |
+|--------|-----|
+| US | `wss://wsapi.deepdub.ai/open` |
+| EU | `wss://wsapi.eu.deepdub.ai/open` |
 
 Authentication is handled during the WebSocket handshake via the `x-api-key` header or query parameter.
 

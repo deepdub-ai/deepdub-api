@@ -54,12 +54,15 @@ Check your credit balance in the Deepdub dashboard, or contact support to upgrad
 
 ## Regions
 
-Deepdub operates in two regions:
+Deepdub operates in two regions. Every API is available in both — the EU host is the US host with `.eu` inserted before `.deepdub.ai`.
 
-| Region | Base URL |
-|--------|----------|
-| US (default) | `https://restapi.deepdub.ai/api/v1` |
-| EU | `https://eu-restapi.deepdub.ai/api/v1` |
+| API | US (default) | EU |
+|-----|--------------|-----|
+| REST | `https://restapi.deepdub.ai/api/v1` | `https://restapi.eu.deepdub.ai/api/v1` |
+| [Streaming Out](/api-reference/websocket/overview) | `wss://wsapi.deepdub.ai/open` | `wss://wsapi.eu.deepdub.ai/open` |
+| [Streaming In and Streaming Out](/api-reference/websocket/streaming) | `wss://wss.deepdub.ai/ws` | `wss://wss.eu.deepdub.ai/ws` |
+
+Your API key is bound to a region: use the host for the region your account was provisioned in. Pick the region closest to your users — crossing the Atlantic adds latency that matters most for real-time streaming.
 
 <Warning>
   The EU region is **not available** with the free trial API key. To access the EU region, [contact us](mailto:support@deepdub.ai) for a production API key.

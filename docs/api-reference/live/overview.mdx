@@ -18,9 +18,12 @@ Under the hood the API drives a live-broadcast orchestration provider on your be
 
 ## Base URL
 
-```
-https://restapi.deepdub.ai/live
-```
+| Region | URL |
+|--------|-----|
+| US (default) | `https://restapi.deepdub.ai/live` |
+| EU | `https://restapi.eu.deepdub.ai/live` |
+
+Use the host for the region your account is provisioned in. The examples below use the US host; substitute the EU one throughout, including the captions WebSocket.
 
 Authentication is the same `x-api-key` header used everywhere else in the Deepdub API. See [Authentication](/authentication).
 
@@ -223,5 +226,5 @@ Errors are proxied from the underlying orchestration provider and normalized to 
 ## Notes and limits
 
 - Accounts have a **soft cap on the number of defined services** (typically 10) regardless of whether they are running. If you hit the cap, `PUT` an existing service to change its source instead of creating a new one, or `DELETE` unused ones.
-- The API is regional. Prefer `https://restapi.deepdub.ai/live` for accounts in North America and use the EU host (`https://eu-restapi.deepdub.ai/live`) once your account is provisioned there.
+- The API is regional — see [Base URL](#base-url). Your API key works only against the region your account is provisioned in.
 - Live pipelines are billed separately from batch TTS. Contact `support@deepdub.ai` for pricing and to enable additional TTS engines beyond `Deepdub`.

@@ -11,7 +11,11 @@
   "servers": [
     {
       "url": "https://restapi.deepdub.ai/api/v1",
-      "description": "Production"
+      "description": "US (default)"
+    },
+    {
+      "url": "https://restapi.eu.deepdub.ai/api/v1",
+      "description": "EU"
     }
   ],
   "security": [

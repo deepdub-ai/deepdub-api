@@ -1003,7 +1003,8 @@
   },
   "servers": [
     {
-      "url": "https://dubbing.deepdub.app"
+      "url": "https://dubbing.deepdub.app",
+      "description": "Production (single region \u2014 no EU host)"
     }
   ],
   "security": [
