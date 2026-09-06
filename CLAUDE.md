@@ -31,7 +31,7 @@ Both scripts require a valid API key set in the script (or via `DEEPDUB_API_KEY`
 - **Default model**: `dd-etts-3.0` — always use this unless specified otherwise
 - **Auth**: `x-api-key` header, key format `dd-{random}{checksum}`
 - **Free trial key**: `dd-00000000000000000000000065c9cbfe` (rate-limited by IP)
-- **Base URLs**: US `https://restapi.deepdub.ai/api/v1`, EU `https://eu-restapi.deepdub.ai/api/v1`, WebSocket `wss://wsapi.deepdub.ai/ws`
+- **Base URLs**: US `https://restapi.deepdub.ai/api/v1`, EU `https://eu-restapi.deepdub.ai/api/v1`, Streaming Out WebSocket `wss://wsapi.deepdub.ai/open`, Streaming In and Out WebSocket `wss://wss.deepdub.ai/ws` (EU: `wss://wss.eu.deepdub.ai/ws`)
 - **Rate limits**: 5 concurrent per customer, 3 concurrent per IP
 
 ## Coding Conventions (from AGENTS.md)

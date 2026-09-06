@@ -19,7 +19,8 @@ This is a monorepo containing Deepdub's platform services:
 |--------|-----|
 | US (default) | `https://restapi.deepdub.ai/api/v1` |
 | EU | `https://eu-restapi.deepdub.ai/api/v1` |
-| WebSocket | `wss://wsapi.deepdub.ai/ws` |
+| Streaming Out (WebSocket) | `wss://wsapi.deepdub.ai/open` |
+| Streaming In and Out (WebSocket) | `wss://wss.deepdub.ai/ws` (US), `wss://wss.eu.deepdub.ai/ws` (EU) |
 
 ### Authentication
 
@@ -81,13 +82,13 @@ Classify speaker gender. Send `audio_url` or `audio_base64`. Returns `{ "predict
 
 Same but accepts multipart file upload.
 
-### WebSocket API
+### Streaming Out API (WebSocket)
 
-Connect to `wss://wsapi.deepdub.ai/ws` with `x-api-key` header.
+One complete text per request; audio streams back. Connect to `wss://wsapi.deepdub.ai/open` with `x-api-key` header.
 
 ```json
 {
-  "action": "generate",
+  "action": "text-to-speech",
   "model": "dd-etts-3.0",
   "targetText": "Hello",
   "locale": "en-US",
@@ -95,7 +96,15 @@ Connect to `wss://wsapi.deepdub.ai/ws` with `x-api-key` header.
 }
 ```
 
-Response: chunked `{ "audio": "<base64>", "isFinished": false }` ... `{ "isFinished": true }`.
+`action` must be `text-to-speech`. Takes the same optional fields as `POST /tts`, plus `format` also accepts `wav` and `s16le` here (default `wav`, not `mp3`).
+
+Response: chunked `{ "generationId": "...", "index": 0, "data": "<base64>", "isFinished": false }`, ending with `{ "generationId": "...", "index": N, "data": "", "isFinished": true }`. Audio is in `data`, not `audio`.
+
+Errors: `{ "error": "...", "errorType": "InvalidInput" | "RateLimit" | "MaxExceeded" | "InsufficientCredits", "generationId": "..." }`. Errors raised after generation starts carry `error` and `generationId` only, with no `errorType`.
+
+### Streaming In and Streaming Out API (WebSocket)
+
+Use when text is not complete up front (e.g. token-by-token from an LLM). Connect to `wss://wss.deepdub.ai/ws`, send `stream-config` once, then `stream-text` repeatedly, then `end-stream`. See the [full reference](https://docs.deepdub.com/api-reference/websocket/streaming).
 
 ### Error Responses
 

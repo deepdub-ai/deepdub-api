@@ -44,7 +44,12 @@
           {
             "group": "TTS",
             "pages": [
-              "api-reference/tts/generate-and-stream-tts-audio",
+              "api-reference/tts/generate-and-stream-tts-audio"
+            ]
+          },
+          {
+            "group": "WebSocket",
+            "pages": [
               "api-reference/websocket/overview",
               "api-reference/websocket/streaming"
             ]

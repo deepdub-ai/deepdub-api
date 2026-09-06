@@ -11,7 +11,8 @@ description: Deepdub Text-to-Speech API reference for building TTS integrations.
 |--------|-----|
 | US (default) | `https://restapi.deepdub.ai/api/v1` |
 | EU | `https://eu-restapi.deepdub.ai/api/v1` |
-| WebSocket | `wss://wsapi.deepdub.ai/ws` |
+| Streaming Out (WebSocket) | `wss://wsapi.deepdub.ai/open` |
+| Streaming In and Out (WebSocket) | `wss://wss.deepdub.ai/ws` (US), `wss://wss.eu.deepdub.ai/ws` (EU) |
 
 ## Authentication
 
@@ -185,15 +186,15 @@ Env var: `DEEPDUB_API_KEY`.
 
 ---
 
-## WebSocket API (raw)
+## Streaming Out API (raw WebSocket)
 
-Connect to `wss://wsapi.deepdub.ai/ws` with header `x-api-key`.
+One complete text per request; audio streams back. Connect to `wss://wsapi.deepdub.ai/open` with header `x-api-key`.
 
-Send JSON message, receive chunked audio:
+Send one JSON message, receive chunked audio:
 
 ```json
 {
-  "action": "generate",
+  "action": "text-to-speech",
   "model": "dd-etts-3.0",
   "targetText": "Hello",
   "locale": "en-US",
@@ -201,7 +202,13 @@ Send JSON message, receive chunked audio:
 }
 ```
 
-Response chunks: `{ "audio": "<base64>", "isFinished": false }` ... `{ "isFinished": true }`
+`action` must be `text-to-speech`. Same optional fields as `POST /tts`; `format` also accepts `wav` and `s16le` here and defaults to `wav`.
+
+Response chunks: `{ "generationId": "...", "index": 0, "data": "<base64>", "isFinished": false }` ... `{ "generationId": "...", "data": "", "isFinished": true }`. Audio is in `data`, not `audio`.
+
+## Streaming In and Streaming Out API (raw WebSocket)
+
+Use when the text is not complete up front (e.g. streaming from an LLM). Connect to `wss://wss.deepdub.ai/ws`, send `stream-config` once, then `stream-text` per fragment, then `end-stream`. Full reference: https://docs.deepdub.com/api-reference/websocket/streaming
 
 ---
 

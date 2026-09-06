@@ -1,18 +1,18 @@
 ---
-title: Real-Time Streaming API
-description: "Stream text incrementally and receive low-latency TTS audio over a persistent WebSocket connection"
+title: Streaming In and Streaming Out API
+description: "Stream text in as it is produced and stream the generated audio back, over one persistent WebSocket session"
 ---
 
 ## Overview
 
-The streaming WebSocket API is designed for real-time, agent-driven applications where text arrives incrementally (for example, token-by-token from an LLM). Unlike the single-request [`text-to-speech` protocol](/api-reference/websocket/overview), this endpoint keeps a persistent session open: you configure the voice once, then push text as it becomes available and receive audio chunks back as they are generated.
+Text **streams in** and audio **streams out**, over one persistent session. This is built for real-time, agent-driven applications where the text does not exist all at once — for example, arriving token-by-token from an LLM. You configure the voice once, then push text as it becomes available and receive audio chunks back as they are generated.
 
 <Info>
   The server buffers and batches incoming text intelligently before dispatching it to TTS workers, so you can send anything from a full sentence to a single token per message without worrying about segmentation.
 </Info>
 
 <Note>
-  This is a distinct endpoint (`/ws`) from the single-shot [WebSocket Streaming API](/api-reference/websocket/overview) (`/open`). Use this page for incremental / agent streaming, and the overview page for one-shot generations.
+  This is a distinct endpoint (`/ws`) from the [Streaming Out API](/api-reference/websocket/overview) (`/open`). If your text is already complete when you call, that endpoint is simpler — use this one only when text has to stream in.
 </Note>
 
 ## Connection
@@ -123,7 +123,7 @@ It can be sent again later in the same session to reconfigure it. The new settin
 </ParamField>
 
 <ParamField body="format" type="string" default="wav">
-  Output audio format: `wav` (default), `mp3`, `opus`, `mulaw`, or `s16le`. Unlike the [single-request endpoint](/api-reference/websocket/overview), this one does not reject unknown values — an unrecognized format silently produces `wav`, so check your spelling.
+  Output audio format: `wav` (default), `mp3`, `opus`, `mulaw`, or `s16le`. Unlike the [Streaming Out API](/api-reference/websocket/overview), this endpoint does not reject unknown values — an unrecognized format silently produces `wav`, so check your spelling.
 
   For low-latency playback, `s16le` and `mulaw` avoid the container and decoder overhead of `wav` and `mp3`.
 </ParamField>

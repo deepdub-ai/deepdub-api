@@ -1,18 +1,18 @@
 ---
-title: WebSocket Streaming API
-description: "Stream TTS audio in real-time over WebSocket connections"
+title: Streaming Out API
+description: "Send one complete text and stream the generated audio back over a WebSocket"
 ---
 
 ## Overview
 
-The WebSocket API enables real-time, chunked audio streaming for low-latency TTS generation. Audio data is delivered incrementally as base64-encoded chunks, allowing playback to begin before the full generation is complete.
+You send one complete text, and the audio **streams out** to you as it is generated — delivered incrementally as base64-encoded chunks, so playback can begin before the full generation finishes.
 
 <Info>
-  The WebSocket API uses the same generation parameters as the [REST TTS endpoint](/api-reference/tts/generate-and-stream-tts-audio), but delivers audio as a stream of chunks rather than a single response.
+  This endpoint takes the same generation parameters as the [REST TTS endpoint](/api-reference/tts/generate-and-stream-tts-audio), but delivers audio as a stream of chunks rather than a single response.
 </Info>
 
 <Note>
-  For incremental, agent-driven use cases where text arrives token-by-token (e.g., from an LLM), use the [Real-Time Streaming API](/api-reference/websocket/streaming) (`/ws`) instead. This page documents the single-request `text-to-speech` protocol (`/open`).
+  If your text is not complete up front — for example it arrives token-by-token from an LLM — you want text to stream **in** as well. Use the [Streaming In and Streaming Out API](/api-reference/websocket/streaming) (`/ws`) for that. This page documents the single-request `text-to-speech` protocol (`/open`).
 </Note>
 
 ## Connection
@@ -287,21 +287,17 @@ Audio chunks are delivered as base64-encoded data in JSON messages.
 | `mulaw` | 8-bit μ-law, common in telephony |
 | `s16le` | Raw signed 16-bit little-endian PCM, no container |
 
-<Note>
-  This endpoint synthesizes one complete text per request. To feed text in incrementally as it is produced — for example from an LLM — use the [Live Streaming API](/api-reference/websocket/streaming) instead.
-</Note>
-
 ## Sample rates
 
 Valid values are `8000`, `16000`, `22050`, `24000`, `32000`, `36000`, `44100`, and `48000` Hz. The internal generation runs at 48 kHz and is resampled to the requested rate. If no sample rate is specified, `mulaw` defaults to 8000 Hz.
 
-### REST vs WebSocket comparison
+### REST vs Streaming Out
 
-| Feature | REST API | WebSocket API |
-|---------|----------|---------------|
+| Feature | REST API | Streaming Out API |
+|---------|----------|-------------------|
 | **Delivery** | Streaming HTTP response (chunked audio bytes) | Chunked audio delivered incrementally as base64-encoded JSON messages |
 | **Formats** | `mp3`, `opus`, `mulaw` | `wav` (default), `mp3`, `opus`, `mulaw`, `s16le` |
-| **Incremental text input** | Not supported | Not supported here — use the [Live Streaming API](/api-reference/websocket/streaming) |
+| **Text streamed in** | No | No — use [Streaming In and Streaming Out](/api-reference/websocket/streaming) |
 | **Default format** | `mp3` | `wav` |
 | **Default mulaw sample rate** | 8000 Hz | 8000 Hz |
 | **Best for** | Simple integrations, file generation | Real-time playback, low-latency applications |

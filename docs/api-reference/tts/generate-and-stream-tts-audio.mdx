@@ -60,7 +60,7 @@ The REST API streams audio as raw bytes in the HTTP response body. Supported for
 | `mulaw` | 8-bit µ-law encoding, commonly used in telephony. Defaults to 8000 Hz if no sample rate is specified. |
 
 <Warning>
-  The REST API supports `mp3`, `opus`, and `mulaw` only. For `wav` or `s16le` output, use the [WebSocket API](/api-reference/websocket/overview).
+  The REST API supports `mp3`, `opus`, and `mulaw` only. For `wav` or `s16le` output, use the [Streaming Out API](/api-reference/websocket/overview).
 </Warning>
 
 ## Sample rates
@@ -73,11 +73,11 @@ Every successful response carries an `x-generation-id` header identifying the ge
 
 ### REST vs WebSocket comparison
 
-| Feature | REST API | WebSocket API |
-|---------|----------|---------------|
+| Feature | REST API | Streaming Out API |
+|---------|----------|-------------------|
 | **Delivery** | Streaming HTTP response (chunked audio bytes) | Chunked audio delivered incrementally as base64-encoded JSON messages |
 | **Formats** | `mp3`, `opus`, `mulaw` | `wav` (default), `mp3`, `opus`, `mulaw`, `s16le` |
-| **Incremental text input** | Not supported | Not supported here either — use the [Live Streaming API](/api-reference/websocket/streaming) |
+| **Text streamed in** | No | No — use [Streaming In and Streaming Out](/api-reference/websocket/streaming) |
 | **Default format** | `mp3` | `wav` |
 | **Default mulaw sample rate** | 8000 Hz | 8000 Hz |
 | **Best for** | Simple integrations, file generation | Real-time playback, low-latency applications |
