@@ -25,7 +25,7 @@ Every API above runs in two regions. The EU host is the US host with `.eu` inser
 | Streaming In and Streaming Out | `wss://wss.deepdub.ai/ws` | `wss://wss.eu.deepdub.ai/ws` |
 | Live (broadcast) | `https://restapi.deepdub.ai/live` | `https://restapi.eu.deepdub.ai/live` |
 
-The Managed Dub API is US-only (`https://dubbing.deepdub.app`). An API key is bound to one region, and the EU region is not available with the free trial key.
+The Managed Dub API is US-only (`https://dubbing.deepdub.app`). An API key is bound to one region.
 
 ## Supported output formats
 

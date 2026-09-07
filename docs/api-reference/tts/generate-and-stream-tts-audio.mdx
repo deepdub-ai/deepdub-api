@@ -2,6 +2,17 @@
 openapi: post /tts
 ---
 
+## Regions
+
+The REST API runs in two regions. Use the host for the region your account is provisioned in — the playground above lets you switch between them.
+
+| Region | Base URL |
+|--------|----------|
+| US (default) | `https://restapi.deepdub.ai/api/v1` |
+| EU | `https://restapi.eu.deepdub.ai/api/v1` |
+
+Both regions serve every REST endpoint and take the same request bodies. See [Authentication](/authentication) for the WebSocket hosts.
+
 ## Supported languages
 
 | Language | Locale code |

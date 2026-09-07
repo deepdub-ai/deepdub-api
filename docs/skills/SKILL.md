@@ -15,7 +15,7 @@ Every API runs in two regions. The EU host is the US host with `.eu` inserted be
 | Streaming Out | `wss://wsapi.deepdub.ai/open` | `wss://wsapi.eu.deepdub.ai/open` |
 | Streaming In and Out | `wss://wss.deepdub.ai/ws` | `wss://wss.eu.deepdub.ai/ws` |
 
-An API key is bound to one region. The EU region is not available with the free trial key.
+An API key is bound to one region.
 
 ## Authentication
 
