@@ -346,10 +346,146 @@
           }
         }
       }
+    },
+    "/provenance/verify": {
+      "post": {
+        "summary": "Verify Content Credentials",
+        "description": "Upload a delivered media file and read the C2PA Content Credentials embedded in it. Returns whether a manifest is present, whether its signature validated, and the AI generation classification Deepdub recorded when the file was produced.\n\nThe check runs entirely on the uploaded bytes, so it also works for a copy of the file that has been moved or renamed. A file that was re-encoded after delivery loses its manifest and will come back with `c2pa_present: false`.",
+        "operationId": "verifyContentProvenance",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "The delivered media file to inspect."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The file was read. Check `c2pa_present` and `verified` to interpret the result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerificationResult"
+                },
+                "example": {
+                  "verified": true,
+                  "provider": "Deepdub",
+                  "classification": "partially_ai_modified",
+                  "components": [
+                    "audio",
+                    "voice"
+                  ],
+                  "signature_valid": true,
+                  "c2pa_present": true,
+                  "detail": "Valid"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The uploaded file has an extension that cannot carry Content Credentials."
+          },
+          "401": {
+            "description": "Unauthorized \u2014 invalid or missing API key."
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "VerificationResult": {
+        "type": "object",
+        "title": "VerificationResult",
+        "description": "The result of reading Content Credentials from an uploaded file.",
+        "required": [
+          "verified"
+        ],
+        "properties": {
+          "verified": {
+            "type": "boolean",
+            "description": "True when a manifest is present and its signature validated."
+          },
+          "provider": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Who signed the file. `Deepdub` for Deepdub deliverables."
+          },
+          "classification": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "original",
+              "ai_assisted",
+              "partially_ai_modified",
+              "fully_ai_generated",
+              null
+            ],
+            "description": "How much of the content was AI generated. Dubbing deliverables are `partially_ai_modified`."
+          },
+          "components": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Which parts of the asset the classification applies to, for example `audio` and `voice`."
+          },
+          "signature_valid": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether the cryptographic signature over the manifest validated."
+          },
+          "c2pa_present": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether the file carried a manifest at all."
+          },
+          "created_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "Reserved. Not currently populated."
+          },
+          "watermark_detected": {
+            "type": "boolean",
+            "default": false,
+            "description": "Reserved for a future watermarking signal. Always false today."
+          },
+          "watermark_confidence": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "Reserved for a future watermarking signal. Always null today."
+          },
+          "detail": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Human-readable outcome, such as the validation state or `No C2PA manifest found`."
+          }
+        }
+      },
       "AdditionalProductStateEnum": {
         "type": "string",
         "enum": [

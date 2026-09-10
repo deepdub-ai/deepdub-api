@@ -116,12 +116,16 @@
               "PUT /dubbing/job/{request_id}",
               "POST /dubbing/job/{request_id}/sources",
               "PATCH /dubbing/job/{request_id}",
-              "DELETE /dubbing/job/{request_id}"
+              "DELETE /dubbing/job/{request_id}",
+              "POST /provenance/verify"
             ]
           },
           {
             "group": "Guides",
-            "pages": ["managed-dub/subtitle-only-flow"]
+            "pages": [
+              "managed-dub/subtitle-only-flow",
+              "managed-dub/content-credentials"
+            ]
           }
         ]
       }
