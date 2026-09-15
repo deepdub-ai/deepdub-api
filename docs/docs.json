@@ -110,7 +110,7 @@
             "group": "API Reference",
             "openapi": "managed-dub.openapi.json",
             "pages": [
-              "POST /dubbing/job",
+              "api-reference/submit-dubbing-job",
               "GET /dubbing/job/{request_id}",
               "GET /dubbing/jobs",
               "PUT /dubbing/job/{request_id}",
