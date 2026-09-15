@@ -107,7 +107,7 @@
         "tab": "Managed Dub API",
         "groups": [
           {
-            "group": "Overview",
+            "group": "Getting Started",
             "pages": [
               "managed-dub/overview"
             ]
