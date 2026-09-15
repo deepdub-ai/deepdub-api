@@ -107,7 +107,7 @@ Errors: `{ "error": "...", "errorType": "InvalidInput" | "RateLimit" | "MaxExcee
 
 ### Streaming In and Streaming Out API (WebSocket)
 
-Use when text is not complete up front (e.g. token-by-token from an LLM). Connect to `wss://wss.deepdub.ai/ws`, send `stream-config` once, then `stream-text` repeatedly, then `end-stream`. See the [full reference](https://docs.deepdub.app/api-reference/websocket/streaming).
+Use when text is not complete up front (e.g. token-by-token from an LLM). Connect to `wss://wss.deepdub.ai/ws`, send `stream-config` once, then `stream-text` repeatedly, then `end-stream`. See the [full reference](https://docs.deepdub.ai/api-reference/websocket/streaming).
 
 ### Error Responses
 
@@ -197,7 +197,7 @@ Env var: `DEEPDUB_API_KEY`.
 | News Broadcaster (M) | hi-IN | `731912b7-7e63-4de9-acf6-b16c4bdb0c9e_prompt-V2-Newscaster-Headlines` |
 | Storyteller (F) | es-ES | `4202cbc4-5862-4af5-83f4-286ef487d593_reading-neutral` |
 
-Full docs: https://docs.deepdub.app
+Full docs: https://docs.deepdub.ai
 
 ## Coding Conventions
 

@@ -2,7 +2,7 @@
 
 Developer documentation for [Deepdub](https://deepdub.com) voice AI APIs. Built with [Mintlify](https://mintlify.com).
 
-**Docs site:** [docs.deepdub.app](https://docs.deepdub.app)
+**Docs site:** [docs.deepdub.ai](https://docs.deepdub.ai)
 
 ## APIs
 

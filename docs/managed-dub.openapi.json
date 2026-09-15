@@ -2,14 +2,14 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Deepdub Managed Dubbing API",
-    "description": "Public REST API for submitting videos for AI-assisted dubbing, tracking job status, and managing deliverables.\n\nAccess to the Managed Dub API is by invitation only. We onboard partners individually so each integration is tuned to the right workflow and quota. To request access, email sales@deepdub.ai and tell us about your use case — content type, target languages, expected monthly volume, and timeline.",
+    "description": "Public REST API for submitting videos for AI-assisted dubbing, tracking job status, and managing deliverables.",
     "version": "1.0.0"
   },
   "paths": {
     "/dubbing/job": {
       "post": {
         "summary": "Submit Dubbing Job",
-        "description": "Create a new dubbing job. The source video is validated, locales are resolved, and the job is queued for processing. Returns a requestId used to track the job.",
+        "description": "Create a new dubbing job. The source video is validated, locales are resolved, and the job is queued for processing. Returns a requestId used to track the job.\n\n**Access to the Managed Dub API is by invitation only.**\n\nWe onboard partners individually so each integration is tuned to the right workflow and quota. To request access, email [sales@deepdub.ai](mailto:sales@deepdub.ai) and tell us about your use case — content type, target languages, expected monthly volume, and timeline. The more you share, the faster we can get your API keys into your hands.",
         "operationId": "create_dubbing_job_dubbing_job_post",
         "requestBody": {
           "content": {

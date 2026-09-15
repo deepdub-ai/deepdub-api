@@ -14,7 +14,7 @@ This is **not** the platform monorepo — there is no build system, test suite, 
 
 ## Documentation Site
 
-The docs site at https://docs.deepdub.app is built with [Mintlify](https://mintlify.com). Configuration is in `docs/docs.json`. Pages are `.mdx` files in `docs/`. Changes to `main` auto-deploy.
+The docs site at https://docs.deepdub.ai is built with [Mintlify](https://mintlify.com). Configuration is in `docs/docs.json`. Pages are `.mdx` files in `docs/`. Changes to `main` auto-deploy.
 
 ## Running Example Scripts
 

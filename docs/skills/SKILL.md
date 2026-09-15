@@ -211,7 +211,7 @@ Response chunks: `{ "generationId": "...", "index": 0, "data": "<base64>", "isFi
 
 ## Streaming In and Streaming Out API (raw WebSocket)
 
-Use when the text is not complete up front (e.g. streaming from an LLM). Connect to `wss://wss.deepdub.ai/ws`, send `stream-config` once, then `stream-text` per fragment, then `end-stream`. Full reference: https://docs.deepdub.app/api-reference/websocket/streaming
+Use when the text is not complete up front (e.g. streaming from an LLM). Connect to `wss://wss.deepdub.ai/ws`, send `stream-config` once, then `stream-text` per fragment, then `end-stream`. Full reference: https://docs.deepdub.ai/api-reference/websocket/streaming
 
 ---
 
@@ -240,7 +240,7 @@ REST errors return JSON with `{ "success": false, "message": "..." }`.
 
 ## Voice Presets (sample)
 
-For the full voice presets list with IDs, see the [live documentation](https://docs.deepdub.app/voice-presets).
+For the full voice presets list with IDs, see the [live documentation](https://docs.deepdub.ai/voice-presets).
 
 Common presets for quick testing:
 
@@ -259,4 +259,4 @@ Common presets for quick testing:
 
 For complete OpenAPI spec, parameter details, and interactive docs:
 - OpenAPI spec: `docs/openapi3.json` in this repo
-- Live: https://docs.deepdub.app
+- Live: https://docs.deepdub.ai
