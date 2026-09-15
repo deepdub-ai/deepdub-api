@@ -107,6 +107,12 @@
         "tab": "Managed Dub API",
         "groups": [
           {
+            "group": "Overview",
+            "pages": [
+              "managed-dub/overview"
+            ]
+          },
+          {
             "group": "API Reference",
             "openapi": "managed-dub.openapi.json",
             "pages": [
