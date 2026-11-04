@@ -18,9 +18,12 @@ To make a report actionable, include:
 - `phoneticExpected` *(optional)* — how the word should have sounded, written phonetically
 - `problemAudioFile` *(optional)* — base64-encoded clip of the problem audio
 - `additionalComments` *(optional)* — anything else that helps reproduce or explain the issue
+- `model` *(optional)* — the model that produced the audio, such as `dd-etts-3.0`
 
 Use `type` to say what kind of problem you're reporting: `hallucinations` for words the model got wrong or invented, `glossary` for terms that need a permanent pronunciation entry. Omitting it defaults to `hallucinations`; any other value returns `400`.
 
 The `phoneticHeard` and `phoneticExpected` pair is the fastest way to make a mispronunciation actionable — it tells the team exactly what the model produced and what it should have produced, without anyone having to listen to the audio.
+
+Send `model` when you know which model generated the audio. Quality problems are usually specific to a model, so naming it saves a round trip during triage. The value is recorded exactly as you send it and isn't checked against the list of available models, which means a typo is accepted — but it must be at most 64 characters of letters, digits, `.`, `_`, `:`, `/` or `-`, and anything else returns `400`. Omit it if you aren't sure; it's optional, and a report without it is handled exactly as before.
 
 The response includes an `id` you can use with the [GET](/api-reference/issues/get-issue), [PUT](/api-reference/issues/update-issue), and [DELETE](/api-reference/issues/delete-issue) endpoints.

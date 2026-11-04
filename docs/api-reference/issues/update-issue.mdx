@@ -3,3 +3,5 @@ openapi: put /issues/{id}
 ---
 
 All fields in the request body are optional — only fields you include will be updated.
+
+That includes `model`, so you can name the model on a report you already filed. The same validation applies as on create: at most 64 characters of letters, digits, `.`, `_`, `:`, `/` or `-`, and anything else returns `400`.

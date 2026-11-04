@@ -64,9 +64,9 @@ Report and manage TTS quality issues (mispronunciations, artifacts, etc.).
 
 | Method | Path | Description |
 |--------|------|-------------|
-| POST | /issues | Create an issue. Required: `generationId`, `generatedText`, `problemWord`, `voicePromptId`. Optional: `type` (hallucinations/glossary, default hallucinations), `additionalComments`, `problemAudioFile` (base64), `problemSeconds`, `phoneticHeard`, `phoneticExpected`. |
-| GET | /issues | List your issues, newest first. Query: `limit` (1–100, default 50), `cursor` (from a previous `nextCursor`), `from`/`to` (YYYY-MM-DD or RFC3339, inclusive). |
-| GET | /issues/{id} | Get an issue by ID. Response `state` is one of open, uploaded_for_correction, in_progress, resolved, rejected; `rejectionReason` is set only when rejected. |
+| POST | /issues | Create an issue. Required: `generationId`, `generatedText`, `problemWord`, `voicePromptId`. Optional: `type` (hallucinations/glossary, default hallucinations), `additionalComments`, `problemAudioFile` (base64), `problemSeconds`, `phoneticHeard`, `phoneticExpected`, `model` (e.g. `dd-etts-3.0`; ≤64 chars of letters, digits, `.`, `_`, `:`, `/`, `-`, else 400). |
+| GET | /issues | List your issues, newest first. Each entry is a summary: `id`, `state`, `rejectionReason`, `createdAt`, `updatedAt`, `generationId`, `type`, `locale`, `model`. Query: `limit` (1–100, default 50), `cursor` (from a previous `nextCursor`), `from`/`to` (YYYY-MM-DD or RFC3339, inclusive). |
+| GET | /issues/{id} | Get an issue by ID. Response `state` is one of open, uploaded_for_correction, in_progress, resolved, rejected; `rejectionReason` is set only when rejected. `generatedText`, `problemWord` and `additionalComments` are accepted on write but never returned. |
 | PUT | /issues/{id} | Update an issue (all fields optional) |
 | PATCH | /issues/{id}/state | Move an issue to a new `state`. `rejectionReason` required when state is `rejected`. |
 | DELETE | /issues/{id} | Archive an issue |

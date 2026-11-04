@@ -1137,7 +1137,7 @@
     "/issues": {
       "get": {
         "operationId": "listIssues",
-        "description": "List the issues reported by your account, newest first. Pagination is cursor-based: pass the `nextCursor` from a response as the next request's `cursor`, and stop once a response omits it.",
+        "description": "List the issues reported by your account, newest first. Each entry is a summary — `id`, `state`, `rejectionReason`, `createdAt`, `updatedAt`, `generationId`, `type`, `locale` and `model`; fetch `GET /issues/{id}` for the full record. Pagination is cursor-based: pass the `nextCursor` from a response as the next request's `cursor`, and stop once a response omits it.",
         "tags": ["Issues"],
         "summary": "List issues",
         "parameters": [
@@ -1277,7 +1277,8 @@
                 "problemWord": "Deepdub",
                 "voicePromptId": "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
                 "additionalComments": "Mispronunciation of brand name",
-                "problemSeconds": 2.5
+                "problemSeconds": 2.5,
+                "model": "dd-etts-3.0"
               }
             }
           }
@@ -1450,7 +1451,8 @@
                 "$ref": "#/components/schemas/model.UpdateIssueRequest"
               },
               "example": {
-                "additionalComments": "Confirmed the mispronunciation reproduces with seed=42"
+                "additionalComments": "Confirmed the mispronunciation reproduces with seed=42",
+                "model": "dd-etts-3.0"
               }
             }
           }
@@ -2415,6 +2417,11 @@
             "description": "Optional phonetic transcription of how the word should sound",
             "type": "string",
             "example": "deep-dub"
+          },
+          "model": {
+            "description": "Model used for the generation. Optional — omit it if you don't know which model produced the audio. Up to 64 characters of letters, digits, `.`, `_`, `:`, `/` or `-`; any other value returns 400. Recorded as reported and not validated against the list of available models.",
+            "type": "string",
+            "example": "dd-etts-3.0"
           }
         }
       },
@@ -2456,46 +2463,16 @@
           "phoneticExpected": {
             "description": "Optional phonetic transcription of how the word should sound",
             "type": "string"
-          }
-        }
-      },
-      "model.ListIssuesResponse": {
-        "description": "A page of issues reported by your account",
-        "type": "object",
-        "properties": {
-          "issues": {
-            "description": "Issues on this page, newest first.",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/model.IssueResponse"
-            }
           },
-          "nextCursor": {
-            "description": "Pass as `cursor` to fetch the next page. Absent on the last page.",
-            "type": "string"
+          "model": {
+            "description": "Model used for the generation. Up to 64 characters of letters, digits, `.`, `_`, `:`, `/` or `-`; any other value returns 400. Recorded as reported and not validated against the list of available models.",
+            "type": "string",
+            "example": "dd-etts-3.0"
           }
         }
       },
-      "model.UpdateIssueStateRequest": {
-        "description": "Payload for moving an issue to a new workflow state",
-        "type": "object",
-        "required": ["state"],
-        "properties": {
-          "state": {
-            "description": "State to move the issue to.",
-            "type": "string",
-            "enum": ["open", "uploaded_for_correction", "in_progress", "resolved", "rejected"],
-            "example": "resolved"
-          },
-          "rejectionReason": {
-            "description": "Why the issue is being rejected. Required when `state` is `rejected`, ignored otherwise.",
-            "type": "string",
-            "example": "not reproducible"
-          }
-        }
-      },
-      "model.IssueResponse": {
-        "description": "Issue details",
+      "model.IssueSummary": {
+        "description": "Condensed view of an issue, as returned by the list endpoint. Fetch `GET /issues/{id}` for the full record, including `voicePromptId`, `problemSeconds` and the phonetic fields.",
         "type": "object",
         "properties": {
           "id": {
@@ -2524,10 +2501,86 @@
           "generationId": {
             "type": "string"
           },
-          "generatedText": {
-            "type": "string"
+          "type": {
+            "description": "Category of problem being reported.",
+            "type": "string",
+            "enum": ["hallucinations", "glossary"]
           },
-          "problemWord": {
+          "locale": {
+            "description": "Locale of the reported generation, when known.",
+            "type": "string",
+            "example": "en-US"
+          },
+          "model": {
+            "description": "Model reported for the generation. Present only when it was supplied on create or update.",
+            "type": "string",
+            "example": "dd-etts-3.0"
+          }
+        }
+      },
+      "model.ListIssuesResponse": {
+        "description": "A page of issues reported by your account",
+        "type": "object",
+        "properties": {
+          "issues": {
+            "description": "Issues on this page, newest first.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/model.IssueSummary"
+            }
+          },
+          "nextCursor": {
+            "description": "Pass as `cursor` to fetch the next page. Absent on the last page.",
+            "type": "string"
+          }
+        }
+      },
+      "model.UpdateIssueStateRequest": {
+        "description": "Payload for moving an issue to a new workflow state",
+        "type": "object",
+        "required": ["state"],
+        "properties": {
+          "state": {
+            "description": "State to move the issue to.",
+            "type": "string",
+            "enum": ["open", "uploaded_for_correction", "in_progress", "resolved", "rejected"],
+            "example": "resolved"
+          },
+          "rejectionReason": {
+            "description": "Why the issue is being rejected. Required when `state` is `rejected`, ignored otherwise.",
+            "type": "string",
+            "example": "not reproducible"
+          }
+        }
+      },
+      "model.IssueResponse": {
+        "description": "Issue details. `generatedText`, `problemWord` and `additionalComments` are accepted on create and update and kept for triage, but are never returned.",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "iss_12345abcde"
+          },
+          "state": {
+            "description": "Current state of the issue.",
+            "type": "string",
+            "enum": ["open", "uploaded_for_correction", "in_progress", "resolved", "rejected"],
+            "example": "open"
+          },
+          "rejectionReason": {
+            "description": "Why the issue was rejected. Present only when `state` is `rejected`.",
+            "type": "string",
+            "example": "duplicate report"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "generationId": {
             "type": "string"
           },
           "voicePromptId": {
@@ -2543,8 +2596,10 @@
             "type": "string",
             "example": "en-US"
           },
-          "additionalComments": {
-            "type": "string"
+          "model": {
+            "description": "Model reported for the generation. Present only when it was supplied on create or update.",
+            "type": "string",
+            "example": "dd-etts-3.0"
           },
           "problemSeconds": {
             "type": "number"

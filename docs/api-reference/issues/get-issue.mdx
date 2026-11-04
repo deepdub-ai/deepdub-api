@@ -2,6 +2,14 @@
 openapi: get /issues/{id}
 ---
 
+## What comes back
+
+The record covers the report's identity and status — `generationId`, `voicePromptId`, `type`, `locale`, `model`, `problemSeconds` and the phonetic fields — alongside `state` and the timestamps.
+
+<Note>
+  `generatedText`, `problemWord` and `additionalComments` are accepted when you file or update a report and are kept for triage, but they are never returned by any endpoint. They can carry text you submitted, so they stay out of responses. Keep your own copy if you need to show them back to your users.
+</Note>
+
 ## Issue states
 
 The `state` field tracks where a report sits in the review process:

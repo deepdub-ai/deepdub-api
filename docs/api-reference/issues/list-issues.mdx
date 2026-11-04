@@ -4,6 +4,8 @@ openapi: get /issues
 
 Returns the issues reported by your account, newest first. Only your own reports are visible — an API key never sees another customer's issues.
 
+Each entry is a summary: `id`, `state`, `rejectionReason`, `createdAt`, `updatedAt`, `generationId`, `type`, `locale` and `model`. Fetch [`GET /issues/{id}`](/api-reference/issues/get-issue) for the full record, which adds `voicePromptId`, `problemSeconds` and the phonetic fields.
+
 ## Pagination
 
 Paging is cursor-based. Make the first request without a `cursor`, then pass the `nextCursor` from each response as the `cursor` of the next request:
