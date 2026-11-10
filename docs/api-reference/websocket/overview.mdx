@@ -35,7 +35,7 @@ Send a JSON message on the WebSocket connection:
 </ParamField>
 
 <ParamField body="model" type="string" required>
-  Model ID to use for generation (e.g., `dd-etts-3.0`).
+  Model ID to use for generation (e.g., `dd-etts-4.0`).
 </ParamField>
 
 <ParamField body="targetText" type="string" required>
@@ -131,7 +131,7 @@ Send a JSON message on the WebSocket connection:
 ```json
 {
   "action": "text-to-speech",
-  "model": "dd-etts-3.0",
+  "model": "dd-etts-4.0",
   "targetText": "Welcome to Deepdub's real-time text to speech API.",
   "locale": "en-US",
   "voicePromptId": "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
@@ -319,7 +319,7 @@ async def streaming_tts():
         async for chunk in conn.async_tts(
             text="Hello, this is streamed text input.",
             voice_prompt_id="bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
-            model="dd-etts-3.0",
+            model="dd-etts-4.0",
             locale="en-US",
             format="wav",
             sample_rate=16000,
@@ -348,7 +348,7 @@ async function streamingTts() {
   for await (const chunk of deepdub.streamTts("Hello, this is streamed text input.", {
     locale: "en-US",
     voicePromptId: "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
-    model: "dd-etts-3.0",
+    model: "dd-etts-4.0",
     format: "wav",
     sampleRate: 16000,
   })) {

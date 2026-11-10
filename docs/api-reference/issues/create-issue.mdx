@@ -18,7 +18,7 @@ To make a report actionable, include:
 - `phoneticExpected` *(optional)* — how the word should have sounded, written phonetically
 - `problemAudioFile` *(optional)* — base64-encoded clip of the problem audio
 - `additionalComments` *(optional)* — anything else that helps reproduce or explain the issue
-- `model` *(optional)* — the model that produced the audio, such as `dd-etts-3.0`
+- `model` *(optional)* — the model that produced the audio, such as `dd-etts-4.0`
 
 Use `type` to say what kind of problem you're reporting: `hallucinations` for words the model got wrong or invented, `glossary` for terms that need a permanent pronunciation entry. Omitting it defaults to `hallucinations`; any other value returns `400`.
 

@@ -11,7 +11,6 @@ In addition to this API documentation, there's also the python library found her
 | Model Nickname | Model ID    | Realtime Support | Realtime Latency (E2E) | Realtime Factor |
 | -------------- | ----------- | ---------------- | ---------------------- | --------------- |
 | OG             | dd-etts-1.1 | x                | 600ms                  | up to 2x        |
-| Violet         | dd-etts-2.5 | v                | 200ms                  | up to 3.5x      |
 | Phanotmx       | dd-etts-3.0 | v                | 125ms                  | up to 5x        |
 
 ### Connection Setup
@@ -31,7 +30,7 @@ r = requests.post("https://restapi.deepdub.ai/api/v1/tts",
                   "x-api-key": api_key
               },
          json={
-              "model": "dd-etts-2.5",
+              "model": "dd-etts-4.0",
               "targetText": "marry christmas! and a happy new year!",
               "locale": "en-US",
               "voicePromptId": voice_prompt_id

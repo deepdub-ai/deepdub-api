@@ -28,7 +28,7 @@ Both scripts require a valid API key set in the script (or via `DEEPDUB_API_KEY`
 
 ## API Essentials
 
-- **Default model**: `dd-etts-3.0` — always use this unless specified otherwise
+- **Default model**: `dd-etts-4.0` — always use this unless specified otherwise
 - **Auth**: `x-api-key` header, key format `dd-{random}{checksum}`
 - **Free trial key**: `dd-00000000000000000000000065c9cbfe` (rate-limited by IP)
 - **Base URLs** — every API runs in two regions; the EU host is the US host with `.eu` inserted before `.deepdub.ai`:

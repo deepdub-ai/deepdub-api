@@ -35,7 +35,7 @@ Store production keys in a secrets manager, never in code.
 
 ### Default Model
 
-`dd-etts-3.0` — always use this unless specified otherwise.
+`dd-etts-4.0` — always use this unless specified otherwise.
 
 ### REST Endpoints
 
@@ -45,7 +45,7 @@ Returns audio stream (MP3 by default).
 
 ```json
 {
-  "model": "dd-etts-3.0",
+  "model": "dd-etts-4.0",
   "targetText": "Hello world",
   "locale": "en-US",
   "voicePromptId": "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773"
@@ -70,7 +70,7 @@ Report and manage TTS quality issues (mispronunciations, artifacts, etc.).
 
 | Method | Path | Description |
 |--------|------|-------------|
-| POST | /issues | Create an issue. Required: `generationId`, `generatedText`, `problemWord`, `voicePromptId`. Optional: `type` (hallucinations/glossary, default hallucinations), `additionalComments`, `problemAudioFile` (base64), `problemSeconds`, `phoneticHeard`, `phoneticExpected`, `model` (e.g. `dd-etts-3.0`; ≤64 chars of letters, digits, `.`, `_`, `:`, `/`, `-`, else 400). |
+| POST | /issues | Create an issue. Required: `generationId`, `generatedText`, `problemWord`, `voicePromptId`. Optional: `type` (hallucinations/glossary, default hallucinations), `additionalComments`, `problemAudioFile` (base64), `problemSeconds`, `phoneticHeard`, `phoneticExpected`, `model` (e.g. `dd-etts-4.0`; ≤64 chars of letters, digits, `.`, `_`, `:`, `/`, `-`, else 400). |
 | GET | /issues | List your issues, newest first. Each entry is a summary: `id`, `state`, `rejectionReason`, `createdAt`, `updatedAt`, `generationId`, `type`, `locale`, `model`. Query: `limit` (1–100, default 50), `cursor` (from a previous `nextCursor`), `from`/`to` (YYYY-MM-DD or RFC3339, inclusive). |
 | GET | /issues/{id} | Get an issue by ID. Response `state` is one of open, uploaded_for_correction, in_progress, resolved, rejected; `rejectionReason` is set only when rejected. `generatedText`, `problemWord` and `additionalComments` are accepted on write but never returned. |
 | PUT | /issues/{id} | Update an issue (all fields optional) |
@@ -92,7 +92,7 @@ One complete text per request; audio streams back. Connect to `wss://wsapi.deepd
 ```json
 {
   "action": "text-to-speech",
-  "model": "dd-etts-3.0",
+  "model": "dd-etts-4.0",
   "targetText": "Hello",
   "locale": "en-US",
   "voicePromptId": "..."
@@ -141,7 +141,7 @@ client = DeepdubClient(api_key="YOUR_KEY")
 audio = client.tts(
     text="Hello world",
     voice_prompt_id="bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
-    model="dd-etts-3.0",
+    model="dd-etts-4.0",
     locale="en-US",
 )
 
@@ -155,7 +155,7 @@ Async streaming:
 
 ```python
 async with client.async_connect() as conn:
-    async for chunk in conn.async_tts(text="...", voice_prompt_id="...", model="dd-etts-3.0", format="mp3"):
+    async for chunk in conn.async_tts(text="...", voice_prompt_id="...", model="dd-etts-4.0", format="mp3"):
         audio.extend(chunk)
 ```
 
@@ -176,7 +176,7 @@ await deepdub.connect();
 const buffer = await deepdub.generateToBuffer("Hello world", {
   locale: "en-US",
   voicePromptId: "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
-  model: "dd-etts-3.0",
+  model: "dd-etts-4.0",
 });
 
 await deepdub.generateToFile("./output.wav", "Hello world", { ... });
@@ -203,4 +203,4 @@ Full docs: https://docs.deepdub.ai
 
 - Python: prefer `dict.get()` over `if key in dict`; use `logger.exception()` not `logger.error(f"...{e}")`; write module-level pytest tests, not class-based
 - Store secrets in secrets manager, not env vars or code
-- Default TTS model is always `dd-etts-3.0`
+- Default TTS model is always `dd-etts-4.0`

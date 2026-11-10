@@ -27,7 +27,7 @@ Store production keys in a secrets manager, never in code.
 
 ## Default Model
 
-`dd-etts-3.0` — always use this unless the user specifies otherwise.
+`dd-etts-4.0` — always use this unless the user specifies otherwise.
 
 ---
 
@@ -39,7 +39,7 @@ Returns audio stream (MP3 by default).
 
 ```json
 {
-  "model": "dd-etts-3.0",
+  "model": "dd-etts-4.0",
   "targetText": "Hello world",
   "locale": "en-US",
   "voicePromptId": "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773"
@@ -64,7 +64,7 @@ Report and manage TTS quality issues (mispronunciations, artifacts, etc.).
 
 | Method | Path | Description |
 |--------|------|-------------|
-| POST | /issues | Create an issue. Required: `generationId`, `generatedText`, `problemWord`, `voicePromptId`. Optional: `type` (hallucinations/glossary, default hallucinations), `additionalComments`, `problemAudioFile` (base64), `problemSeconds`, `phoneticHeard`, `phoneticExpected`, `model` (e.g. `dd-etts-3.0`; ≤64 chars of letters, digits, `.`, `_`, `:`, `/`, `-`, else 400). |
+| POST | /issues | Create an issue. Required: `generationId`, `generatedText`, `problemWord`, `voicePromptId`. Optional: `type` (hallucinations/glossary, default hallucinations), `additionalComments`, `problemAudioFile` (base64), `problemSeconds`, `phoneticHeard`, `phoneticExpected`, `model` (e.g. `dd-etts-4.0`; ≤64 chars of letters, digits, `.`, `_`, `:`, `/`, `-`, else 400). |
 | GET | /issues | List your issues, newest first. Each entry is a summary: `id`, `state`, `rejectionReason`, `createdAt`, `updatedAt`, `generationId`, `type`, `locale`, `model`. Query: `limit` (1–100, default 50), `cursor` (from a previous `nextCursor`), `from`/`to` (YYYY-MM-DD or RFC3339, inclusive). |
 | GET | /issues/{id} | Get an issue by ID. Response `state` is one of open, uploaded_for_correction, in_progress, resolved, rejected; `rejectionReason` is set only when rejected. `generatedText`, `problemWord` and `additionalComments` are accepted on write but never returned. |
 | PUT | /issues/{id} | Update an issue (all fields optional) |
@@ -99,7 +99,7 @@ client = DeepdubClient(api_key="YOUR_KEY")
 audio = client.tts(
     text="Hello world",
     voice_prompt_id="bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
-    model="dd-etts-3.0",
+    model="dd-etts-4.0",
     locale="en-US",
 )
 
@@ -118,7 +118,7 @@ async def stream():
         async for chunk in conn.async_tts(
             text="Streaming audio",
             voice_prompt_id="...",
-            model="dd-etts-3.0",
+            model="dd-etts-4.0",
             format="mp3",
         ):
             audio.extend(chunk)
@@ -158,7 +158,7 @@ await deepdub.connect();
 const buffer = await deepdub.generateToBuffer("Hello world", {
   locale: "en-US",
   voicePromptId: "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
-  model: "dd-etts-3.0",
+  model: "dd-etts-4.0",
 });
 
 // Or write directly to file
@@ -171,7 +171,7 @@ await deepdub.generateToFile("./output.wav", "Hello world", { ... });
 const buffer = await deepdub.generateToBuffer("Hello", {
   locale: "en-US",
   voicePromptId: "...",
-  model: "dd-etts-3.0",
+  model: "dd-etts-4.0",
   onChunk: (chunk) => console.log(`Received ${chunk.length} bytes`),
   headerless: true, // raw PCM without WAV header
 });
@@ -198,7 +198,7 @@ Send one JSON message, receive chunked audio:
 ```json
 {
   "action": "text-to-speech",
-  "model": "dd-etts-3.0",
+  "model": "dd-etts-4.0",
   "targetText": "Hello",
   "locale": "en-US",
   "voicePromptId": "..."

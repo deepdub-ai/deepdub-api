@@ -67,7 +67,7 @@ Generate speech and receive the complete audio as bytes.
 audio_data = client.tts(
     text="Hello, welcome to Deepdub!",
     voice_prompt_id="your-voice-id",
-    model="dd-etts-2.5",
+    model="dd-etts-4.0",
     locale="en-US"
 )
 
@@ -91,8 +91,8 @@ with open("output.mp3", "wb") as f:
   Audio reference for instant voice cloning. Accepts a file `Path`, raw `bytes`, or a base64-encoded `string`. Either this or `voice_prompt_id` must be provided.
 </ParamField>
 
-<ParamField body="model" type="string" default="dd-etts-2.5">
-  Model ID. Available models: `dd-etts-3.0`, `dd-etts-2.5`.
+<ParamField body="model" type="string" default="dd-etts-4.0">
+  Model ID. Available models: `dd-etts-4.0` (default) and `dd-etts-3.4`.
 </ParamField>
 
 <ParamField body="locale" type="string" default="en-US">
@@ -149,7 +149,7 @@ with open("output.mp3", "wb") as f:
 audio_data = client.tts(
     text="This demonstrates all available TTS parameters.",
     voice_prompt_id="your-voice-id",
-    model="dd-etts-2.5",
+    model="dd-etts-4.0",
     locale="en-US",
     format="mp3",
     temperature=0.7,
@@ -174,7 +174,7 @@ from pathlib import Path
 audio_data = client.tts(
     text="Cloning a voice from an audio sample.",
     voice_reference=Path("reference_audio.mp3"),
-    model="dd-etts-2.5",
+    model="dd-etts-4.0",
     locale="en-US",
 )
 
@@ -202,7 +202,7 @@ async def stream_audio():
         async for chunk in conn.async_tts(
             text="Streaming audio in real time!",
             voice_prompt_id="bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
-            model="dd-etts-3.0",
+            model="dd-etts-4.0",
             locale="en-US",
             format="wav",
             sample_rate=16000,
@@ -252,7 +252,7 @@ async def generate_multiple():
             async for chunk in conn.async_tts(
                 text=text,
                 voice_prompt_id="bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
-                model="dd-etts-3.0",
+                model="dd-etts-4.0",
                 locale="en-US",
                 format="wav",
                 sample_rate=16000,
@@ -284,7 +284,7 @@ client = DeepdubClient(api_key="dd-your-api-key")
 
 async def streaming_input():
     async with client.async_stream_connect(
-        model="dd-etts-3.0",
+        model="dd-etts-4.0",
         locale="en-US",
         voice_prompt_id="your-voice-id",
         format="wav",
@@ -497,5 +497,5 @@ except Exception as e:
 
 | Model ID | Description |
 |----------|-------------|
-| `dd-etts-3.0` | Latest model with best quality |
-| `dd-etts-2.5` | Stable production model (default) |
+| `dd-etts-4.0` | Latest model, best quality. Default. |
+| `dd-etts-3.4` | Stable production model |

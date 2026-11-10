@@ -94,7 +94,7 @@ It can be sent again later in the same session to reconfigure it. The new settin
 {
   "action": "stream-config",
   "data": {
-    "model": "dd-etts-3.0",
+    "model": "dd-etts-4.0",
     "voicePromptId": "59da0f21-63de-4aef-9ade-e5cabfe639ab",
     "locale": "en-US",
     "format": "s16le",
@@ -107,7 +107,7 @@ It can be sent again later in the same session to reconfigure it. The new settin
 ### Parameters
 
 <ParamField body="model" type="string" required>
-  Model ID to use for generation (e.g., `dd-etts-3.0`). Only required field.
+  Model ID to use for generation (e.g., `dd-etts-4.0`). Only required field.
 </ParamField>
 
 <ParamField body="voicePromptId" type="string">
@@ -449,7 +449,7 @@ async def main():
         await ws.send(json.dumps({
             "action": "stream-config",
             "data": {
-                "model": "dd-etts-3.0",
+                "model": "dd-etts-4.0",
                 "voicePromptId": "59da0f21-63de-4aef-9ade-e5cabfe639ab",
                 "locale": "en-US",
                 "format": "s16le",
@@ -549,7 +549,7 @@ async def main():
         await ws.send(json.dumps({
             "action": "stream-config",
             "data": {
-                "model": "dd-etts-3.0",
+                "model": "dd-etts-4.0",
                 "voicePromptId": "59da0f21-63de-4aef-9ade-e5cabfe639ab",
                 "locale": "en-US",
                 "format": "s16le",
