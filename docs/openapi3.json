@@ -1451,7 +1451,7 @@
                 "$ref": "#/components/schemas/model.UpdateIssueRequest"
               },
               "example": {
-                "additionalComments": "Confirmed the mispronunciation reproduces with seed=42",
+                "additionalComments": "Confirmed the mispronunciation reproduces on every retry",
                 "model": "dd-etts-4.0"
               }
             }
@@ -2048,11 +2048,6 @@
             "description": "ID of the voice prompt to use for generation",
             "type": "string",
             "example": "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773"
-          },
-          "seed": {
-            "description": "Random seed for deterministic generation. Applies to `dd-etts-1.1` only — newer models do not use it, and setting it has no effect on their output.",
-            "type": "integer",
-            "example": 42
           }
         },
         "additionalProperties": true

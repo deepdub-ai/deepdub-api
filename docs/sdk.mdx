@@ -92,7 +92,7 @@ with open("output.mp3", "wb") as f:
 </ParamField>
 
 <ParamField body="model" type="string" default="dd-etts-4.0">
-  Model ID. Available models: `dd-etts-4.0` (default) and `dd-etts-3.4`.
+  Model ID. Defaults to `dd-etts-4.0` — see [Available Models](#available-models).
 </ParamField>
 
 <ParamField body="locale" type="string" default="en-US">
@@ -117,10 +117,6 @@ with open("output.mp3", "wb") as f:
 
 <ParamField body="tempo" type="float">
   Playback speed multiplier. Mutually exclusive with `duration`.
-</ParamField>
-
-<ParamField body="seed" type="int">
-  Random seed for deterministic generation. Applies to `dd-etts-1.1` only — newer models do not use it, and setting it has no effect on their output.
 </ParamField>
 
 <ParamField body="prompt_boost" type="bool">
@@ -499,3 +495,4 @@ except Exception as e:
 |----------|-------------|
 | `dd-etts-4.0` | Latest model, best quality. Default. |
 | `dd-etts-3.4` | Stable production model |
+| `dd-etts-3.0` | Earlier model, still supported |

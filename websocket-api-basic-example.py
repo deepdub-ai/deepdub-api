@@ -21,7 +21,7 @@ async def text_to_speech():
         # for ratio in range(10):
         # Send a message to the WebSocket server
         message_to_send = {
-        "model": "dd-etts-1.1",
+        "model": "dd-etts-4.0",
         "action": "text-to-speech",
         "targetText": "Hello, this is a test.",
         "locale": "en-US",            

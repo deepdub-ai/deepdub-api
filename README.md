@@ -8,10 +8,11 @@ In addition to this API documentation, there's also the python library found her
 
 ### Available Models
 
-| Model Nickname | Model ID    | Realtime Support | Realtime Latency (E2E) | Realtime Factor |
-| -------------- | ----------- | ---------------- | ---------------------- | --------------- |
-| OG             | dd-etts-1.1 | x                | 600ms                  | up to 2x        |
-| Phanotmx       | dd-etts-3.0 | v                | 125ms                  | up to 5x        |
+| Model ID      | Description                           |
+| ------------- | ------------------------------------- |
+| `dd-etts-4.0` | Latest model, best quality. Default.  |
+| `dd-etts-3.4` | Stable production model               |
+| `dd-etts-3.0` | Earlier model, still supported        |
 
 ### Connection Setup
 
@@ -62,13 +63,12 @@ async with websockets.connect("wss://wsapi.deepdub.ai/open", extra_headers={"x-a
   "action": "text-to-speech",
   "locale": "en-US",
   "voicePromptId": "promptId",
-  "model": "dd-etts-1.1",
+  "model": "dd-etts-4.0",
   "targetText": "hello",
 
   // Not required:
   "targetDuration": 4.7,
   "promptBoost": false,
-  "seed": 0,
   "variance": 0.5,
   "accentControl": {
     "accentBaseLocale": "en-US",
@@ -84,7 +84,7 @@ async with websockets.connect("wss://wsapi.deepdub.ai/open", extra_headers={"x-a
 - **action** (string, required): Specifies the action to perform. Must be `"text-to-speech"`.
 - **locale** (string, required): The locale (case sensitive) for the generated speech, e.g. `"en-US"`.
 - **voicePromptId** (string, required): The ID of the voice prompt to use can be fetched from the Deepdub-Go platform.
-- **model** (string, required): The model to use for text-to-speech conversion, e.g., `"dd-etts-1.1"`.
+- **model** (string, required): The model to use for text-to-speech conversion, e.g., `"dd-etts-4.0"`.
 - **targetText** (string, required): The text to convert to speech.
 
 #### Optional Parameters
@@ -93,7 +93,6 @@ async with websockets.connect("wss://wsapi.deepdub.ai/open", extra_headers={"x-a
 - **tempo** (number, optional): The tempo of the speech mutually exclusive with targetDuration. value should be between 0 and 2.0.
 - **variance** (number, optional): The variance within a single output of speech. value should be between 0 and 1.0. (system default is 1).
 - **promptBoost** (boolean, optional): Overrides the default prompt boost logic. Boosting the prompt affects the behavior of tempo, targetDuration and accentControl.
-- **seed** (number, optional): The seed value for the random number generator — send the same seed to keep consistency between generations. Applies to `dd-etts-1.1` only; newer models do not use it, and setting it has no effect on their output.
 - **accentControl** (object, optional): An object to control accent settings.
   - **accentBaseLocale** (string, required if `accentControl` is used): The base locale for the accent, e.g., `"en-US"`.
   - **accentLocale** (string, required if `accentControl` is used): The locale for the accent, e.g., `"fr-FR"`.
@@ -135,7 +134,7 @@ async with websockets.connect("wss://wsapi.deepdub.ai/open", extra_headers={"x-a
   "action": "text-to-speech",
   "locale": "en-US",
   "voicePromptId": "promptId",
-  "model": "dd-etts-1.1",
+  "model": "dd-etts-4.0",
   "targetText": "hello",
   "targetDuration": 4.7,
   "accentControl": {
@@ -191,7 +190,7 @@ async def text_to_speech():
 
         # Send a message to the WebSocket server
         message_to_send = {
-            "model": "dd-etts-1.1",
+            "model": "dd-etts-4.0",
             "action": "text-to-speech",
             "targetText": "Hello, this is a test.",
             "locale": "en-US",
@@ -250,7 +249,7 @@ r = requests.post(
         "x-api-key": api_key                 # Authentication via API key
     },
     json={
-        "model": "dd-etts-1.1",                  # TTS model to use
+        "model": "dd-etts-4.0",                  # TTS model to use
         "targetText": "marry christmas! and a happy new year!",  # Text to synthesize
         "locale": "en-US",                       # Language locale
         "voiceReference": audio_b64,             # Base64-encoded reference audio
@@ -341,7 +340,7 @@ async def create_audio_description_from_file(xml_content):
             begin_ms = message["begin_ms"]
             end_ms = message["end_ms"]
             message_to_send = {
-                "model": "dd-etts-1.1",
+                "model": "dd-etts-4.0",
                 "action": "text-to-speech",
                 "targetText": message["text"],
                 "targetDuration": (end_ms - begin_ms) / 1000,
@@ -416,7 +415,7 @@ r = requests.post("https://restapi.deepdub.ai/api/v1/tts",
                   "x-api-key": "your-api-key-here"
               },
          json={
-              "model": "dd-etts-1.1",
+              "model": "dd-etts-4.0",
               "targetText": "marry <phoneme alphabet="ipa" ph="ˈkɹɪsməs"> Christmas </phoneme>! and a happy new year!",
               "locale": "en-US",
               "voicePromptId": "your-prompt-here"
@@ -437,7 +436,7 @@ r = requests.post("https://restapi.deepdub.ai/api/v1/tts",
                   "x-api-key": "your-api-key-here"
               },
          json={
-              "model": "dd-etts-1.1",
+              "model": "dd-etts-4.0",
               "targetText": "Hi, how can I help you ?",
               "locale": "en-US",
               "format": "mulaw", # this can be one of the following mp3 (default for REST API),
@@ -462,7 +461,7 @@ r = requests.post("https://restapi.deepdub.ai/api/v1/tts",
                   "x-api-key": "your-api-key-here"
               },
          json={
-              "model": "dd-etts-1.1",
+              "model": "dd-etts-4.0",
               "targetText": "Hi, how can I help you ?",
               "locale": "en-US",
               "sampleRate": 16000,

@@ -102,7 +102,7 @@ Both `generateToBuffer` and `generateToFile` accept these options:
 </ParamField>
 
 <ParamField body="model" type="string" default="dd-etts-4.0">
-  Model ID. Available: `dd-etts-4.0` (default) and `dd-etts-3.4`.
+  Model ID. Available: `dd-etts-4.0` (default), `dd-etts-3.4` and `dd-etts-3.0`.
 </ParamField>
 
 <ParamField body="generationId" type="string">
@@ -131,10 +131,6 @@ Both `generateToBuffer` and `generateToFile` accept these options:
 
 <ParamField body="targetDuration" type="number">
   Target audio duration in seconds.
-</ParamField>
-
-<ParamField body="seed" type="number">
-  Random seed for deterministic output. Applies to `dd-etts-1.1` only — newer models do not use it, and setting it has no effect on their output.
 </ParamField>
 
 <ParamField body="promptBoost" type="boolean">

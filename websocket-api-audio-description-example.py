@@ -89,7 +89,7 @@ async def create_audio_description_from_file(xml_content):
             begin_ms = message["begin_ms"]
             end_ms = message["end_ms"]
             message_to_send = {
-                "model": "dd-etts-1.1",
+                "model": "dd-etts-4.0",
                 "action": "text-to-speech",
                 "targetText": message["text"],
                 "targetDuration": (end_ms - begin_ms) / 1000,
