@@ -33,6 +33,17 @@
             "pages": ["sdk", "sdk-javascript"]
           },
           {
+            "group": "Switch in place",
+            "pages": [
+              "switch-in-place/overview",
+              "switch-in-place/elevenlabs",
+              "switch-in-place/cartesia",
+              "switch-in-place/deepgram",
+              "switch-in-place/gradium",
+              "switch-in-place/inworld"
+            ]
+          },
+          {
             "group": "AI Agent Integration",
             "pages": ["cursor-skill", "claude-code"]
           }

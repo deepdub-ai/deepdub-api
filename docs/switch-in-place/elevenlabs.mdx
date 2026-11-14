@@ -1,0 +1,99 @@
+---
+title: Switch from ElevenLabs
+description: "Replace an ElevenLabs text-to-speech request with a Deepdub POST /tts call"
+---
+
+ElevenLabs speaks one complete text at `POST /v1/text-to-speech/{voice_id}` and returns audio bytes. The Deepdub call is `POST /api/v1/tts` and also returns audio bytes.
+
+The voice id in the ElevenLabs path becomes a Deepdub [voice preset](/voice-presets). `model_id` becomes `dd-etts-4.0`.
+
+## The call you have
+
+```python
+import os
+import requests
+
+text = "Hello, this is a test."
+voice_id = "21m00Tcm4TlvDq8ikWAM"
+output_format = "mp3_44100_128"
+
+response = requests.post(
+    f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}",
+    headers={"xi-api-key": os.environ["ELEVENLABS_API_KEY"]},
+    params={"output_format": output_format},
+    json={
+        "text": text,
+        "model_id": "eleven_multilingual_v2",
+        "voice_settings": {
+            "stability": 0.5,
+            "similarity_boost": 0.75,
+            "style": 0.0,
+            "speed": 1.0,
+        },
+    },
+)
+response.raise_for_status()
+open("output.mp3", "wb").write(response.content)
+```
+
+## Replace it
+
+```python
+import requests
+
+text = "Hello, this is a test."
+output_format = "mp3_44100_128"
+
+SAMPLE_RATES = {8000, 16000, 22050, 24000, 32000, 36000, 44100, 48000}
+
+def from_output_format(output_format: str) -> dict:
+    codec, _, rest = output_format.partition("_")
+    rate_token = rest.split("_", 1)[0] if rest else ""
+    sample_rate = int(rate_token) if rate_token.isdigit() else None
+    formats = {"mp3": "mp3", "opus": "opus", "ulaw": "mulaw"}
+    body = {"format": formats[codec]}
+    if sample_rate in SAMPLE_RATES:
+        body["sampleRate"] = sample_rate
+    return body
+
+response = requests.post(
+    "https://restapi.deepdub.ai/api/v1/tts",
+    headers={"x-api-key": "dd-00000000000000000000000065c9cbfe"},
+    json={
+        "model": "dd-etts-4.0",
+        "targetText": text,
+        "locale": "en-US",
+        "voicePromptId": "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",  # Storyteller stand-in
+        "tempo": 1.0,  # voice_settings.speed
+        **from_output_format(output_format),
+    },
+)
+response.raise_for_status()
+open("output.mp3", "wb").write(response.content)
+print(response.headers["x-generation-id"])
+```
+
+`output_format` values that start with `pcm_`, `wav_`, or `alaw_` are outside `from_output_format`. PCM and WAV go to [Streaming Out](/api-reference/websocket/overview) with `format` set to `s16le` or `wav`. A-law has no Deepdub format.
+
+The MP3 bitrate suffix (`128` in `mp3_44100_128`) is dropped. Deepdub takes the codec and the sample rate.
+
+## Field map
+
+| ElevenLabs | Deepdub |
+|------------|---------|
+| `xi-api-key` | `x-api-key` |
+| Path `{voice_id}` | `voicePromptId` |
+| `text` | `targetText` |
+| `model_id` | `model` = `dd-etts-4.0` |
+| `voice_settings.speed` (about 0.7–1.2, `1.0` is normal) | `tempo` (`0`–`2`, `1` is normal). Pass the number through. |
+| `output_format` `mp3_*` / `opus_*` / `ulaw_8000` | `format` `mp3` / `opus` / `mulaw`, plus `sampleRate` when the rate is one Deepdub accepts |
+| Response body | Response body, still the audio bytes |
+| — | `x-generation-id` response header |
+
+`stability`, `similarity_boost`, `style`, and `use_speaker_boost` have no Deepdub field. Leave `variance` and `temperature` unset and tune them by ear if you need that control. See the [TTS reference](/api-reference/tts/generate-and-stream-tts-audio) for the ranges.
+
+Set `locale` to the locale of the text. ElevenLabs infers it from the voice and the model; Deepdub takes it on the request. The sample uses `en-US`.
+
+## Text that arrives in pieces
+
+ElevenLabs input streaming is a different socket. On Deepdub that path is [Streaming In and Streaming Out](/api-reference/websocket/streaming): `stream-config`, then `stream-text` as tokens arrive, then `end-stream`.

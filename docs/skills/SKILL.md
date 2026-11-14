@@ -1,6 +1,6 @@
 ---
 name: deepdub-api
-description: Deepdub Text-to-Speech API reference for building TTS integrations. Use when the user writes code that calls the Deepdub API, uses the Deepdub Python/JS SDK, generates speech, manages voices, classifies gender, or mentions deepdub, TTS, text-to-speech, or voice cloning.
+description: Deepdub Text-to-Speech API reference for building TTS integrations. Use when the user writes code that calls the Deepdub API, uses the Deepdub Python/JS SDK, generates speech, manages voices, classifies gender, or mentions deepdub, TTS, text-to-speech, or voice cloning. Also use when switching a TTS call from ElevenLabs, Cartesia, Deepgram, Gradium, or Inworld.
 ---
 
 # Deepdub API
@@ -237,6 +237,12 @@ REST errors return JSON with `{ "success": false, "message": "..." }`.
 | Concurrent requests per IP | 3 |
 
 ---
+
+## Switch in place
+
+`docs/switch-in-place/` is the migration section. One page per vendor — ElevenLabs, Cartesia, Deepgram, Gradium, Inworld — shows the existing TTS request and the Deepdub request that replaces it.
+
+Voice ids and model ids stay on the vendor. Send `voicePromptId` and `"model": "dd-etts-4.0"`. The response body is raw audio bytes. The generation id is the `x-generation-id` response header. `wav` and raw PCM use the Streaming Out WebSocket; REST accepts `mp3`, `opus`, and `mulaw`.
 
 ## Voice Presets (sample)
 

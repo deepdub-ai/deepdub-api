@@ -1,0 +1,130 @@
+---
+title: Switch from Gradium
+description: "Replace a Gradium speech TTS request with a Deepdub call"
+---
+
+Gradium speaks at `POST https://api.gradium.ai/api/speech/tts` with the same `x-api-key` header Deepdub uses. `voice_id` becomes a Deepdub [voice preset](/voice-presets). `model_name` becomes `dd-etts-4.0`.
+
+With `only_audio: true` and `output_format: "wav"` or `"pcm"`, Gradium returns a file. Deepdub serves WAV and raw PCM on [Streaming Out](/api-reference/websocket/overview). Opus and μ-law stay on `POST /api/v1/tts`, and that response is the file.
+
+## The call you have
+
+```python
+import os
+import requests
+
+text = "Hello, world!"
+
+response = requests.post(
+    "https://api.gradium.ai/api/speech/tts",
+    headers={"x-api-key": os.environ["GRADIUM_API_KEY"]},
+    json={
+        "text": text,
+        "voice_id": "Bla6SbVMczYnOhfK",
+        "model_name": "default",
+        "output_format": "wav",
+        "only_audio": True,
+        "json_config": {"temp": 0.3, "padding_bonus": 0.0},
+    },
+)
+response.raise_for_status()
+open("output.wav", "wb").write(response.content)
+```
+
+## Replace a WAV or PCM call
+
+Streaming Out takes one complete text and sends the audio back as base64 chunks. Concatenate the decoded `data` fields. `format` `wav` is the default; use `s16le` for Gradium's `pcm`.
+
+```python
+import asyncio
+import base64
+import json
+import websockets
+
+text = "Hello, world!"
+
+async def main():
+    headers = {"x-api-key": "dd-00000000000000000000000065c9cbfe"}
+    async with websockets.connect("wss://wsapi.deepdub.ai/open", additional_headers=headers) as websocket:
+        await websocket.send(json.dumps({
+            "action": "text-to-speech",
+            "model": "dd-etts-4.0",
+            "targetText": text,
+            "locale": "en-US",
+            "voicePromptId": "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",  # Storyteller stand-in
+            "format": "wav",
+            "temperature": 0.3,  # json_config.temp
+        }))
+        audio = bytearray()
+        async for raw in websocket:
+            message = json.loads(raw)
+            if message.get("error"):
+                raise RuntimeError(message["error"])
+            if message.get("data"):
+                audio.extend(base64.b64decode(message["data"]))
+            if message.get("isFinished"):
+                break
+    open("output.wav", "wb").write(audio)
+
+asyncio.run(main())
+```
+
+## Replace an Opus or μ-law call
+
+```python
+import requests
+
+text = "Hello, world!"
+output_format = "opus"  # or "ulaw_8000"
+
+body = {
+    "model": "dd-etts-4.0",
+    "targetText": text,
+    "locale": "en-US",
+    "voicePromptId": "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
+}
+if output_format == "opus":
+    body["format"] = "opus"
+elif output_format == "ulaw_8000":
+    body["format"] = "mulaw"
+    body["sampleRate"] = 8000
+
+response = requests.post(
+    "https://restapi.deepdub.ai/api/v1/tts",
+    headers={"x-api-key": "dd-00000000000000000000000065c9cbfe"},
+    json=body,
+)
+response.raise_for_status()
+open("output.bin", "wb").write(response.content)
+print(response.headers["x-generation-id"])
+```
+
+`alaw_8000` has no Deepdub format.
+
+`only_audio: false` is Gradium's NDJSON stream of audio, text, and timestamps. Deepdub's REST body is the audio file, and Streaming Out's messages are `data` plus `isFinished`. Read those bytes directly.
+
+## Field map
+
+| Gradium | Deepdub |
+|---------|---------|
+| `x-api-key` | `x-api-key` |
+| `text` | `targetText` |
+| `voice_id` | `voicePromptId` |
+| `model_name` | `model` = `dd-etts-4.0` |
+| `output_format` `wav` | Streaming Out, `format` `wav` |
+| `output_format` `pcm` | Streaming Out, `format` `s16le` |
+| `output_format` `opus` | `format` `opus` |
+| `output_format` `ulaw_8000` | `format` `mulaw`, `sampleRate` `8000` |
+| `json_config.temp` (`0`–`1.4`, default `0.7`) | `temperature` (`0.0`–`1.0`). Pass it through up to `1.0`. |
+| `only_audio: true` | The response body is the audio |
+| Response body | Response body for REST. Streaming Out puts audio in `data`. |
+
+`json_config.padding_bonus` (negative is faster, positive is slower, `0` is the default) has no fixed conversion onto `tempo`. Leave `tempo` unset at `padding_bonus` `0`, and set `tempo` by ear when you had been moving `padding_bonus`. `1` is normal speed, below `1` is slower, above `1` is faster, on a `0`–`2` scale.
+
+`cfg_coef`, `rewrite_rules`, and `pronunciation_id` have no Deepdub field.
+
+Gradium does not take a locale on this request. Set Deepdub `locale` to the locale of the text. The sample uses `en-US`.
+
+## Text that arrives in pieces
+
+Gradium's WebSocket sends `setup`, then text, then `end_of_stream`. On Deepdub that path is [Streaming In and Streaming Out](/api-reference/websocket/streaming): `stream-config` carries the voice, `stream-text` carries each piece, and `end-stream` closes the turn.

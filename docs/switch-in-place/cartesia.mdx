@@ -1,0 +1,135 @@
+---
+title: Switch from Cartesia
+description: "Replace a Cartesia TTS bytes request with a Deepdub POST /tts call"
+---
+
+Cartesia speaks one complete transcript at `POST /tts/bytes` and streams audio bytes back. For an MP3 container, the Deepdub call is `POST /api/v1/tts`. A `wav` container or raw PCM uses [Streaming Out](/api-reference/websocket/overview).
+
+`voice` (a string id, or an object with `id`) becomes a Deepdub [voice preset](/voice-presets). `model_id` becomes `dd-etts-4.0`.
+
+## The call you have
+
+```python
+import os
+import requests
+
+transcript = "Hello, this is a test."
+
+response = requests.post(
+    "https://api.cartesia.ai/tts/bytes",
+    headers={
+        "X-API-Key": os.environ["CARTESIA_API_KEY"],
+        "Cartesia-Version": "2026-08-14",
+    },
+    json={
+        "model_id": "sonic-3.6",
+        "transcript": transcript,
+        "voice": {"mode": "id", "id": "CARTESIA_VOICE_ID"},
+        "language": "en",
+        "output_format": {"container": "mp3", "sample_rate": 44100},
+        "generation_config": {"speed": 1.0},
+    },
+)
+response.raise_for_status()
+open("output.mp3", "wb").write(response.content)
+```
+
+## Replace it
+
+```python
+import requests
+
+transcript = "Hello, this is a test."
+language = "en"
+output_format = {"container": "mp3", "sample_rate": 44100}
+speed = 1.0
+
+LOCALE_FOR_LANGUAGE = {
+    "en": "en-US",
+    "de": "de-DE",
+    "fr": "fr-FR",
+    "es": "es-ES",
+    "pt": "pt-BR",
+    "nl": "nl-NL",
+    "it": "it-IT",
+    "ja": "ja-JP",
+    "hi": "hi-IN",
+    "ko": "ko-KR",
+    "pl": "pl-PL",
+    "ru": "ru-RU",
+    "sv": "sv-SE",
+    "tr": "tr-TR",
+    "ar": "ar-SA",
+    "da": "da-DK",
+    "fi": "fi-FI",
+    "el": "el-GR",
+    "he": "he-IL",
+    "hu": "hu-HU",
+    "id": "id-ID",
+    "cs": "cs-CZ",
+    "ro": "ro-RO",
+    "th": "th-TH",
+    "ta": "ta-IN",
+    "nb": "nb-NO",
+}
+
+# Cartesia accepts "en" or "en-GB". Deepdub takes a locale.
+normalized = language.replace("_", "-")
+locale = normalized if "-" in normalized else LOCALE_FOR_LANGUAGE[normalized]
+
+container = output_format["container"]
+body = {
+    "model": "dd-etts-4.0",
+    "targetText": transcript,
+    "locale": locale,
+    "voicePromptId": "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",  # Storyteller stand-in
+    "tempo": speed,
+}
+if container == "mp3":
+    body["format"] = "mp3"
+elif output_format.get("encoding") == "pcm_mulaw":
+    body["format"] = "mulaw"
+else:
+    raise SystemExit("wav and raw PCM use Streaming Out")
+
+sample_rate = output_format.get("sample_rate")
+if sample_rate in {8000, 16000, 22050, 24000, 32000, 36000, 44100, 48000}:
+    body["sampleRate"] = sample_rate
+
+response = requests.post(
+    "https://restapi.deepdub.ai/api/v1/tts",
+    headers={"x-api-key": "dd-00000000000000000000000065c9cbfe"},
+    json=body,
+)
+response.raise_for_status()
+open("output.mp3", "wb").write(response.content)
+print(response.headers["x-generation-id"])
+```
+
+`SystemExit` is there so a WAV or raw-PCM container fails loudly. Those two use Streaming Out, with `format` `wav` (WAV container) or `s16le` (`encoding` `pcm_s16le`). `pcm_f32le` and `pcm_alaw` have no Deepdub format.
+
+`en` maps to `en-US`, `es` to `es-ES`, `pt` to `pt-BR`, and `ar` to `ar-SA`. Pass a full locale (`en-GB`, `es-MX`, `es-419`) when that default is the wrong region. A language with no entry in the dict is one Deepdub does not list — set `locale` yourself from the [supported locales](/api-reference/tts/generate-and-stream-tts-audio).
+
+## Field map
+
+| Cartesia | Deepdub |
+|----------|---------|
+| `X-API-Key` | `x-api-key` |
+| `Cartesia-Version` | Omit |
+| `transcript` | `targetText` |
+| `voice` string, or `voice.id` | `voicePromptId` |
+| `model_id` | `model` = `dd-etts-4.0` |
+| `language` or `locale` | `locale` |
+| `output_format.container` `mp3` | `format` `mp3` |
+| `output_format.container` `wav` | Streaming Out, `format` `wav` |
+| `output_format` raw + `pcm_s16le` | Streaming Out, `format` `s16le` |
+| `output_format` `pcm_mulaw` | `format` `mulaw` |
+| `output_format.sample_rate` | `sampleRate` |
+| `generation_config.speed` | `tempo` |
+| Response body | Response body, still the audio bytes |
+
+`generation_config.volume`, `generation_config.emotion`, and `pronunciation_dict_id` have no Deepdub field. A Cartesia `accent` string becomes [`accentControl`](/api-reference/tts/generate-and-stream-tts-audio): `accentBaseLocale` is the speaking locale, `accentLocale` is the accent, and `accentRatio` is a blend you choose from `0.0` to `1.0`.
+
+## Text that arrives in pieces
+
+Cartesia's WebSocket sends transcript chunks on a `context_id`. On Deepdub that path is [Streaming In and Streaming Out](/api-reference/websocket/streaming): one `stream-config`, then `stream-text` for each chunk, then `end-stream`.

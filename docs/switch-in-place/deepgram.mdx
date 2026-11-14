@@ -1,0 +1,99 @@
+---
+title: Switch from Deepgram
+description: "Replace a Deepgram Aura speak request with a Deepdub POST /tts call"
+---
+
+Deepgram Aura speaks at `POST /v1/speak`. The voice is the `model` query parameter (`aura-2-thalia-en`), and the body is `{ "text": "..." }`. The response is audio bytes.
+
+On Deepdub the voice and the model are separate fields. `model` is `dd-etts-4.0`. The Aura name becomes a Deepdub [voice preset](/voice-presets), and the language suffix becomes `locale`.
+
+## The call you have
+
+```python
+import os
+import requests
+
+text = "Hello, how can I help you today?"
+model = "aura-2-thalia-en"
+
+response = requests.post(
+    "https://api.deepgram.com/v1/speak",
+    headers={"Authorization": f"Token {os.environ['DEEPGRAM_API_KEY']}"},
+    params={"model": model, "encoding": "mp3", "sample_rate": 24000},
+    json={"text": text},
+)
+response.raise_for_status()
+open("output.mp3", "wb").write(response.content)
+```
+
+## Replace it
+
+```python
+import requests
+
+text = "Hello, how can I help you today?"
+model = "aura-2-thalia-en"
+encoding = "mp3"
+sample_rate = 24000
+
+# Replace each value with the Deepdub preset you chose for that Aura voice.
+VOICE_PROMPTS = {
+    "aura-2-thalia-en": "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",
+}
+
+LOCALE_FOR_LANGUAGE = {
+    "en": "en-US",
+    "es": "es-ES",
+    "de": "de-DE",
+    "fr": "fr-FR",
+    "nl": "nl-NL",
+    "it": "it-IT",
+    "ja": "ja-JP",
+}
+
+FORMAT_FOR_ENCODING = {"mp3": "mp3", "opus": "opus", "mulaw": "mulaw"}
+
+language = model.rsplit("-", 1)[-1]
+body = {
+    "model": "dd-etts-4.0",
+    "targetText": text,
+    "locale": LOCALE_FOR_LANGUAGE[language],
+    "voicePromptId": VOICE_PROMPTS[model],
+    "format": FORMAT_FOR_ENCODING[encoding],
+}
+if sample_rate in {8000, 16000, 22050, 24000, 32000, 36000, 44100, 48000}:
+    body["sampleRate"] = sample_rate
+
+response = requests.post(
+    "https://restapi.deepdub.ai/api/v1/tts",
+    headers={"x-api-key": "dd-00000000000000000000000065c9cbfe"},
+    json=body,
+)
+response.raise_for_status()
+open("output.mp3", "wb").write(response.content)
+print(response.headers["x-generation-id"])
+```
+
+The Storyteller id in `VOICE_PROMPTS` is a stand-in, not a match for Thalia. Put the preset you actually want in that map.
+
+`encoding` `linear16` uses [Streaming Out](/api-reference/websocket/overview) with `format` `s16le` (or `wav` when you want a WAV container). `alaw`, `flac`, and `aac` have no Deepdub format.
+
+`en` maps to `en-US` and `es` to `es-ES`. Pass `en-GB`, `en-AU`, or `es-MX` yourself when the Aura voice's accent is that region. Aura language codes outside the dict are outside the [Deepdub locale list](/api-reference/tts/generate-and-stream-tts-audio).
+
+## Field map
+
+| Deepgram | Deepdub |
+|----------|---------|
+| `Authorization: Token …` | `x-api-key` |
+| Body `text` | `targetText` |
+| Query `model` (`aura-2-thalia-en`) | `voicePromptId` from your map, and `model` = `dd-etts-4.0` |
+| Language suffix of `model` | `locale` |
+| Query `encoding` `mp3` / `opus` / `mulaw` | `format` |
+| Query `sample_rate` | `sampleRate` |
+| Response body | Response body, still the audio bytes |
+
+`container`, `bit_rate`, `callback`, `tag`, and `mip_opt_out` have no Deepdub field.
+
+## Text that arrives in pieces
+
+Deepgram's speak stream is a socket that accepts text and returns audio. On Deepdub, text that is still being produced uses [Streaming In and Streaming Out](/api-reference/websocket/streaming). A finished string keeps the `POST` above; the body streams as it is generated.

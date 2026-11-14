@@ -1,0 +1,53 @@
+---
+title: Switch in place
+description: "Replace an existing ElevenLabs, Cartesia, Deepgram, Gradium, or Inworld TTS call with Deepdub"
+---
+
+Keep the code around the TTS call. Replace the request itself: same text in, audio bytes out, your current voice id swapped for a Deepdub voice prompt.
+
+<CardGroup cols={2}>
+
+<Card title="ElevenLabs" icon="arrow-right" href="/switch-in-place/elevenlabs">
+  `POST /v1/text-to-speech/{voice_id}` with `xi-api-key`.
+</Card>
+
+<Card title="Cartesia" icon="arrow-right" href="/switch-in-place/cartesia">
+  `POST /tts/bytes` with `transcript`, `voice`, and `output_format`.
+</Card>
+
+<Card title="Deepgram" icon="arrow-right" href="/switch-in-place/deepgram">
+  `POST /v1/speak?model=…` with a JSON body of `text`.
+</Card>
+
+<Card title="Gradium" icon="arrow-right" href="/switch-in-place/gradium">
+  `POST /api/speech/tts` with `x-api-key`, `text`, and `voice_id`.
+</Card>
+
+<Card title="Inworld" icon="arrow-right" href="/switch-in-place/inworld">
+  `POST /tts/v1/voice` with `voiceId`, `modelId`, and `audioConfig`.
+</Card>
+
+</CardGroup>
+
+## What every page changes
+
+| Their field | Deepdub field |
+|-------------|---------------|
+| The spoken text (`text` or `transcript`) | `targetText` |
+| Their voice id | `voicePromptId` — pick a preset from [Voice Presets](/voice-presets) |
+| Their model id | `model` set to `dd-etts-4.0` |
+| Their API key header | `x-api-key` |
+| MP3, Opus, or μ-law output | `format` of `mp3`, `opus`, or `mulaw` on `POST /api/v1/tts` |
+| WAV or raw PCM | [Streaming Out](/api-reference/websocket/overview) with `format` `wav` or `s16le` |
+
+The REST response body is the audio. Keep the `x-generation-id` response header — it is what you quote when [reporting a problem](/api-reference/issues/create-issue) with that generation.
+
+Snippets use the US host, `https://restapi.deepdub.ai/api/v1`. A key provisioned in the EU uses `https://restapi.eu.deepdub.ai/api/v1`. Streaming Out is `wss://wsapi.deepdub.ai/open` in the US and `wss://wsapi.eu.deepdub.ai/open` in the EU.
+
+## What stays on the vendor
+
+- Voice ids. A Deepdub `voicePromptId` is a different id. The samples use the Storyteller preset (`bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773`) as a stand-in.
+- Model ids. Send `dd-etts-4.0`.
+- Pronunciation-dictionary ids and word timestamps. `POST /tts` returns audio bytes.
+
+When the text arrives in pieces from an LLM, use [Streaming In and Streaming Out](/api-reference/websocket/streaming) instead of one `POST`.

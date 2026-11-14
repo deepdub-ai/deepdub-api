@@ -6,6 +6,8 @@ Deepdub supports RESTful and WebSocket API which provides functionality to conve
 
 In addition to this API documentation, there's also the python library found here: https://github.com/deepdub-ai/deepdub
 
+To replace an existing ElevenLabs, Cartesia, Deepgram, Gradium, or Inworld TTS call, see [Switch in place](docs/switch-in-place/overview.mdx).
+
 ### Available Models
 
 | Model ID      | Description                           |

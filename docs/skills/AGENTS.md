@@ -186,6 +186,12 @@ HTTP mode for REST calls: `new DeepdubClient("KEY", { protocol: "http" })`, then
 
 Env var: `DEEPDUB_API_KEY`.
 
+## Switch in place
+
+`docs/switch-in-place/` is the migration section. One page per vendor — ElevenLabs, Cartesia, Deepgram, Gradium, Inworld — shows the existing TTS request and the Deepdub request that replaces it.
+
+Voice ids and model ids stay on the vendor. Send `voicePromptId` and `"model": "dd-etts-4.0"`. The response body is raw audio bytes. The generation id is the `x-generation-id` response header. `wav` and raw PCM use the Streaming Out WebSocket; REST accepts `mp3`, `opus`, and `mulaw`.
+
 ## Voice Presets (sample)
 
 | Preset | Locale | Voice Prompt ID |

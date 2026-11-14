@@ -1,0 +1,102 @@
+---
+title: Switch from Inworld
+description: "Replace an Inworld TTS voice request with a Deepdub POST /tts call"
+---
+
+Inworld speaks at `POST /tts/v1/voice`. The response is JSON, and the audio is base64 in `audioContent`. Deepdub's `POST /api/v1/tts` response body is the audio itself, so the decode step comes out.
+
+`voiceId` becomes a Deepdub [voice preset](/voice-presets). `modelId` becomes `dd-etts-4.0`.
+
+## The call you have
+
+```python
+import base64
+import os
+import requests
+
+text = "Hello, world!"
+
+response = requests.post(
+    "https://api.inworld.ai/tts/v1/voice",
+    headers={"Authorization": f"Basic {os.environ['INWORLD_API_KEY']}"},
+    json={
+        "text": text,
+        "voiceId": "Ashley",
+        "modelId": "inworld-tts-2",
+        "language": "en-US",
+        "audioConfig": {
+            "audioEncoding": "MP3",
+            "sampleRateHertz": 24000,
+            "speakingRate": 1.0,
+        },
+    },
+)
+response.raise_for_status()
+open("output.mp3", "wb").write(base64.b64decode(response.json()["audioContent"]))
+```
+
+## Replace it
+
+```python
+import requests
+
+text = "Hello, world!"
+audio_config = {
+    "audioEncoding": "MP3",
+    "sampleRateHertz": 24000,
+    "speakingRate": 1.0,
+}
+language = "en-US"
+
+FORMAT_FOR_ENCODING = {"MP3": "mp3", "OGG_OPUS": "opus", "MULAW": "mulaw"}
+
+body = {
+    "model": "dd-etts-4.0",
+    "targetText": text,
+    "locale": language,  # Inworld language is already a BCP-47 tag
+    "voicePromptId": "bd1b00bb-be1c-4679-8eaa-0fcbfd4ff773",  # Storyteller stand-in
+    "format": FORMAT_FOR_ENCODING[audio_config["audioEncoding"]],
+    "tempo": audio_config.get("speakingRate", 1.0),
+}
+sample_rate = audio_config.get("sampleRateHertz")
+if sample_rate in {8000, 16000, 22050, 24000, 32000, 36000, 44100, 48000}:
+    body["sampleRate"] = sample_rate
+
+response = requests.post(
+    "https://restapi.deepdub.ai/api/v1/tts",
+    headers={"x-api-key": "dd-00000000000000000000000065c9cbfe"},
+    json=body,
+)
+response.raise_for_status()
+open("output.mp3", "wb").write(response.content)
+print(response.headers["x-generation-id"])
+```
+
+Write `response.content`. There is no `audioContent` field to decode.
+
+`speakingRate` is `0.5`–`1.5` with `1.0` as normal speech. `tempo` accepts that whole range (`0`–`2`, and `1` is normal), so pass the number through.
+
+`audioEncoding` of `WAV`, `LINEAR16`, or `PCM` uses [Streaming Out](/api-reference/websocket/overview): `WAV` and `LINEAR16` with `format` `wav`, `PCM` with `format` `s16le`. `FLAC` and `ALAW` have no Deepdub format. `bitRate` has no Deepdub field.
+
+`language` passes through when it is one of the [supported locales](/api-reference/tts/generate-and-stream-tts-audio). Inworld treats `en-gb` and `en-GB` as the same tag; send Deepdub the `en-GB` form.
+
+## Field map
+
+| Inworld | Deepdub |
+|---------|---------|
+| `Authorization: Basic …` | `x-api-key` |
+| `text` | `targetText` |
+| `voiceId` | `voicePromptId` |
+| `modelId` | `model` = `dd-etts-4.0` |
+| `language` | `locale` |
+| `audioConfig.audioEncoding` `MP3` / `OGG_OPUS` / `MULAW` | `format` `mp3` / `opus` / `mulaw` |
+| `audioConfig.sampleRateHertz` | `sampleRate` |
+| `audioConfig.speakingRate` | `tempo` |
+| JSON `audioContent` (base64) | Response body, raw audio bytes |
+| — | `x-generation-id` response header |
+
+A request that sends `script` or `voiceDesign` instead of `text` and `voiceId` is a different Inworld shape. This page covers the single-text `voiceId` call.
+
+## Text that arrives in pieces
+
+Inworld's HTTP stream (`/tts/v1/voice:stream`) still starts from a finished text and streams audio. Deepdub's `POST /tts` already streams the body. Text that is still being produced, token by token, uses [Streaming In and Streaming Out](/api-reference/websocket/streaming).
