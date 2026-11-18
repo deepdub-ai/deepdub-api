@@ -1,18 +1,22 @@
 ---
 title: Introduction
-description: "Generate expressive, high-quality speech with Deepdub's Text-to-Speech API"
+description: "Generate expressive speech and transcribe live audio with Deepdub's voice AI APIs"
 ---
 
 ## Welcome to Deepdub
 
-Deepdub provides a powerful Text-to-Speech API for generating natural, expressive speech with voice cloning, accent control, and real-time streaming. Whether you're building voiceover pipelines, conversational agents, or content localization workflows, Deepdub delivers studio-quality audio at scale.
+Deepdub provides voice AI APIs in both directions. Text-to-Speech turns text into natural, expressive speech with voice cloning, accent control, and real-time streaming. Speech-to-Text transcribes live Hebrew and English audio word by word as it is spoken. Use them together for voice agents and call centers, or on their own for voiceover, localization, and transcription.
 
 ### Key capabilities
 
 <CardGroup cols={2}>
 
-<Card title="Text-to-Speech" icon="waveform-lines">
+<Card title="Text-to-Speech" icon="waveform-lines" href="/api-reference/tts/generate-and-stream-tts-audio">
   Generate speech from text using state-of-the-art models with fine-grained control over tempo, variance, and duration.
+</Card>
+
+<Card title="Speech-to-Text" icon="closed-captioning" href="/api-reference/stt/realtime">
+  Stream Hebrew or English audio and receive each word as it is recognized, first as provisional and then as final.
 </Card>
 
 <Card title="Voice Cloning" icon="microphone">
@@ -24,21 +28,27 @@ Deepdub provides a powerful Text-to-Speech API for generating natural, expressiv
 </Card>
 
 <Card title="Real-time Streaming" icon="bolt">
-  Stream audio in real-time over HTTP or WebSocket connections for low-latency applications.
+  Stream audio out over HTTP or WebSocket, and stream audio in for live transcription, for low-latency applications.
+</Card>
+
+<Card title="Hebrew and English" icon="language">
+  Speech-to-Text locks to one language or detects Hebrew and English per utterance, including switches inside one session.
 </Card>
 
 </CardGroup>
 
 ## Try it now
 
-Use the free trial API key to generate speech instantly — no sign-up required:
+Use the free trial API key to generate speech or transcribe audio — no sign-up required:
 
 ```
 dd-00000000000000000000000065c9cbfe
 ```
 
+To try speech-to-text without code, open [Real-time speech-to-text](/api-reference/stt/realtime), press **Record**, and speak.
+
 <Tabs>
-<Tab title="Python">
+<Tab title="Text-to-Speech (Python)">
 ```python
 from deepdub import DeepdubClient
 
@@ -55,7 +65,7 @@ with open("output.mp3", "wb") as f:
     f.write(audio)
 ```
 </Tab>
-<Tab title="JavaScript">
+<Tab title="Text-to-Speech (JavaScript)">
 ```javascript
 const { DeepdubClient } = require("@deepdub/node");
 
@@ -73,16 +83,53 @@ async function main() {
 main();
 ```
 </Tab>
+<Tab title="Speech-to-Text (Python)">
+```python
+import asyncio
+import json
+import wave
+
+import websockets  # pip install "websockets>=14"
+
+async def main():
+    with wave.open("sample.wav") as w:  # 16 kHz mono 16-bit
+        pcm = w.readframes(w.getnframes())
+
+    headers = {"Authorization": "Bearer dd-00000000000000000000000065c9cbfe"}
+    url = "wss://wsgw.deepdub.ai/transcribe-websocket"
+    async with websockets.connect(url, additional_headers=headers) as ws:
+        await ws.send(json.dumps({
+            "model": "stt-egf",
+            "audio_format": "pcm_s16le",
+            "sample_rate": 16000,
+            "num_channels": 1,
+            "language_hints": ["en"],
+        }))
+        for i in range(0, len(pcm), 3200):  # 100 ms per frame
+            await ws.send(pcm[i:i + 3200])
+            await asyncio.sleep(0.1)
+        await ws.send("")  # end of audio
+
+        words = []
+        async for msg in ws:
+            data = json.loads(msg)
+            words += [t["text"] for t in data.get("tokens", []) if t["is_final"]]
+            if data.get("finished"):
+                break
+        print("".join(words).strip())
+
+asyncio.run(main())
+```
+</Tab>
 </Tabs>
 
 ## API access
 
-Deepdub offers two integration methods:
-
-| Method | Endpoint | Use case |
+| API | Endpoint | Use case |
 |--------|----------|----------|
-| **REST API** | `https://restapi.deepdub.ai/api/v1` | Streaming audio generation, voice management |
-| **WebSocket API** | `wss://wsapi.deepdub.ai` | Real-time streaming with chunked audio delivery |
+| **Text-to-Speech REST** | `https://restapi.deepdub.ai/api/v1` | Streaming audio generation, voice management |
+| **Text-to-Speech WebSocket** | `wss://wsapi.deepdub.ai/open` | Real-time streaming with chunked audio delivery |
+| **Speech-to-Text WebSocket** | `wss://wsgw.deepdub.ai/transcribe-websocket` | Live transcription, word by word |
 
 ## Quick links
 
@@ -116,8 +163,8 @@ Deepdub offers two integration methods:
   Stream text in as an LLM produces it and stream the audio back.
 </Card>
 
-<Card title="Speech-to-Text" icon="microphone" href="/api-reference/stt/realtime">
-  Stream Hebrew or English audio and receive word tokens as they are recognized.
+<Card title="Speech-to-Text" icon="closed-captioning" href="/api-reference/stt/realtime">
+  Stream Hebrew or English audio and receive word tokens as they are recognized. Includes a Try it box that records from your microphone.
 </Card>
 
 </CardGroup>
