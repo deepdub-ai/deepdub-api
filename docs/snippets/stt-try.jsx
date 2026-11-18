@@ -1,7 +1,7 @@
 export const SttTry = () => {
   const trialKey = "dd-00000000000000000000000065c9cbfe"
   const [apiKey, setApiKey] = useState(trialKey)
-  const [lang, setLang] = useState("en")
+  const [lang, setLang] = useState("auto")
   const [status, setStatus] = useState("Press Record and speak, or choose a file.")
   const [text, setText] = useState("")
   const [busy, setBusy] = useState(false)
@@ -263,9 +263,9 @@ export const SttTry = () => {
           onChange={(event) => setLang(event.target.value)}
           className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-950 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
         >
+          <option value="auto">Auto-detect</option>
           <option value="en">English</option>
           <option value="he">Hebrew</option>
-          <option value="auto">Detect</option>
         </select>
         <button
           type="button"
