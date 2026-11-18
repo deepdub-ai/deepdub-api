@@ -7,6 +7,7 @@ export const SttTry = () => {
   const [busy, setBusy] = useState(false)
   const [recording, setRecording] = useState(false)
   const [fileName, setFileName] = useState("")
+  const [level, setLevel] = useState(0)
   const fileRef = useRef(null)
   const micRef = useRef(null)
 
@@ -141,6 +142,7 @@ export const SttTry = () => {
     if (mic.pending.length) mic.session.send(toPcm16(new Float32Array(mic.pending)))
     mic.session.end()
     setRecording(false)
+    setLevel(0)
     setStatus("Waiting for the last words…")
     try {
       setText(await mic.session.finished)
@@ -157,24 +159,40 @@ export const SttTry = () => {
     if (busy) return
     setText("")
     setFileName("")
+    setLevel(0)
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setStatus("This browser does not allow microphone access on this page. Try Chrome, Edge, Firefox, or Safari.")
+      return
+    }
+    const audioContext = new AudioContext()
+    audioContext.resume()
     setBusy(true)
-    setStatus("Asking for the microphone…")
+    setStatus("Asking for the microphone… allow it in the browser prompt.")
     let stream
     let session
     try {
       stream = await navigator.mediaDevices.getUserMedia({
         audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true },
       })
+      setStatus("Connecting…")
       session = await openSession()
-      const audioContext = new AudioContext()
+      await audioContext.resume()
+      if (audioContext.state !== "running") {
+        throw new Error("The browser kept audio paused. Click Record again.")
+      }
       const source = audioContext.createMediaStreamSource(stream)
       const processor = audioContext.createScriptProcessor(4096, 1, 1)
       const silent = audioContext.createGain()
       silent.gain.value = 0
       const ratio = audioContext.sampleRate / 16000
-      const mic = { stream, session, audioContext, source, processor, pending: [], position: 0 }
+      const mic = { stream, session, audioContext, source, processor, pending: [], position: 0, peak: 0 }
       processor.onaudioprocess = (event) => {
         const input = event.inputBuffer.getChannelData(0)
+        let sum = 0
+        for (let i = 0; i < input.length; i++) sum += input[i] * input[i]
+        const rms = Math.sqrt(sum / input.length)
+        mic.peak = Math.max(mic.peak, rms)
+        setLevel(Math.min(1, rms * 8))
         while (mic.position < input.length) {
           const index = Math.floor(mic.position)
           const next = Math.min(index + 1, input.length - 1)
@@ -192,7 +210,12 @@ export const SttTry = () => {
       silent.connect(audioContext.destination)
       micRef.current = mic
       setRecording(true)
-      setStatus("Listening… press Stop when you are done.")
+      setStatus("Listening… speak, then press Stop.")
+      setTimeout(() => {
+        if (micRef.current === mic && mic.peak < 0.002) {
+          setStatus("No sound from the microphone. Check that the right input is selected and not muted.")
+        }
+      }, 3000)
       session.finished.catch((err) => {
         if (micRef.current === mic) {
           stopRecording()
@@ -202,10 +225,16 @@ export const SttTry = () => {
     } catch (err) {
       if (stream) stream.getTracks().forEach((track) => track.stop())
       if (session) session.close()
+      audioContext.close()
+      const name = err && err.name
       setStatus(
-        err && err.name === "NotAllowedError"
-          ? "Microphone access was blocked. Allow it in the browser and try again."
-          : (err && err.message) || "Recording failed."
+        name === "NotAllowedError" || name === "SecurityError"
+          ? "Microphone access was blocked. Allow it from the icon in the address bar, then press Record again."
+          : name === "NotFoundError"
+            ? "No microphone was found."
+            : name === "NotReadableError"
+              ? "The microphone is in use by another app."
+              : (err && err.message) || "Recording failed."
       )
       setBusy(false)
     }
@@ -254,6 +283,11 @@ export const SttTry = () => {
         >
           Choose file
         </button>
+        {recording ? (
+          <div className="h-2 w-24 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800" title="Microphone level">
+            <div className="h-full bg-[#FF3390] transition-all" style={{ width: Math.round(level * 100) + "%" }} />
+          </div>
+        ) : null}
         <span className="text-xs text-zinc-500">{fileName}</span>
         <input
           ref={fileRef}
