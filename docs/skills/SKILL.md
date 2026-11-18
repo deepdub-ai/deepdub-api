@@ -209,6 +209,16 @@ Send one JSON message, receive chunked audio:
 
 Response chunks: `{ "generationId": "...", "index": 0, "data": "<base64>", "isFinished": false }` ... `{ "generationId": "...", "data": "", "isFinished": true }`. Audio is in `data`, not `audio`.
 
+## Real-time speech-to-text
+
+One WebSocket, one audio stream. Connect to `wss://wsgw.deepdub.ai/transcribe-websocket` with `Authorization: Bearer <key>`. Model is `stt-egf`. Languages are Hebrew (`he`) and English (`en`).
+
+First frame is JSON: `model`, `audio_format` (`pcm_s16le` at 16 kHz mono is the low-latency choice), `sample_rate`, `num_channels`, optional `language_hints`. Then binary audio frames of about 100 ms at real-time pace. End with an empty text frame `""`.
+
+Server messages carry `tokens` (`text`, `start_ms`, `end_ms`, `confidence`, `is_final`, `language`). Concatenate `text` exactly. Keep `is_final: true` tokens; replace provisional ones from the latest message. Last message has `"finished": true`, then the socket closes with 1000.
+
+`translation` and `enable_speaker_diarization` are rejected. 503 `no_capacity` closes with 1013; retry with backoff. Full page: https://docs.deepdub.ai/api-reference/stt/realtime
+
 ## Streaming In and Streaming Out API (raw WebSocket)
 
 Use when the text is not complete up front (e.g. streaming from an LLM). Connect to `wss://wss.deepdub.ai/ws`, send `stream-config` once, then `stream-text` per fragment, then `end-stream`. Full reference: https://docs.deepdub.ai/api-reference/websocket/streaming

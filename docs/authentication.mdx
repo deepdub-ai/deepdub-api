@@ -5,7 +5,7 @@ description: "Authenticate your requests to the Deepdub API"
 
 ## API keys
 
-All Deepdub API requests require authentication via an API key passed in the `x-api-key` header.
+Text-to-speech and the other REST and WebSocket APIs authenticate with an API key in the `x-api-key` header. Real-time speech-to-text uses `Authorization: Bearer` instead. See [Real-time speech-to-text](/api-reference/stt/realtime).
 
 ```bash
 curl -X POST https://restapi.deepdub.ai/api/v1/tts \

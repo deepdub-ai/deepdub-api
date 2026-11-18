@@ -1,0 +1,260 @@
+---
+title: Real-time speech-to-text
+description: "Stream Hebrew or English audio over one WebSocket and receive word tokens as they are recognized"
+---
+
+## Overview
+
+You stream audio in and receive word tokens back as they are recognized. Each word arrives first as provisional, then as final.
+
+One WebSocket is one audio stream, one conversation. Open a new socket for each new stream.
+
+## Connection
+
+| | |
+|---|---|
+| URL | `wss://wsgw.deepdub.ai/transcribe-websocket` |
+| Auth | `Authorization: Bearer YOUR_API_KEY` on the handshake |
+| Model | `stt-egf` |
+
+Keys use the same `dd-...` format as the rest of the API. See [Authentication](/authentication) for how to get one. Keep the key in a secrets manager or in `DEEPDUB_API_KEY`. Do not put it in client-side code or in the repository.
+
+## Start message
+
+The first frame is a text frame of JSON. Send it before any audio.
+
+```json
+{
+  "model": "stt-egf",
+  "audio_format": "pcm_s16le",
+  "sample_rate": 16000,
+  "num_channels": 1,
+  "language_hints": ["he"],
+  "enable_endpoint_detection": false,
+  "context": {"terms": ["Deepdub", "מוצרלה"], "text": ""},
+  "enable_agent_text_input": false,
+  "client_reference_id": "my-call-123"
+}
+```
+
+<ParamField body="model" type="string" required>
+  Speech-to-text model. Use `stt-egf`.
+</ParamField>
+
+<ParamField body="audio_format" type="string" required>
+  Raw formats `pcm_s16le`, `pcm_f32le`, `pcm_mulaw`, and `pcm_alaw` also require `sample_rate` and `num_channels`. Container formats are `auto`, `wav`, `ogg`, `flac`, `mp3`, `webm`, `aac`, `m4a`, `amr`, and `mp4`. Raw 16 kHz mono `pcm_s16le` is the lowest-latency choice.
+</ParamField>
+
+<ParamField body="sample_rate" type="integer">
+  Sample rate in Hz for a raw format. The example uses `16000`.
+</ParamField>
+
+<ParamField body="num_channels" type="integer">
+  Channel count for a raw format. Use `1` for mono.
+</ParamField>
+
+<ParamField body="language_hints" type="string[]">
+  `["he"]` or `["en"]` locks that language. Both, or omitting the field, turns on automatic detection per utterance. Hebrew and English can switch within one session in automatic mode.
+</ParamField>
+
+<ParamField body="language_hints_strict" type="boolean">
+  Restrict automatic detection to the languages in `language_hints`.
+</ParamField>
+
+<ParamField body="enable_endpoint_detection" type="boolean" default="false">
+  When `true`, the server sends a final `<end>` token when the speaker finishes a turn.
+</ParamField>
+
+<ParamField body="max_endpoint_delay_ms" type="integer">
+  How long a pause must last before a turn ends, from `500` to `3000`. Used with endpoint detection.
+</ParamField>
+
+<ParamField body="context.terms" type="string[]">
+  Words to boost: names, products, rare words. Up to 200 words.
+</ParamField>
+
+<ParamField body="context.text" type="string">
+  Earlier conversation as plain text. Used as history for recognition.
+</ParamField>
+
+<ParamField body="context.prev" type="string">
+  Earlier conversation as plain text, same role as `context.text`.
+</ParamField>
+
+<ParamField body="enable_agent_text_input" type="boolean" default="false">
+  Set `true` when you will send what your voice agent is saying. See [Agent text](#agent-text).
+</ParamField>
+
+<ParamField body="client_reference_id" type="string">
+  Your own id. It is echoed in Deepdub logs.
+</ParamField>
+
+<Warning>
+  `translation` and `enable_speaker_diarization` are rejected.
+</Warning>
+
+## Audio
+
+Send audio as binary frames, at real-time pace, in chunks of about 100 ms. That is 3,200 bytes of 16 kHz `pcm_s16le` mono. An empty binary frame is a valid empty chunk.
+
+End the audio with an empty text frame, `""`. The server flushes the last words, sends a final message with `"finished": true`, and closes the socket with code 1000.
+
+## Control messages
+
+After the start message, further text frames are JSON.
+
+<ParamField body="type" type="string">
+  `keepalive` keeps the stream open while you have no audio to send. `finalize` finalizes everything recognized so far and leaves the stream open. `agent_text` sends what your agent is saying.
+</ParamField>
+
+### Agent text
+
+Requires `enable_agent_text_input: true`. Send the agent's speech in small pieces, each just before it is played to the user, and end each agent turn with `end_of_segment`:
+
+```json
+{"type": "agent_text", "text": "Which branch: Dizengoff or "}
+{"type": "agent_text", "text": "Ibn Gabirol?", "end_of_segment": true}
+```
+
+Send the text exactly as spoken, spaces included. Each message can be at most 2,000 characters. The text becomes history for the user's next reply. Vocabulary boosting stays on `context.terms`. Agent text is omitted from the transcript. If the user interrupts the agent, send `end_of_segment: true` immediately and stop sending the rest of that reply.
+
+## Tokens
+
+Each server message is JSON:
+
+```json
+{
+  "tokens": [
+    {
+      "text": " שלום",
+      "start_ms": 1200,
+      "end_ms": 1480,
+      "confidence": 0.97,
+      "is_final": true,
+      "language": "he"
+    }
+  ],
+  "final_audio_proc_ms": 1600,
+  "total_audio_proc_ms": 2400
+}
+```
+
+<ResponseField name="tokens" type="object[]">
+  Words or word pieces recognized so far in this message.
+</ResponseField>
+
+<ResponseField name="tokens.text" type="string">
+  The word, with its leading space when the server sends one. Build the transcript by concatenating `text` exactly as sent. Do not add or remove spaces.
+</ResponseField>
+
+<ResponseField name="tokens.start_ms" type="integer">
+  Start time of the token in the audio, in milliseconds.
+</ResponseField>
+
+<ResponseField name="tokens.end_ms" type="integer">
+  End time of the token in the audio, in milliseconds.
+</ResponseField>
+
+<ResponseField name="tokens.confidence" type="number">
+  Recognition confidence for this token.
+</ResponseField>
+
+<ResponseField name="tokens.is_final" type="boolean">
+  `false` tokens are provisional and are replaced by later messages. `true` tokens never change. Keep the finals, and redraw the provisional tokens from the latest message.
+</ResponseField>
+
+<ResponseField name="tokens.language" type="string">
+  Language of this token, `he` or `en`.
+</ResponseField>
+
+<ResponseField name="final_audio_proc_ms" type="integer">
+  Milliseconds of audio included in the latest final tokens.
+</ResponseField>
+
+<ResponseField name="total_audio_proc_ms" type="integer">
+  Milliseconds of audio processed so far.
+</ResponseField>
+
+<ResponseField name="finished" type="boolean">
+  `true` on the last message, which has an empty `tokens` array. The socket then closes.
+</ResponseField>
+
+`<end>` is sent only when endpoint detection is on. It marks the end of a speaker turn. Skip it when building text.
+
+## Errors
+
+An error is a JSON message, and then the socket closes.
+
+```json
+{"error_code": 400, "error_type": "...", "error_message": "..."}
+```
+
+| Code | When |
+|------|------|
+| 400 | The start message or a later frame is invalid. |
+| 401 | The API key is missing or invalid. |
+| 503 | `error_type` is `no_capacity` and the close code is 1013. Every server is busy. Retry after a short backoff. |
+
+## Code example
+
+The file is 16 kHz mono 16-bit WAV. Audio is sent in 100 ms chunks at real-time pace. The returned string is the concatenation of final tokens.
+
+```python
+import asyncio
+import json
+import os
+import wave
+
+import websockets  # pip install "websockets>=14"
+
+URL = "wss://wsgw.deepdub.ai/transcribe-websocket"
+
+async def transcribe(path: str, lang: str = "he") -> str:
+    with wave.open(path) as w:
+        sample_rate = w.getframerate()
+        pcm = w.readframes(w.getnframes())
+
+    finals = []
+    headers = {"Authorization": f"Bearer {os.environ['DEEPDUB_API_KEY']}"}
+    async with websockets.connect(URL, additional_headers=headers, max_size=None) as ws:
+        await ws.send(json.dumps({
+            "model": "stt-egf",
+            "audio_format": "pcm_s16le",
+            "sample_rate": sample_rate,
+            "num_channels": 1,
+            "language_hints": [lang],
+        }))
+
+        async def receive():
+            async for msg in ws:
+                data = json.loads(msg)
+                if data.get("error_code"):
+                    raise RuntimeError(data)
+                finals.extend(
+                    token["text"]
+                    for token in data.get("tokens", [])
+                    if token["is_final"] and token["text"] != "<end>"
+                )
+                if data.get("finished"):
+                    return
+
+        receive_task = asyncio.create_task(receive())
+        chunk = sample_rate * 2 // 10  # 100 ms of 16-bit mono
+        for i in range(0, len(pcm), chunk):
+            await ws.send(pcm[i:i + chunk])
+            await asyncio.sleep(0.1)
+        await ws.send("")  # end of audio
+        await receive_task
+
+    return "".join(finals).strip()
+
+print(asyncio.run(transcribe("sample.wav")))
+```
+
+## Limits
+
+Final words arrive about 0.1 s after the speaker stops (median). Provisional words stream while they talk.
+
+A session can run for up to 5 hours. Send `{"type": "keepalive"}` during a long silence in which you send no audio.
+
+Each message, in either direction, is limited to 1 MiB.

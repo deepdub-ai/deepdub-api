@@ -105,6 +105,12 @@ Response: chunked `{ "generationId": "...", "index": 0, "data": "<base64>", "isF
 
 Errors: `{ "error": "...", "errorType": "InvalidInput" | "RateLimit" | "MaxExceeded" | "InsufficientCredits", "generationId": "..." }`. Errors raised after generation starts carry `error` and `generationId` only, with no `errorType`.
 
+### Real-time speech-to-text
+
+One WebSocket, one audio stream. Connect to `wss://wsgw.deepdub.ai/transcribe-websocket` with `Authorization: Bearer <key>`. Model is `stt-egf`. Languages are Hebrew (`he`) and English (`en`).
+
+First frame is JSON (`model`, `audio_format`, `sample_rate`, `num_channels`, optional `language_hints`), then binary audio in ~100 ms chunks at real-time pace, then an empty text frame `""` to end. Tokens come back with `text` and `is_final`. Concatenate `text` exactly; keep finals and replace provisional tokens from the latest message. `translation` and `enable_speaker_diarization` are rejected. 503 `no_capacity` closes with code 1013. Full page: https://docs.deepdub.ai/api-reference/stt/realtime
+
 ### Streaming In and Streaming Out API (WebSocket)
 
 Use when text is not complete up front (e.g. token-by-token from an LLM). Connect to `wss://wss.deepdub.ai/ws`, send `stream-config` once, then `stream-text` repeatedly, then `end-stream`. See the [full reference](https://docs.deepdub.ai/api-reference/websocket/streaming).
