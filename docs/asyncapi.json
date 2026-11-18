@@ -1,0 +1,210 @@
+{
+  "asyncapi": "3.0.0",
+  "info": {
+    "title": "Deepdub Speech-to-Text",
+    "version": "1.0.0",
+    "description": "Stream audio in over one WebSocket and receive word tokens as they are recognized."
+  },
+  "servers": {
+    "production": {
+      "host": "wsgw.deepdub.ai",
+      "protocol": "wss",
+      "description": "Real-time speech-to-text",
+      "security": [
+        { "$ref": "#/components/securitySchemes/bearerAuth" }
+      ]
+    }
+  },
+  "channels": {
+    "transcribe": {
+      "address": "/transcribe-websocket",
+      "title": "Transcribe",
+      "description": "One WebSocket is one audio stream. The first frame is the start message. Audio follows as binary frames.",
+      "servers": [
+        { "$ref": "#/servers/production" }
+      ],
+      "messages": {
+        "start": {
+          "$ref": "#/components/messages/Start"
+        },
+        "tokens": {
+          "$ref": "#/components/messages/Tokens"
+        }
+      }
+    }
+  },
+  "operations": {
+    "sendStart": {
+      "action": "send",
+      "title": "Start transcription",
+      "description": "Send this JSON text frame first. Then send audio as binary frames of about 100 ms at real-time pace. End the audio with an empty text frame.",
+      "channel": {
+        "$ref": "#/channels/transcribe"
+      },
+      "messages": [
+        { "$ref": "#/channels/transcribe/messages/start" }
+      ]
+    },
+    "receiveTokens": {
+      "action": "receive",
+      "title": "Word tokens",
+      "description": "Words arrive as provisional tokens, then as final tokens. The last message has finished set to true, and the socket closes.",
+      "channel": {
+        "$ref": "#/channels/transcribe"
+      },
+      "messages": [
+        { "$ref": "#/channels/transcribe/messages/tokens" }
+      ]
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Deepdub API key. Send it as Authorization: Bearer on the WebSocket handshake."
+      }
+    },
+    "messages": {
+      "Start": {
+        "name": "Start",
+        "title": "Start message",
+        "contentType": "application/json",
+        "payload": {
+          "type": "object",
+          "required": ["model", "audio_format", "sample_rate", "num_channels"],
+          "properties": {
+            "model": {
+              "type": "string",
+              "description": "Speech-to-text model.",
+              "enum": ["stt-egf"]
+            },
+            "audio_format": {
+              "type": "string",
+              "description": "Raw formats pcm_s16le, pcm_f32le, pcm_mulaw, and pcm_alaw need sample_rate and num_channels. Containers include wav, ogg, flac, mp3, webm, aac, m4a, amr, and mp4.",
+              "enum": ["pcm_s16le", "pcm_f32le", "pcm_mulaw", "pcm_alaw", "auto", "wav", "ogg", "flac", "mp3", "webm", "aac", "m4a", "amr", "mp4"]
+            },
+            "sample_rate": {
+              "type": "integer",
+              "description": "Sample rate in Hz for a raw format."
+            },
+            "num_channels": {
+              "type": "integer",
+              "description": "Channel count for a raw format. Use 1 for mono."
+            },
+            "language_hints": {
+              "type": "array",
+              "description": "[\"he\"] or [\"en\"] locks that language. Both, or omitting the field, detects the language per utterance.",
+              "items": { "type": "string", "enum": ["he", "en"] }
+            },
+            "language_hints_strict": {
+              "type": "boolean",
+              "description": "Restrict detection to the hinted languages."
+            },
+            "enable_endpoint_detection": {
+              "type": "boolean",
+              "description": "Send a final <end> token when the speaker finishes a turn."
+            },
+            "max_endpoint_delay_ms": {
+              "type": "integer",
+              "description": "Pause length before a turn ends, from 500 to 3000.",
+              "minimum": 500,
+              "maximum": 3000
+            },
+            "context": {
+              "type": "object",
+              "properties": {
+                "terms": {
+                  "type": "array",
+                  "description": "Words to boost. Up to 200.",
+                  "items": { "type": "string" }
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Earlier conversation, used as history."
+                },
+                "prev": {
+                  "type": "string",
+                  "description": "Earlier conversation, same role as text."
+                }
+              }
+            },
+            "enable_agent_text_input": {
+              "type": "boolean",
+              "description": "Allow agent_text control messages on this socket."
+            },
+            "client_reference_id": {
+              "type": "string",
+              "description": "Your own id, echoed in Deepdub logs."
+            }
+          }
+        },
+        "examples": [
+          {
+            "name": "start",
+            "payload": {
+              "model": "stt-egf",
+              "audio_format": "pcm_s16le",
+              "sample_rate": 16000,
+              "num_channels": 1,
+              "language_hints": ["he"],
+              "enable_endpoint_detection": false,
+              "context": { "terms": ["Deepdub", "insurance"], "text": "" },
+              "enable_agent_text_input": false,
+              "client_reference_id": "my-call-123"
+            }
+          }
+        ]
+      },
+      "Tokens": {
+        "name": "Tokens",
+        "title": "Word tokens",
+        "contentType": "application/json",
+        "payload": {
+          "type": "object",
+          "properties": {
+            "tokens": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "text": { "type": "string", "description": "Word text, spaces included. Concatenate exactly." },
+                  "start_ms": { "type": "integer" },
+                  "end_ms": { "type": "integer" },
+                  "confidence": { "type": "number" },
+                  "is_final": { "type": "boolean", "description": "Final tokens never change. Provisional tokens are replaced by a later message." },
+                  "language": { "type": "string", "enum": ["he", "en"] }
+                }
+              }
+            },
+            "final_audio_proc_ms": { "type": "integer" },
+            "total_audio_proc_ms": { "type": "integer" },
+            "finished": { "type": "boolean", "description": "True on the last message. The socket then closes." },
+            "error_code": { "type": "integer" },
+            "error_type": { "type": "string" },
+            "error_message": { "type": "string" }
+          }
+        },
+        "examples": [
+          {
+            "name": "token",
+            "payload": {
+              "tokens": [
+                {
+                  "text": " hello",
+                  "start_ms": 1200,
+                  "end_ms": 1480,
+                  "confidence": 0.97,
+                  "is_final": true,
+                  "language": "en"
+                }
+              ],
+              "final_audio_proc_ms": 1600,
+              "total_audio_proc_ms": 2400
+            }
+          }
+        ]
+      }
+    }
+  }
+}

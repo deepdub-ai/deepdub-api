@@ -19,6 +19,7 @@
     }
   },
   "openapi": "openapi3.json",
+  "asyncapi": "asyncapi.json",
   "navigation": {
     "tabs": [
       {

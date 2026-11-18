@@ -1,11 +1,14 @@
 ---
 title: Real-time speech-to-text
 description: "Stream Hebrew or English audio over one WebSocket and receive word tokens as they are recognized"
+asyncapi: "asyncapi.json transcribe"
 ---
 
 ## Overview
 
 You stream audio in and receive word tokens back as they are recognized. Each word arrives first as provisional, then as final.
+
+The playground above opens the socket and sends the start message, the same way the text-to-speech playground sends a generation request. Audio is the binary frames that follow that message.
 
 One WebSocket is one audio stream, one conversation. Open a new socket for each new stream.
 
