@@ -42,7 +42,7 @@
         "tab": "API Reference",
         "groups": [
           {
-            "group": "TTS",
+            "group": "Text-to-Speech",
             "pages": [
               "api-reference/tts/generate-and-stream-tts-audio"
             ]

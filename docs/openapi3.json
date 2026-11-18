@@ -31,9 +31,9 @@
     "/tts": {
       "post": {
         "operationId": "generateTTS",
-        "description": "Generate and stream TTS audio based on the provided text. Returns an audio stream in the specified format (default MP3). Supported formats: `mp3`, `opus`, `mulaw`. For `wav` or `s16le` output, use the WebSocket API.",
-        "tags": ["TTS"],
-        "summary": "Generate and stream TTS audio",
+        "description": "Generate and stream text-to-speech audio based on the provided text. Returns an audio stream in the specified format (default MP3). Supported formats: `mp3`, `opus`, `mulaw`. For `wav` or `s16le` output, use the WebSocket API.",
+        "tags": ["Text-to-Speech"],
+        "summary": "Generate and stream text-to-speech audio",
         "parameters": [
           {
             "description": "API Key",
