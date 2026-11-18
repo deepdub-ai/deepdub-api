@@ -1,0 +1,105 @@
+{
+  "asyncapi": "3.0.0",
+  "info": {
+    "title": "Deepdub Text-to-Speech WebSocket",
+    "version": "1.0.0",
+    "description": "WebSocket text-to-speech. Streaming Out sends one complete text. Streaming In and Out accepts text as it is produced."
+  },
+  "servers": {
+    "streamingOutUs": {
+      "host": "wsapi.deepdub.ai",
+      "protocol": "wss",
+      "description": "Streaming Out, US. Authenticate with the x-api-key header."
+    },
+    "streamingOutEu": {
+      "host": "wsapi.eu.deepdub.ai",
+      "protocol": "wss",
+      "description": "Streaming Out, EU. Authenticate with the x-api-key header."
+    },
+    "streamingInUs": {
+      "host": "wss.deepdub.ai",
+      "protocol": "wss",
+      "description": "Streaming In and Out, US. Authenticate with the x-api-key header."
+    },
+    "streamingInEu": {
+      "host": "wss.eu.deepdub.ai",
+      "protocol": "wss",
+      "description": "Streaming In and Out, EU. Authenticate with the x-api-key header."
+    }
+  },
+  "channels": {
+    "streamingOut": {
+      "address": "/open",
+      "title": "Streaming Out",
+      "description": "Send one complete text and receive audio chunks.",
+      "servers": [
+        { "$ref": "#/servers/streamingOutUs" },
+        { "$ref": "#/servers/streamingOutEu" }
+      ],
+      "messages": {
+        "request": { "$ref": "#/components/messages/StreamingOutRequest" }
+      }
+    },
+    "streamingInOut": {
+      "address": "/ws",
+      "title": "Streaming In and Out",
+      "description": "Send stream-config, then stream-text as text arrives, then end-stream.",
+      "servers": [
+        { "$ref": "#/servers/streamingInUs" },
+        { "$ref": "#/servers/streamingInEu" }
+      ],
+      "messages": {
+        "config": { "$ref": "#/components/messages/StreamConfig" }
+      }
+    }
+  },
+  "operations": {
+    "sendStreamingOut": {
+      "action": "send",
+      "title": "Text to speech",
+      "channel": { "$ref": "#/channels/streamingOut" },
+      "messages": [{ "$ref": "#/channels/streamingOut/messages/request" }]
+    },
+    "sendStreamConfig": {
+      "action": "send",
+      "title": "Configure the stream",
+      "channel": { "$ref": "#/channels/streamingInOut" },
+      "messages": [{ "$ref": "#/channels/streamingInOut/messages/config" }]
+    }
+  },
+  "components": {
+    "messages": {
+      "StreamingOutRequest": {
+        "name": "StreamingOutRequest",
+        "title": "Text to speech",
+        "contentType": "application/json",
+        "payload": {
+          "type": "object",
+          "required": ["action", "model", "targetText", "locale", "voicePromptId"],
+          "properties": {
+            "action": { "type": "string", "enum": ["text-to-speech"] },
+            "model": { "type": "string" },
+            "targetText": { "type": "string" },
+            "locale": { "type": "string" },
+            "voicePromptId": { "type": "string" }
+          }
+        }
+      },
+      "StreamConfig": {
+        "name": "StreamConfig",
+        "title": "Stream config",
+        "contentType": "application/json",
+        "payload": {
+          "type": "object",
+          "required": ["action", "model"],
+          "properties": {
+            "action": { "type": "string", "enum": ["stream-config"] },
+            "model": { "type": "string" },
+            "locale": { "type": "string" },
+            "voicePromptId": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}
