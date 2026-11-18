@@ -1,0 +1,67 @@
+---
+title: API Reference
+description: "Text-to-Speech, Speech-to-Text, and the rest of the Deepdub API"
+---
+
+Deepdub has APIs in both directions. Text-to-Speech turns text into speech. Speech-to-Text turns live speech into text. Both accept the free trial key `dd-00000000000000000000000065c9cbfe`, and each has a Try it on its page.
+
+## Text-to-Speech
+
+<CardGroup cols={3}>
+
+<Card title="REST" icon="code" href="/api-reference/tts/generate-and-stream-tts-audio">
+  One HTTP request, audio streamed back in the response.
+</Card>
+
+<Card title="Streaming Out" icon="plug" href="/api-reference/websocket/overview">
+  Send one complete text over a WebSocket and stream the audio back.
+</Card>
+
+<Card title="Streaming In and Out" icon="arrows-left-right" href="/api-reference/websocket/streaming">
+  Stream text in as an LLM produces it and stream the audio back.
+</Card>
+
+</CardGroup>
+
+## Speech-to-Text
+
+<CardGroup cols={3}>
+
+<Card title="Real-time speech-to-text" icon="closed-captioning" href="/api-reference/stt/realtime">
+  Stream Hebrew or English audio over a WebSocket and receive each word as it is recognized. Try it from your microphone.
+</Card>
+
+</CardGroup>
+
+## Endpoints
+
+| API | Protocol | Endpoint | Auth |
+|-----|----------|----------|------|
+| Text-to-Speech | HTTPS | `https://restapi.deepdub.ai/api/v1/tts` | `x-api-key` header |
+| Text-to-Speech Streaming Out | WSS | `wss://wsapi.deepdub.ai/open` | `x-api-key` header |
+| Text-to-Speech Streaming In and Out | WSS | `wss://wss.deepdub.ai/ws` | `x-api-key` header |
+| Speech-to-Text | WSS | `wss://wsgw.deepdub.ai/transcribe-websocket` | `Authorization: Bearer` header, or `?x-api-key=` in a browser |
+
+Text-to-Speech also runs in the EU: insert `.eu` before `.deepdub.ai` in the host. See [Authentication](/authentication) for keys and regions.
+
+## More APIs
+
+<CardGroup cols={2}>
+
+<Card title="Voice" icon="microphone" href="/api-reference/voice/get-voice-prompts">
+  Upload, list, update, and delete voice prompts.
+</Card>
+
+<Card title="Gender Detection" icon="venus-mars" href="/api-reference/gender-detection/classify-speaker-gender">
+  Classify the speaker gender of an audio clip.
+</Card>
+
+<Card title="Usage" icon="chart-line" href="/api-reference/usage/get-daily-concurrent-usage">
+  Daily concurrency and usage by model.
+</Card>
+
+<Card title="Live Streaming (Beta)" icon="tower-broadcast" href="/api-reference/live/overview">
+  Live captions and dubbing on broadcast streams.
+</Card>
+
+</CardGroup>

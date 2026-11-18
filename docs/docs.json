@@ -43,6 +43,10 @@
         "tab": "API Reference",
         "groups": [
           {
+            "group": "Overview",
+            "pages": ["api-reference/overview"]
+          },
+          {
             "group": "Text-to-Speech",
             "pages": [
               "api-reference/tts/generate-and-stream-tts-audio"
